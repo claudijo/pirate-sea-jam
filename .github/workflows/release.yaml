@@ -7,7 +7,7 @@ on:
 
 env:
   # update with the name of the main binary
-  binary: bevy_github_ci_template
+  binary: pirate-sea-jam
   add_binaries_to_github_release: true
   itch_target: claudijo/pirate-sea-jam
 
