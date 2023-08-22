@@ -1,6 +1,6 @@
 # Pirate Sea Jam
 
-Jam-sized pirate game. Written in Rust and Bevy. Made with ❤️.
+Jam-sized pirate game in development. Written in Rust and Bevy. Made with ❤️
 
 > Learning game development is a journey on the open seas
 
