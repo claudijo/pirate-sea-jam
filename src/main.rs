@@ -6,17 +6,20 @@
 
 use bevy::prelude::*;
 
+mod utils;
+mod resources;
+mod components;
+mod plugins;
+mod systems;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_systems(Startup, setup)
+        .add_plugins((
+            plugins::camera::CameraPlugin,
+            plugins::ocean::OceanPlugin,
+            plugins::light::LigthPlugin,
+        ))
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
-    commands.spawn(SpriteBundle {
-        texture: asset_server.load("icon.png"),
-        ..Default::default()
-    });
-}
