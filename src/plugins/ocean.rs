@@ -13,7 +13,6 @@ impl Plugin for OceanPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(WaveMachine {
             time_scale: 0.4,
-            height_sample_count: 4,
         })
         .add_systems(Startup, spawn_ocean)
         .add_systems(Update, waves::make_waves);
