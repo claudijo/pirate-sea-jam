@@ -1,3 +1,3 @@
 # Pirate Sea Jam
 
-Jam-sized pirate game made for fun and as a game dev resource.
+Jam-sized pirate game. Written in Rust and Bevy. Made with ❤️.
