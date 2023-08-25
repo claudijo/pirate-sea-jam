@@ -34,6 +34,25 @@ pub fn gerstner_wave(
     Vec3::new(xz.x, y, xz.y)
 }
 
+// https://www.youtube.com/watch?v=kGEqaX4Y4bQ&t=746s
+pub fn wave_height<F>(
+    point: Vec3,
+    time: f32,
+    sample_count: u8,
+    next_position: F
+) -> f32 where F: Fn(Vec3, f32) -> Vec3  {
+    let mut sample_point = point;
+    let mut displacement;
+    for _i in 1..sample_count {
+        displacement = next_position(sample_point, time);
+        sample_point -= displacement - point;
+    }
+    // Do last sample outside loop to avoid superfluous calculation
+    displacement = next_position(sample_point, time);
+
+    displacement.y
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -58,18 +58,10 @@ impl WaveMachine {
         )
     }
 
-    // https://www.youtube.com/watch?v=kGEqaX4Y4bQ&t=746s
+    
     pub fn surface_height(&self, point: Vec3, time: f32) -> f32 {
-        let mut sample_point = point;
-        let mut displacement;
-        for _i in 1..self.sample_count {
-            displacement = self.next_position(sample_point, time);
-            sample_point -= displacement - point;
-        }
-
-        // Do last sample outside loop to avoid superfluous calculation
-        displacement = self.next_position(sample_point, time);
-
-        displacement.y
+        liquid::wave_height(point, time, self.sample_count, |position: Vec3, time: f32| {
+            self.next_position(position, time)
+        })
     }
 }
