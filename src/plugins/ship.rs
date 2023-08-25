@@ -11,21 +11,40 @@ impl Plugin for ShipPlugin {
 }
 
 fn spawn_ship(mut commands: Commands) {
-    let position = Vec3::new(0., 10., 0.);
-
-    commands
+    let parent = commands
         .spawn((
-            TransformBundle::from(Transform::from_translation(position)),
+            TransformBundle::from(Transform::from_xyz(0., 10., 0.)),
             RigidBody::Dynamic,
-            Collider::cuboid(0.5, 0.5, 0.5),
-            ExternalForce { ..default() },
-            Damping { ..default() },
-            Velocity { ..default() },
+            Collider::cuboid(2.5, 0.5, 1.),
             CollisionGroups::new(Group::NONE, Group::NONE),
-            CubePontoonSize { side: 1. },
-            PontoonForceScale {
-                buoyant_force_scale: 0.002,
-                linear_damping_scale: 0.0002,
-            },
-        ));
+        ))
+        .id();
+
+    for row in 0..3 {
+        for col in 0..2 {
+            let position = Vec3::new(-2.5 + row as f32 * 2.5, 0., -1. + col as f32 * 2.);
+
+            let child = commands
+                .spawn((
+                    TransformBundle::from(Transform::from_translation(position)),
+                    RigidBody::Dynamic,
+                    Collider::ball(0.5),
+                    ExternalForce { ..default() },
+                    Damping { ..default() },
+                    Velocity { ..default() },
+                    CollisionGroups::new(Group::NONE, Group::NONE),
+                    CubePontoonSize { side: 1. },
+                    PontoonForceScale {
+                        buoyant_force_scale: 0.005,
+                        linear_damping_scale: 0.0005,
+                    },
+                ))
+                .id();
+
+            let joint = FixedJointBuilder::new().local_anchor2(position);
+            commands.entity(child).with_children(|children| {
+                children.spawn(ImpulseJoint::new(parent, joint));
+            });
+        }
+    }
 }
