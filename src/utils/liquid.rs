@@ -46,8 +46,8 @@ mod tests {
 
     #[test]
     fn drag() {
-       let force = drag_force(Vec3::Y * 5., 16., CUBE_DRAG_COEFFICIENT);
-       assert_eq!(force, Vec3::Y * 215249.98);
+       let force = damping(5., 16., CUBE_DRAG_COEFFICIENT);
+       assert_eq!(force, 215249.98);
     }
 }
 
