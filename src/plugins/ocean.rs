@@ -1,8 +1,7 @@
-use bevy::prelude::*;
-
-use crate::resources::wave_machine::WaveMachine;
-use crate::systems::waves;
 use crate::components::ocean::OceanTopology;
+use crate::resources::wave_machine::WaveMachine;
+use crate::systems::fluid_dynamics;
+use bevy::prelude::*;
 
 const OCEAN_SIZE: f32 = 50.;
 const OCEAN_SUBDIVISIONS: u32 = 20;
@@ -13,9 +12,10 @@ impl Plugin for OceanPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(WaveMachine {
             time_scale: 0.4,
+            sample_count: 4,
         })
         .add_systems(Startup, spawn_ocean)
-        .add_systems(Update, waves::make_waves);
+        .add_systems(Update, fluid_dynamics::make_waves);
     }
 }
 

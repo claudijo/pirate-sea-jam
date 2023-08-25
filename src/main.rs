@@ -5,21 +5,25 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
 
-mod utils;
-mod resources;
 mod components;
 mod plugins;
+mod resources;
 mod systems;
+mod utils;
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
+        .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins((
             plugins::camera::CameraPlugin,
             plugins::ocean::OceanPlugin,
             plugins::light::LigthPlugin,
+            plugins::ship::ShipPlugin,
+            plugins::pontoon::PontoonPlugin,
         ))
         .run();
 }
-
