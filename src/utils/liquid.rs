@@ -47,7 +47,7 @@ pub fn wave_height<F>(
         displacement = next_position(sample_point, time);
         sample_point -= displacement - point;
     }
-    // Do last sample outside loop to avoid superfluous calculation
+    // Do last sample outside loop to avoid extra calculation
     displacement = next_position(sample_point, time);
 
     displacement.y
