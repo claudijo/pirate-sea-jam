@@ -1,10 +1,11 @@
+use crate::utils::liquid;
 use bevy::prelude::*;
 use std::f32::consts::PI;
-use crate::utils::wave_mechanics;
 
 #[derive(Resource)]
 pub struct WaveMachine {
     pub time_scale: f32,
+    pub sample_count: u8,
 }
 
 impl WaveMachine {
@@ -18,7 +19,7 @@ impl WaveMachine {
         // shape. Could also use a configurable value for number of modulations.
         let phase = 0.;
 
-        offset_sum += wave_mechanics::gerstner_wave(
+        offset_sum += liquid::gerstner_wave(
             point_on_surface,
             time,
             Vec2::from_angle(0.) * 0.2,
@@ -26,7 +27,7 @@ impl WaveMachine {
             phase,
         );
 
-        offset_sum += wave_mechanics::gerstner_wave(
+        offset_sum += liquid::gerstner_wave(
             point_on_surface,
             time,
             Vec2::from_angle(PI / 6.) * 0.4,
@@ -34,7 +35,7 @@ impl WaveMachine {
             phase,
         );
 
-        offset_sum += wave_mechanics::gerstner_wave(
+        offset_sum += liquid::gerstner_wave(
             point_on_surface,
             time,
             Vec2::from_angle(PI / 4.) * 0.6,
@@ -42,7 +43,7 @@ impl WaveMachine {
             phase,
         );
 
-        offset_sum += wave_mechanics::gerstner_wave(
+        offset_sum += liquid::gerstner_wave(
             point_on_surface,
             time,
             Vec2::from_angle(PI / 2.) * 0.8,
@@ -50,6 +51,17 @@ impl WaveMachine {
             phase,
         );
 
-        Vec3::new(position.x - offset_sum.x, offset_sum.y, position.z - offset_sum.z)
+        Vec3::new(
+            position.x - offset_sum.x,
+            offset_sum.y,
+            position.z - offset_sum.z,
+        )
+    }
+
+    
+    pub fn surface_height(&self, point: Vec3, time: f32) -> f32 {
+        liquid::wave_height(point, time, self.sample_count, |position: Vec3, time: f32| {
+            self.next_position(position, time)
+        })
     }
 }

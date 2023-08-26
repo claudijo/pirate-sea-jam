@@ -25,9 +25,8 @@ fn spawn_light(mut commands: Commands) {
         .insert(Name::new("Sun Light"));
 
     // ambient light
-    commands
-        .insert_resource(AmbientLight {
-            color: Color::rgb_u8(210, 220, 240),
-            brightness: 0.5,
-        })
+    commands.insert_resource(AmbientLight {
+        color: Color::rgb_u8(210, 220, 240),
+        brightness: 0.5,
+    })
 }

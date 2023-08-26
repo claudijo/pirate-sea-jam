@@ -1,1 +1,1 @@
-pub mod waves;
+pub mod fluid_dynamics;
