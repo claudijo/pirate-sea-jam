@@ -8,7 +8,7 @@ pub struct CubePontoonSize {
 #[derive(Component)]
 pub struct PontoonForceScale {
     pub buoyant_force_scale: f32,
-    pub linear_damping_scale: f32,
+    pub water_damping_scale: f32,
 }
 
 

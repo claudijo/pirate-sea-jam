@@ -13,7 +13,7 @@ impl Plugin for ShipPlugin {
 fn spawn_ship(mut commands: Commands) {
     let parent = commands
         .spawn((
-            TransformBundle::from(Transform::from_xyz(0., 10., 0.)),
+            TransformBundle::from(Transform::from_xyz(0., 5., 0.)),
             RigidBody::Dynamic,
             Collider::cuboid(2.5, 0.5, 1.),
             CollisionGroups::new(Group::NONE, Group::NONE),
@@ -36,7 +36,7 @@ fn spawn_ship(mut commands: Commands) {
                     CubePontoonSize { side: 1. },
                     PontoonForceScale {
                         buoyant_force_scale: 0.005,
-                        linear_damping_scale: 0.0005,
+                        water_damping_scale: 0.0005,
                     },
                 ))
                 .id();
