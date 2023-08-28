@@ -1,3 +1,4 @@
+use crate::game_state::GameState;
 use bevy::prelude::*;
 use core::f32::consts::PI;
 
@@ -5,7 +6,7 @@ pub struct LigthPlugin;
 
 impl Plugin for LigthPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_light);
+        app.add_systems(OnEnter(GameState::InGame), spawn_light);
     }
 }
 

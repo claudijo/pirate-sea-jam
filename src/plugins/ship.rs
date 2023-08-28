@@ -1,4 +1,5 @@
 use crate::components::pontoon::{CubePontoonSize, PontoonForceScale};
+use crate::game_state::GameState;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
@@ -6,7 +7,7 @@ pub struct ShipPlugin;
 
 impl Plugin for ShipPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_ship);
+        app.add_systems(OnEnter(GameState::InGame), spawn_ship);
     }
 }
 

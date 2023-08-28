@@ -58,10 +58,12 @@ impl WaveMachine {
         )
     }
 
-    
     pub fn surface_height(&self, point: Vec3, time: f32) -> f32 {
-        liquid::wave_height(point, time, self.sample_count, |position: Vec3, time: f32| {
-            self.next_position(position, time)
-        })
+        liquid::wave_height(
+            point,
+            time,
+            self.sample_count,
+            |position: Vec3, time: f32| self.next_position(position, time),
+        )
     }
 }

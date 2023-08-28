@@ -35,12 +35,10 @@ pub fn gerstner_wave(
 }
 
 // https://www.youtube.com/watch?v=kGEqaX4Y4bQ&t=746s
-pub fn wave_height<F>(
-    point: Vec3,
-    time: f32,
-    sample_count: u8,
-    next_position: F
-) -> f32 where F: Fn(Vec3, f32) -> Vec3  {
+pub fn wave_height<F>(point: Vec3, time: f32, sample_count: u8, next_position: F) -> f32
+where
+    F: Fn(Vec3, f32) -> Vec3,
+{
     let mut sample_point = point;
     let mut displacement;
     for _i in 1..sample_count {
@@ -59,14 +57,13 @@ mod tests {
 
     #[test]
     fn buoyancy() {
-       let force = buoyant_force(64.);
-       assert_eq!(force, Vec3::Y * 643536.);
+        let force = buoyant_force(64.);
+        assert_eq!(force, Vec3::Y * 643536.);
     }
 
     #[test]
     fn drag() {
-       let force = damping(5., 16., CUBE_DRAG_COEFFICIENT);
-       assert_eq!(force, 215249.98);
+        let force = damping(5., 16., CUBE_DRAG_COEFFICIENT);
+        assert_eq!(force, 215249.98);
     }
 }
-

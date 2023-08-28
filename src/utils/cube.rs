@@ -101,7 +101,7 @@ mod tests {
     }
     #[test]
     fn mostly_submerged_low_tide() {
-        let displayced_volume = displaced_liquid_volume(4.,-2., -1.);
+        let displayced_volume = displaced_liquid_volume(4., -2., -1.);
         assert_eq!(displayced_volume, 48.);
     }
 
@@ -110,5 +110,4 @@ mod tests {
         let displayced_volume = displaced_liquid_volume(4., -3., -1.);
         assert_eq!(displayced_volume, 64.);
     }
-    
 }
