@@ -2,6 +2,8 @@ use crate::game_state::GameState;
 use bevy::asset::LoadState;
 use bevy::prelude::*;
 
+// Use <HandleUntyped> to refer to any asset, regardless of the asset type and allow to store a 
+// collection containing assets of mixed types.
 #[derive(Resource, Default)]
 pub struct Assets(Vec<HandleUntyped>);
 
@@ -19,10 +21,7 @@ impl Plugin for AssetsLoadingPlugin {
 }
 
 fn setup(server: Res<AssetServer>, mut loading: ResMut<Assets>) {
-    // we can have different asset types
     let boat_scene: Handle<Scene> = server.load("models/boat.glb#Scene0");
-
-    // add them all to our collection for tracking
     loading.0.push(boat_scene.clone_untyped());
 }
 
