@@ -1,4 +1,3 @@
-// states.rs
 use bevy::prelude::*;
 
 #[derive(Clone, Debug, Default, Hash, Eq, States, PartialEq)]
