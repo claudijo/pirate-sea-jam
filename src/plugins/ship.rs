@@ -133,7 +133,7 @@ fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>) {
                 },
                 PontoonForceScale {
                     buoyant_force_scale: 0.005,
-                    water_damping_scale: 0.004,
+                    water_damping_scale: 0.003,
                 },
             ))
             .id();
