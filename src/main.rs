@@ -8,22 +8,28 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
 mod components;
+mod game_state;
 mod plugins;
 mod resources;
 mod systems;
 mod utils;
 
 fn main() {
-    App::new()
-        .add_plugins(DefaultPlugins)
-        .add_plugins(RapierPhysicsPlugin::<NoUserData>::default())
-        .add_plugins(RapierDebugRenderPlugin::default())
-        .add_plugins((
-            plugins::camera::CameraPlugin,
-            plugins::ocean::OceanPlugin,
-            plugins::light::LigthPlugin,
-            plugins::ship::ShipPlugin,
-            plugins::pontoon::PontoonPlugin,
-        ))
-        .run();
+    let mut app = App::new();
+    app.add_plugins(DefaultPlugins);
+    app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
+    app.add_plugins((
+        plugins::assets_ready_checker::AssetsReadyCheckerPlugin,
+        plugins::camera::CameraPlugin,
+        plugins::ocean::OceanPlugin,
+        plugins::light::LigthPlugin,
+        plugins::ship::ShipPlugin,
+        plugins::pontoon::PontoonPlugin,
+    ))
+    .add_state::<game_state::GameState>();
+
+    #[cfg(debug_assertions)]
+    app.add_plugins(RapierDebugRenderPlugin::default());
+
+    app.run();
 }

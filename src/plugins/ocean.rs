@@ -1,4 +1,5 @@
 use crate::components::ocean::OceanTopology;
+use crate::game_state::GameState;
 use crate::resources::wave_machine::WaveMachine;
 use crate::systems::fluid_dynamics;
 use bevy::prelude::*;
@@ -14,8 +15,11 @@ impl Plugin for OceanPlugin {
             time_scale: 0.4,
             sample_count: 4,
         })
-        .add_systems(Startup, spawn_ocean)
-        .add_systems(Update, fluid_dynamics::make_waves);
+        .add_systems(OnEnter(GameState::InGame), spawn_ocean)
+        .add_systems(
+            Update,
+            (fluid_dynamics::make_waves).run_if(in_state(GameState::InGame)),
+        );
     }
 }
 
