@@ -1,4 +1,4 @@
-pub mod assets_loading;
+pub mod assets_ready_checker;
 pub mod camera;
 pub mod light;
 pub mod ocean;

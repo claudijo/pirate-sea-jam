@@ -1,8 +1,8 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct CubePontoonSize {
-    pub side: f32,
+pub struct SpherePontoonSize {
+    pub radius: f32,
 }
 
 #[derive(Component)]

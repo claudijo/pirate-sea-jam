@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 pub const LIQUID_DENCITY: f32 = 1025.;
 pub const GRAVITY: f32 = 9.81;
-pub const CUBE_DRAG_COEFFICIENT: f32 = 1.05;
+pub const SPHERE_DRAG_COEFFICIENT: f32 = 0.47;
 
 // https://www.omnicalculator.com/physics/buoyancy
 pub fn buoyant_force(displaced_liquid_volume: f32) -> Vec3 {
@@ -63,7 +63,7 @@ mod tests {
 
     #[test]
     fn drag() {
-        let force = damping(5., 16., CUBE_DRAG_COEFFICIENT);
-        assert_eq!(force, 215249.98);
+        let force = damping(5., 16., SPHERE_DRAG_COEFFICIENT);
+        assert_eq!(force, 96350.0);
     }
 }
