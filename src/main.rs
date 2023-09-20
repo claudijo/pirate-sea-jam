@@ -25,6 +25,7 @@ fn main() {
         plugins::light::LigthPlugin,
         plugins::ship::ShipPlugin,
         plugins::pontoon::PontoonPlugin,
+        plugins::keyboad_controller::KeyboadControllerPlugin,
     ))
     .add_state::<game_state::GameState>();
 
