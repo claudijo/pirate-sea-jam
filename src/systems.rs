@@ -1,3 +1,3 @@
 pub mod fluid_dynamics;
-pub mod motion;
+pub mod movement;
 pub mod player_input;

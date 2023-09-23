@@ -1,8 +1,8 @@
-use crate::components::ship::{Hull, Rudder, Helm};
 use crate::components::pontoon::{PontoonForceScale, SpherePontoonSize};
+use crate::components::ship::{Helm, Ship};
 use crate::game_state::GameState;
 use crate::plugins::assets_ready_checker::LoadingAssets;
-use crate::systems::motion;
+use crate::systems::movement;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::collections::HashMap;
@@ -33,9 +33,11 @@ impl Plugin for ShipPlugin {
             .add_systems(
                 Update,
                 (
-                    motion::turn_ship,
-                    motion::rotate_helm,
-                ).run_if(in_state(GameState::InGame)),
+                    movement::push_ship,
+                    movement::turn_ship,
+                    movement::rotate_helm,
+                )
+                    .run_if(in_state(GameState::InGame)),
             );
     }
 }
@@ -62,13 +64,10 @@ fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>) {
             Collider::cuboid(0.8, 0.5, 2.),
             CollisionGroups::new(Group::NONE, Group::NONE),
             VisibilityBundle { ..default() }, // Necessary to display child scene bundle
+            ExternalImpulse { ..default() },
             ExternalForce { ..default() },
-            Velocity {
-                linvel: Vec3::new(0., 0., 0.),
-                ..default()
-            },
-            Hull { ..default() },
-            Rudder { ..default() },
+            Velocity { ..default() },
+            Ship { ..default() },
         ))
         .id();
 
@@ -80,12 +79,12 @@ fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>) {
         })
         .with_children(|parent| {
             parent.spawn((
-                Helm, 
+                Helm,
                 SceneBundle {
-                scene: ship_assets.scene_handles["medium_helm"].clone(),
-                transform: Transform::from_xyz(0., 5.5806, -1.0694),
-                ..default()
-            }
+                    scene: ship_assets.scene_handles["medium_helm"].clone(),
+                    transform: Transform::from_xyz(0., 5.5806, -1.0694),
+                    ..default()
+                },
             ));
             parent.spawn(SceneBundle {
                 scene: ship_assets.scene_handles["medium_pirate_sail"].clone(),

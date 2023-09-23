@@ -1,31 +1,18 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct Hull {
-    pub stability: f32,
-    pub manoeuvrability: f32,
-    pub max_speed: f32,
+pub struct Ship {
+    pub turn_rate: f32,
+    pub speed_factor: f32,
+    pub maneuverability: f32,
 }
 
-impl Default for Hull {
+impl Default for Ship {
     fn default() -> Self {
         Self {
-            stability: 100.,
-            manoeuvrability: 30.,
-            max_speed: 100.,
-        }
-    }
-}
-
-#[derive(Component)]
-pub struct Rudder {
-    pub angle: f32,
-}
-
-impl Default for Rudder {
-    fn default() -> Self {
-        Self {
-            angle: 0.,
+            turn_rate: 0.,
+            speed_factor: 0.4,
+            maneuverability: 0.1,
         }
     }
 }
