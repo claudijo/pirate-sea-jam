@@ -1,12 +1,9 @@
 use bevy::prelude::*;
 
-pub fn display_text_overlay(mut commands: Commands) {
-    // UI camera
-    commands.spawn(Camera2dBundle::default());
-
+pub fn display_control_keys(mut commands: Commands) {
     commands.spawn((
         TextBundle::from_section(
-            "[A] turn to port | [D] turn to starboard | [Left shift] boost | [R] reset",
+            "[A] turn port | [D] turn starboard | [Left shift] boost | [R] reset",
             TextStyle {
                 font_size: 24.0,
                 color: Color::WHITE,

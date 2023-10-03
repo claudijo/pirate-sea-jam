@@ -15,13 +15,5 @@ impl Plugin for KeyboadControllerPlugin {
             )
                 .run_if(in_state(GameState::InGame)),
         );
-
-        // app.add_systems(
-        //     PostUpdate,
-        //     (
-        //         player_input::reset_game,
-        //     )
-        //         .run_if(in_state(GameState::InGame)),
-        // );
     }
 }

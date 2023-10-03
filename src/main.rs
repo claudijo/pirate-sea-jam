@@ -25,7 +25,7 @@ fn main() {
         plugins::light::LightPlugin,
         plugins::ship::ShipPlugin,
         plugins::pontoon::PontoonPlugin,
-        plugins::keyboad_controller::KeyboadControllerPlugin,
+        plugins::keyboard_controller::KeyboadControllerPlugin,
         plugins::wind::WindPlugin,
         plugins::text::TextOverlayPlugin,
     ))

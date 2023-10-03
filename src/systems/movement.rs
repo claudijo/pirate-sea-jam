@@ -49,11 +49,9 @@ pub fn turn_ship(
         let roll_factor = velocity.angvel.y * ship_speed / ship.stability;
         let yaw_factor =
             -rate_of_turn.value * velocity.linvel.xz().length().sqrt() * ship.maneuverability;
-        let tilt_factor = ship_speed * 0.1 / ship.stability;
 
         torque_impulse += transform.local_y() * yaw_factor;
         torque_impulse += transform.local_z() * roll_factor;
-        // torque_impulse += transform.local_x() * tilt_factor;
 
         // Pass the vector3 of the axis around which you want to rotate
         external_impulse.torque_impulse = torque_impulse;
@@ -61,7 +59,7 @@ pub fn turn_ship(
 }
 
 pub fn rotate_helm(
-    rate_of_turns: Query<(&TurnRate)>,
+    rate_of_turns: Query<&TurnRate>,
     mut helms: Query<&mut Transform, With<Helm>>,
 ) {
     for rate_of_turn in &rate_of_turns {
@@ -73,7 +71,7 @@ pub fn rotate_helm(
 
 pub fn flutter_masthead_pennant(
     mut pennants: Query<&mut Transform, With<Pennant>>,
-    ships: Query<(&Transform, &Velocity, &Booster), (With<Ship>, Without<Pennant>)>,
+    ships: Query<(&Transform, &Velocity), (With<Ship>, Without<Pennant>)>,
     winds: Query<&Wind>,
     time: Res<Time>,
 ) {
@@ -81,7 +79,7 @@ pub fn flutter_masthead_pennant(
     let elapsed_time = time.elapsed().as_secs_f32();
 
     for wind in &winds {
-        for (ship_transform, ship_velocity, ship_booster) in &ships {
+        for (ship_transform, ship_velocity) in &ships {
             for mut pennant_transform in &mut pennants {
                 let flutter = ship_velocity.linvel.xz().length().to_radians()
                     * (elapsed_time * TIME_SCALE).sin();

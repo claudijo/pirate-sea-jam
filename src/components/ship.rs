@@ -14,7 +14,7 @@ impl Default for Ship {
             speed: 3.,
             maneuverability: 0.8,
             booster_power: 160.,
-            stability: 4.,
+            stability: 6.,
         }
     }
 }

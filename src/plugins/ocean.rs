@@ -57,6 +57,5 @@ fn spawn_ocean(
         OceanTopology {
             positions: mesh_positions,
         },
-        Name::new("Ocean"),
     ));
 }

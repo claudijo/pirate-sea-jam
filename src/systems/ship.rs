@@ -46,6 +46,7 @@ pub fn spawn_ship(
                     ..default()
                 },
             ));
+
             parent.spawn((
                 Sail,
                 SceneBundle {
@@ -54,6 +55,7 @@ pub fn spawn_ship(
                     ..default()
                 },
             ));
+
             parent.spawn((
                 Pennant,
                 SceneBundle {
@@ -62,23 +64,27 @@ pub fn spawn_ship(
                     ..default()
                 },
             ));
+
             parent.spawn(SceneBundle {
                 scene: ship_assets.scene_handles["port_back_canon"].clone(),
                 transform: Transform::from_xyz(1.1769, 1.4593, -0.5485)
                     .with_rotation(Quat::from_rotation_z(PI)),
                 ..default()
             });
+
             parent.spawn(SceneBundle {
                 scene: ship_assets.scene_handles["port_front_canon"].clone(),
                 transform: Transform::from_xyz(1.13846, 1.54822, 1.54781)
                     .with_rotation(Quat::from_rotation_z(PI)),
                 ..default()
             });
+
             parent.spawn(SceneBundle {
                 scene: ship_assets.scene_handles["starboard_back_canon"].clone(),
                 transform: Transform::from_xyz(-1.1769, 1.4593, -0.5485),
                 ..default()
             });
+
             parent.spawn(SceneBundle {
                 scene: ship_assets.scene_handles["starboard_front_canon"].clone(),
                 transform: Transform::from_xyz(-1.13846, 1.54822, 1.54781),
