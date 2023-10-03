@@ -1,6 +1,8 @@
 use crate::plugins::assets_ready_checker::LoadingAssets;
 use std::collections::HashMap;
+use bevy::asset::LoadState;
 use bevy::prelude::*;
+use crate::game_state::GameState;
 use crate::resources::assets::ShipAssets;
 
 const ASSET_NAMES: [&str; 8] = [
@@ -26,4 +28,20 @@ pub fn load_assets(
         scene_handles.insert(name, handle);
     }
     commands.insert_resource(ShipAssets { scene_handles });
+}
+
+pub fn check_load_state(
+    asset_server: Res<AssetServer>,
+    assets: Res<LoadingAssets>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    match asset_server.get_group_load_state(assets.0.iter().map(|a| a.id())) {
+        LoadState::Loaded => {
+            next_state.set(GameState::InGame);
+        }
+        LoadState::Failed => {
+            error!("asset loading error");
+        }
+        _ => {} // NotLoaded / Loading / Unloaded
+    };
 }

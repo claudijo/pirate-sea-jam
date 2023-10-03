@@ -1,5 +1,9 @@
 use crate::components::ship::{Booster, Ship, TurnRate};
 use bevy::prelude::*;
+use bevy_rapier3d::prelude::{ExternalForce, ExternalImpulse};
+use crate::resources::assets::ShipAssets;
+use crate::resources::despawn::ShipDespawnEntities;
+use crate::systems::ship::spawn_ship;
 
 const RATE_OF_ROTATION: f32 = 1.5;
 const TURN_RATE_LIMIT: f32 = 1.;
@@ -50,11 +54,30 @@ pub fn boost_ship_using_keyboard(keys: Res<Input<KeyCode>>, mut boosters: Query<
 }
 
 // Temporary escape hatch so that the player can restart the game if ship is lost
-pub fn reset_game(keys: Res<Input<KeyCode>>, mut ships: Query<&mut Transform, With<Ship>>) {
+pub fn reset_game(
+    mut commands: Commands, ship_assets: Res<ShipAssets>,
+    mut despawn_entities: ResMut<ShipDespawnEntities>,
+    ships: Query<(Entity, &Children), With<Ship>>,
+    keys: Res<Input<KeyCode>>,
+) {
+
     if keys.just_pressed(KeyCode::R) {
-        for mut transform in &mut ships {
-            transform.translation = Vec3::ZERO;
-            transform.rotation = Quat::IDENTITY;
+        //  Note that some joint related child entities seem to be missing from the normal
+        // parent-child-hierarchy when despawning, so those are registered and handled manually.
+        // (See https://github.com/dimforge/bevy_rapier/blob/master/bevy_rapier3d/examples/joints_despawn3.rs)
+        for (parent, children) in &ships {
+            if let Some(entities) = despawn_entities.entities.get(&parent) {
+                for joint_entity in entities {
+                    commands.entity(*joint_entity).despawn();
+                }
+
+                despawn_entities.entities.remove(&parent);
+            }
+
+            commands.entity(parent).despawn_recursive();
         }
+
+        // Spawn new ship
+        spawn_ship(commands, ship_assets, despawn_entities);
     }
 }

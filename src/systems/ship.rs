@@ -4,8 +4,9 @@ use bevy_rapier3d::prelude::*;
 use crate::components::pontoon::Pontoon;
 use crate::components::ship::{Booster, Helm, Pennant, Sail, Ship, TurnRate};
 use crate::resources::assets::ShipAssets;
+use crate::resources::despawn::ShipDespawnEntities;
 
-pub fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>) {
+pub fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>, mut despawn_entities: ResMut<ShipDespawnEntities>) {
     let parent = commands
         .spawn((
             TransformBundle::from(Transform::from_xyz(0., 0., 0.)),
@@ -95,6 +96,8 @@ pub fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>) {
 
     let pontoon_radius = 0.5;
 
+    let mut joint_entities = Vec::new();
+
     for pontoon_position in pontoon_positions {
         let position = Vec3::from_array(pontoon_position);
         let child_pontoon = commands
@@ -113,9 +116,17 @@ pub fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>) {
             ))
             .id();
 
+        // Need to add pontoon to registry for later despawn
+        joint_entities.push(child_pontoon);
+
         let joint = FixedJointBuilder::new().local_anchor2(position);
         commands.entity(child_pontoon).with_children(|children| {
-            children.spawn(ImpulseJoint::new(parent, joint));
+            let joint_entity = children.spawn(ImpulseJoint::new(parent, joint)).id();
+
+            // Need to add joint to registry for later despawn
+            joint_entities.push(joint_entity);
         });
     }
+
+    despawn_entities.entities.insert(parent, joint_entities);
 }
