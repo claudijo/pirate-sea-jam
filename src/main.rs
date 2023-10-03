@@ -22,9 +22,12 @@ fn main() {
         plugins::assets_ready_checker::AssetsReadyCheckerPlugin,
         plugins::camera::CameraPlugin,
         plugins::ocean::OceanPlugin,
-        plugins::light::LigthPlugin,
+        plugins::light::LightPlugin,
         plugins::ship::ShipPlugin,
         plugins::pontoon::PontoonPlugin,
+        plugins::keyboard_controller::KeyboadControllerPlugin,
+        plugins::wind::WindPlugin,
+        plugins::text::TextOverlayPlugin,
     ))
     .add_state::<game_state::GameState>();
 
