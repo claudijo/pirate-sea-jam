@@ -27,6 +27,7 @@ fn main() {
         plugins::pontoon::PontoonPlugin,
         plugins::keyboad_controller::KeyboadControllerPlugin,
         plugins::wind::WindPlugin,
+        plugins::text::TextOverlayPlugin,
     ))
     .add_state::<game_state::GameState>();
 

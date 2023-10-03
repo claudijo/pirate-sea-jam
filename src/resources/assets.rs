@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use bevy::prelude::*;
+use std::collections::HashMap;
 
 #[derive(Resource)]
 pub struct ShipAssets {

@@ -1,5 +1,5 @@
-use std::f32::consts::PI;
 use bevy::prelude::*;
+use std::f32::consts::PI;
 
 pub fn spawn_light(mut commands: Commands) {
     // directional 'sun' light

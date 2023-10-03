@@ -1,6 +1,6 @@
 use crate::game_state::GameState;
-use bevy::prelude::*;
 use crate::systems::camera;
+use bevy::prelude::*;
 
 pub struct CameraPlugin;
 

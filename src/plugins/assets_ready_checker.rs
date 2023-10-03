@@ -1,6 +1,6 @@
 use crate::game_state::GameState;
-use bevy::prelude::*;
 use crate::systems::assets;
+use bevy::prelude::*;
 
 // Use <HandleUntyped> to refer to any asset, regardless of the asset type and allow to store a
 // collection containing assets of mixed types.
@@ -17,5 +17,3 @@ impl Plugin for AssetsReadyCheckerPlugin {
         );
     }
 }
-
-

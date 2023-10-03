@@ -1,12 +1,16 @@
-use std::f32::consts::PI;
-use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
 use crate::components::pontoon::Pontoon;
 use crate::components::ship::{Booster, Helm, Pennant, Sail, Ship, TurnRate};
 use crate::resources::assets::ShipAssets;
 use crate::resources::despawn::ShipDespawnEntities;
+use bevy::prelude::*;
+use bevy_rapier3d::prelude::*;
+use std::f32::consts::PI;
 
-pub fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>, mut despawn_entities: ResMut<ShipDespawnEntities>) {
+pub fn spawn_ship(
+    mut commands: Commands,
+    ship_assets: Res<ShipAssets>,
+    mut despawn_entities: ResMut<ShipDespawnEntities>,
+) {
     let parent = commands
         .spawn((
             TransformBundle::from(Transform::from_xyz(0., 0., 0.)),
@@ -128,5 +132,7 @@ pub fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>, mut desp
         });
     }
 
-    despawn_entities.entities.insert(parent, despawn_entity_register);
+    despawn_entities
+        .entities
+        .insert(parent, despawn_entity_register);
 }

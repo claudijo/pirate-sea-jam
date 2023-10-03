@@ -1,9 +1,9 @@
+use crate::game_state::GameState;
 use crate::plugins::assets_ready_checker::LoadingAssets;
-use std::collections::HashMap;
+use crate::resources::assets::ShipAssets;
 use bevy::asset::LoadState;
 use bevy::prelude::*;
-use crate::game_state::GameState;
-use crate::resources::assets::ShipAssets;
+use std::collections::HashMap;
 
 const ASSET_NAMES: [&str; 8] = [
     "medium_flag",

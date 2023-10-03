@@ -1,10 +1,10 @@
 use crate::components::pontoon::Pontoon;
 use crate::components::ship::{Booster, Helm, Pennant, Sail, Ship, TurnRate};
 use crate::game_state::GameState;
-use crate::systems::{movement, ship};
-use bevy::prelude::*;
 use crate::resources::despawn::ShipDespawnEntities;
 use crate::systems::assets;
+use crate::systems::{movement, ship};
+use bevy::prelude::*;
 
 pub struct ShipPlugin;
 
@@ -26,5 +26,3 @@ impl Plugin for ShipPlugin {
             );
     }
 }
-
-

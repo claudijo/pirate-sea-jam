@@ -1,6 +1,6 @@
 use crate::game_state::GameState;
-use bevy::prelude::*;
 use crate::systems::light;
+use bevy::prelude::*;
 
 pub struct LightPlugin;
 
@@ -9,5 +9,3 @@ impl Plugin for LightPlugin {
         app.add_systems(OnEnter(GameState::InGame), light::spawn_light);
     }
 }
-
-
