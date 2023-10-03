@@ -96,7 +96,7 @@ pub fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>, mut desp
 
     let pontoon_radius = 0.5;
 
-    let mut joint_entities = Vec::new();
+    let mut despawn_entity_register = Vec::new();
 
     for pontoon_position in pontoon_positions {
         let position = Vec3::from_array(pontoon_position);
@@ -117,16 +117,16 @@ pub fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>, mut desp
             .id();
 
         // Need to add pontoon to registry for later despawn
-        joint_entities.push(child_pontoon);
+        despawn_entity_register.push(child_pontoon);
 
         let joint = FixedJointBuilder::new().local_anchor2(position);
         commands.entity(child_pontoon).with_children(|children| {
             let joint_entity = children.spawn(ImpulseJoint::new(parent, joint)).id();
 
             // Need to add joint to registry for later despawn
-            joint_entities.push(joint_entity);
+            despawn_entity_register.push(joint_entity);
         });
     }
 
-    despawn_entities.entities.insert(parent, joint_entities);
+    despawn_entities.entities.insert(parent, despawn_entity_register);
 }
