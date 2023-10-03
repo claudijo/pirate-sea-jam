@@ -1,5 +1,5 @@
-use crate::components::pontoon::{PontoonForceScale, SpherePontoonSize};
-use crate::components::ship::{Helm, Ship};
+use crate::components::pontoon::Pontoon;
+use crate::components::ship::{Booster, Helm, Pennant, Sail, Ship, TurnRate};
 use crate::game_state::GameState;
 use crate::plugins::assets_ready_checker::LoadingAssets;
 use crate::systems::movement;
@@ -36,6 +36,8 @@ impl Plugin for ShipPlugin {
                     movement::push_ship,
                     movement::turn_ship,
                     movement::rotate_helm,
+                    movement::flutter_masthead_pennant,
+                    movement::flutter_sails,
                 )
                     .run_if(in_state(GameState::InGame)),
             );
@@ -59,7 +61,7 @@ fn load_assets(
 fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>) {
     let parent = commands
         .spawn((
-            TransformBundle::from(Transform::from_xyz(0., 5., 0.)),
+            TransformBundle::from(Transform::from_xyz(0., 0., 0.)),
             RigidBody::Dynamic,
             Collider::cuboid(0.8, 0.5, 2.),
             CollisionGroups::new(Group::NONE, Group::NONE),
@@ -67,7 +69,13 @@ fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>) {
             ExternalImpulse { ..default() },
             ExternalForce { ..default() },
             Velocity { ..default() },
+            Damping {
+                angular_damping: 20.,
+                linear_damping: 4.,
+            },
             Ship { ..default() },
+            Booster { ..default() },
+            TurnRate { ..default() },
         ))
         .id();
 
@@ -86,16 +94,22 @@ fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>) {
                     ..default()
                 },
             ));
-            parent.spawn(SceneBundle {
-                scene: ship_assets.scene_handles["medium_pirate_sail"].clone(),
-                transform: Transform::from_xyz(0., 2.3248, 1.3574),
-                ..default()
-            });
-            parent.spawn(SceneBundle {
-                scene: ship_assets.scene_handles["medium_flag"].clone(),
-                transform: Transform::from_xyz(0., 9.38793, 1.35834),
-                ..default()
-            });
+            parent.spawn((
+                Sail,
+                SceneBundle {
+                    scene: ship_assets.scene_handles["medium_pirate_sail"].clone(),
+                    transform: Transform::from_xyz(0., 2.3248, 1.3574),
+                    ..default()
+                },
+            ));
+            parent.spawn((
+                Pennant,
+                SceneBundle {
+                    scene: ship_assets.scene_handles["medium_flag"].clone(),
+                    transform: Transform::from_xyz(0., 9.38793, 1.35834),
+                    ..default()
+                },
+            ));
             parent.spawn(SceneBundle {
                 scene: ship_assets.scene_handles["port_back_canon"].clone(),
                 transform: Transform::from_xyz(1.1769, 1.4593, -0.5485)
@@ -145,12 +159,9 @@ fn spawn_ship(mut commands: Commands, ship_assets: Res<ShipAssets>) {
                 Damping { ..default() },
                 Velocity { ..default() },
                 CollisionGroups::new(Group::NONE, Group::NONE),
-                SpherePontoonSize {
+                Pontoon {
                     radius: pontoon_radius,
-                },
-                PontoonForceScale {
-                    buoyant_force_scale: 0.005,
-                    water_damping_scale: 0.003,
+                    ..default()
                 },
             ))
             .id();

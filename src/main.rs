@@ -26,6 +26,7 @@ fn main() {
         plugins::ship::ShipPlugin,
         plugins::pontoon::PontoonPlugin,
         plugins::keyboad_controller::KeyboadControllerPlugin,
+        plugins::wind::WindPlugin,
     ))
     .add_state::<game_state::GameState>();
 

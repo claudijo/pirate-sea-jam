@@ -12,18 +12,16 @@ impl Plugin for LigthPlugin {
 
 fn spawn_light(mut commands: Commands) {
     // directional 'sun' light
-    commands
-        .spawn(DirectionalLightBundle {
-            directional_light: DirectionalLight {
-                illuminance: 32000.0,
-                shadows_enabled: true,
-                ..default()
-            },
-            transform: Transform::from_xyz(0.0, 2.0, 0.0)
-                .with_rotation(Quat::from_rotation_x(-PI / 4.)),
+    commands.spawn(DirectionalLightBundle {
+        directional_light: DirectionalLight {
+            illuminance: 32000.0,
+            shadows_enabled: true,
             ..default()
-        })
-        .insert(Name::new("Sun Light"));
+        },
+        transform: Transform::from_xyz(0.0, 2.0, 0.0)
+            .with_rotation(Quat::from_rotation_x(-PI / 4.)),
+        ..default()
+    });
 
     // ambient light
     commands.insert_resource(AmbientLight {

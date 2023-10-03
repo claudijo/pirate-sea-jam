@@ -1,5 +1,5 @@
 use crate::components::ocean::OceanTopology;
-use crate::components::pontoon::{PontoonForceScale, SpherePontoonSize};
+use crate::components::pontoon::Pontoon;
 use crate::resources::wave_machine::WaveMachine;
 use crate::utils::{liquid, liquid::SPHERE_DRAG_COEFFICIENT, sphere};
 use bevy::prelude::*;
@@ -39,9 +39,8 @@ pub fn make_waves(
 pub fn buoyancy(
     mut pontoons: Query<(
         &Transform,
-        &SpherePontoonSize,
+        &Pontoon,
         &Velocity,
-        &PontoonForceScale,
         &mut ExternalForce,
         &mut Damping,
     )>,
@@ -49,27 +48,22 @@ pub fn buoyancy(
     wave_machine: Res<WaveMachine>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
-    for (transform, pontoon_size, velocity, pontoon_force_scale, mut external_force, mut damping) in
-        &mut pontoons
-    {
+    for (transform, pontoon, velocity, mut external_force, mut damping) in &mut pontoons {
         let water_height = wave_machine.surface_height(transform.translation, elapsed_time);
 
-        let displaced_liquid_volume = sphere::displaced_liquid_volume(
-            pontoon_size.radius,
-            transform.translation.y,
-            water_height,
-        );
+        let displaced_liquid_volume =
+            sphere::displaced_liquid_volume(pontoon.radius, transform.translation.y, water_height);
 
-        let buoyant_force = liquid::buoyant_force(displaced_liquid_volume)
-            * pontoon_force_scale.buoyant_force_scale;
+        let buoyant_force =
+            liquid::buoyant_force(displaced_liquid_volume) * pontoon.buoyant_force_scale;
 
-        let is_submerged = transform.translation.y - pontoon_size.radius < water_height;
+        let is_submerged = transform.translation.y - pontoon.radius < water_height;
         let linear_damping = if is_submerged {
             liquid::damping(
                 velocity.linvel.y,
-                sphere::cross_section_area(pontoon_size.radius),
+                sphere::cross_section_area(pontoon.radius),
                 SPHERE_DRAG_COEFFICIENT,
-            ) * pontoon_force_scale.water_damping_scale
+            ) * pontoon.water_damping_scale
         } else {
             0.
         };
