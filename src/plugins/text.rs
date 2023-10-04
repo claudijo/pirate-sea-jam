@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use crate::systems::text;
+use bevy::prelude::*;
 
 pub struct TextOverlayPlugin;
 

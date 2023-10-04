@@ -58,10 +58,7 @@ pub fn turn_ship(
     }
 }
 
-pub fn rotate_helm(
-    rate_of_turns: Query<&TurnRate>,
-    mut helms: Query<&mut Transform, With<Helm>>,
-) {
+pub fn rotate_helm(rate_of_turns: Query<&TurnRate>, mut helms: Query<&mut Transform, With<Helm>>) {
     for rate_of_turn in &rate_of_turns {
         for mut transform in &mut helms {
             transform.rotation = Quat::from_rotation_z(rate_of_turn.value * TAU);
