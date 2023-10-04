@@ -6,11 +6,7 @@ Jam-sized pirate game in development. Written in Rust and Bevy. Made with ❤️
 
 ## Changelog and Feature List
 The following brief changelog includes main concepts and features
-### Version 0.4.0
-Player control
-### Version 0.3.0
-3D models with textures
-### Version 0.2.0
-Buoyancy
-### Version 0.1.0
-Basic ocean tile with dynamic Gerstner waves
+* Player control (version 0.4.0)
+* 3D models with textures (version 0.3.0)
+* Buoyancy (version 0.2.0)
+* Basic ocean tile with dynamic water waves (version 0.1.0)
