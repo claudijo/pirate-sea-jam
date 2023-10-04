@@ -41,11 +41,7 @@ pub fn turn_ship_using_keyboard(
 }
 
 pub fn boost_ship_using_keyboard(keys: Res<Input<KeyCode>>, mut boosters: Query<&mut Booster>) {
-    let active = if keys.just_pressed(KeyCode::ShiftLeft) {
-        true
-    } else {
-        false
-    };
+    let active = keys.just_pressed(KeyCode::ShiftLeft);
 
     for mut boosters in &mut boosters {
         boosters.active = active;

@@ -30,15 +30,9 @@ impl Default for TurnRate {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Default)]
 pub struct Booster {
     pub active: bool,
-}
-
-impl Default for Booster {
-    fn default() -> Self {
-        Self { active: false }
-    }
 }
 
 #[derive(Component)]
