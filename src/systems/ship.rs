@@ -7,12 +7,14 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
 
+const CANNON_POWER: f32 = 1.;
+
 pub fn spawn_ship(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
     mut ship_despawn: ResMut<ShipDespawnEntities>,
 ) {
-    let parent = commands
+    let physics_parent = commands
         .spawn((
             TransformBundle::from(Transform::from_xyz(0., 0., 0.)),
             RigidBody::Dynamic,
@@ -67,7 +69,11 @@ pub fn spawn_ship(
             ));
 
             parent.spawn((
-                Cannon { ..default() },
+                Cannon {
+                    rig: Some(physics_parent),
+                    power: CANNON_POWER,
+                    ..default()
+                },
                 SceneBundle {
                     scene: model_assets.scene_handles["port_back_canon"].clone(),
                     transform: Transform::from_xyz(1.1769, 1.4593, -0.5485)
@@ -77,7 +83,11 @@ pub fn spawn_ship(
             ));
 
             parent.spawn((
-                Cannon { ..default() },
+                Cannon {
+                    rig: Some(physics_parent),
+                    power: CANNON_POWER,
+                    ..default()
+                },
                 SceneBundle {
                     scene: model_assets.scene_handles["port_front_canon"].clone(),
                     transform: Transform::from_xyz(1.13846, 1.54822, 1.54781)
@@ -87,7 +97,11 @@ pub fn spawn_ship(
             ));
 
             parent.spawn((
-                Cannon { ..default() },
+                Cannon {
+                    rig: Some(physics_parent),
+                    power: CANNON_POWER,
+                    ..default()
+                },
                 SceneBundle {
                     scene: model_assets.scene_handles["starboard_back_canon"].clone(),
                     transform: Transform::from_xyz(-1.1769, 1.4593, -0.5485),
@@ -96,7 +110,11 @@ pub fn spawn_ship(
             ));
 
             parent.spawn((
-                Cannon { ..default() },
+                Cannon {
+                    rig: Some(physics_parent),
+                    power: CANNON_POWER,
+                    ..default()
+                },
                 SceneBundle {
                     scene: model_assets.scene_handles["starboard_front_canon"].clone(),
                     transform: Transform::from_xyz(-1.13846, 1.54822, 1.54781),
@@ -106,7 +124,7 @@ pub fn spawn_ship(
         })
         .id();
 
-    commands.entity(parent).push_children(&[child_3d_models]);
+    commands.entity(physics_parent).push_children(&[child_3d_models]);
 
     let pontoon_positions = [
         [-0.8, 0., 2.],
@@ -142,7 +160,7 @@ pub fn spawn_ship(
 
         let joint = FixedJointBuilder::new().local_anchor2(position);
         commands.entity(child_pontoon).with_children(|children| {
-            let joint_entity = children.spawn(ImpulseJoint::new(parent, joint)).id();
+            let joint_entity = children.spawn(ImpulseJoint::new(physics_parent, joint)).id();
 
             // Need to add joint to registry for later despawn
             ship_despawn.entities.push(joint_entity);

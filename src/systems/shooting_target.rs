@@ -3,8 +3,8 @@ use crate::components::shooting_target::{Flag, ShootingTarget};
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::ShootingTargetDespawnEntities;
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
 use bevy_rapier3d::prelude::ColliderMassProperties::Density;
+use bevy_rapier3d::prelude::*;
 
 pub fn spawn_shooting_target(
     mut commands: Commands,

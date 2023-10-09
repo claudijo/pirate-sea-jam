@@ -54,11 +54,12 @@ pub fn fire_canons_at_nearest_target_using_keyboard(
     keys: Res<Input<KeyCode>>,
     ships: Query<&Transform, With<Ship>>,
     targets: Query<&Transform, With<ShootingTarget>>,
-    mut cannons: Query<(&Transform, &mut Cannon)>,
+    mut cannons: Query<(&GlobalTransform, &mut Cannon)>,
 ) {
     if keys.just_pressed(KeyCode::Space) {
         for ship_transform in &ships {
             let mut closest_target: Option<(Vec3, f32)> = None;
+
             for target_transform in &targets {
                 let distance = ship_transform
                     .translation
@@ -73,15 +74,16 @@ pub fn fire_canons_at_nearest_target_using_keyboard(
             }
 
             if let Some((closest_translation, _)) = closest_target {
-                for (cannon_transform, mut cannon) in &mut cannons {
-                    println!("Closest cannon {:?}", cannon.is_shooting);
-                    cannon.is_shooting = cannon_transform.translation.dot(closest_translation) > 0.;
+                for (cannon_global_transform, mut cannon) in &mut cannons {
+                    let target_direction =
+                        closest_translation - cannon_global_transform.translation();
+                    cannon.is_lit = cannon_global_transform.left().dot(target_direction) > 0.;
                 }
             }
         }
     } else {
         for (_, mut cannon) in &mut cannons {
-            cannon.is_shooting = false;
+            cannon.is_lit = false;
         }
     }
 }

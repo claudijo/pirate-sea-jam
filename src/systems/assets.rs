@@ -5,7 +5,7 @@ use bevy::asset::LoadState;
 use bevy::prelude::*;
 use std::collections::HashMap;
 
-const ASSET_NAMES: [&str; 10] = [
+const ASSET_NAMES: [&str; 11] = [
     "medium_flag",
     "medium_helm",
     "medium_hull",
@@ -16,6 +16,7 @@ const ASSET_NAMES: [&str; 10] = [
     "starboard_front_canon",
     "pirate_flag",
     "raft_with_mast",
+    "cannon_ball",
 ];
 
 pub fn load_assets(

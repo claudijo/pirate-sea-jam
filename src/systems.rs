@@ -1,3 +1,4 @@
+pub mod arsenal;
 pub mod assets;
 pub mod camera;
 pub mod fluid_dynamics;
