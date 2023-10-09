@@ -11,7 +11,7 @@ pub fn fire_cannons(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
     cannons: Query<(&GlobalTransform, &Cannon)>,
-    ships: Query<&Velocity, With<Ship>>,
+    rigs: Query<&Velocity, With<Ship>>,
 
 ) {
     for (global_transform, cannon) in &cannons {
@@ -19,7 +19,7 @@ pub fn fire_cannons(
             let mut rng = rand::thread_rng();
 
             if let Some(rig_entity) = cannon.rig {
-                if let Ok(ship_velocity) = ships.get(rig_entity) {
+                if let Ok(rig_velocity) = rigs.get(rig_entity) {
                     commands.spawn((
                         SceneBundle {
                             scene: model_assets.scene_handles["cannon_ball"].clone(),
@@ -34,13 +34,12 @@ pub fn fire_cannons(
                         },
                         Collider::ball(0.2),
                         Velocity {
-                            linvel: ship_velocity.linvel,
+                            linvel: rig_velocity.linvel,
                             ..default()
                         },
                     ));
                 }
             }
-
         }
     }
 }

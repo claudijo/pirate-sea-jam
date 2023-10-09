@@ -15,7 +15,7 @@ impl Plugin for ShipPlugin {
                     movement::push_ship,
                     movement::turn_ship,
                     movement::rotate_helm,
-                    movement::flutter_masthead_pennant,
+                    movement::flutter_pennant,
                     movement::flutter_sails,
                 )
                     .run_if(in_state(GameState::InGame)),

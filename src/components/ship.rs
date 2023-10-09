@@ -39,7 +39,9 @@ pub struct Booster {
 pub struct Helm;
 
 #[derive(Component)]
-pub struct Pennant;
+pub struct Pennant {
+    pub rig: Option<Entity>,
+}
 
 #[derive(Component)]
 pub struct Sail;

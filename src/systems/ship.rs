@@ -60,7 +60,9 @@ pub fn spawn_ship(
             ));
 
             parent.spawn((
-                Pennant,
+                Pennant {
+                    rig: Some(physics_parent),
+                },
                 SceneBundle {
                     scene: model_assets.scene_handles["medium_flag"].clone(),
                     transform: Transform::from_xyz(0., 9.38793, 1.35834),

@@ -5,6 +5,7 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::{PI, TAU};
+use crate::components::shooting_target::ShootingTarget;
 
 pub fn push_ship(
     mut ships: Query<(&mut ExternalImpulse, &Transform, &Booster, &Ship)>,
@@ -66,9 +67,9 @@ pub fn rotate_helm(rate_of_turns: Query<&TurnRate>, mut helms: Query<&mut Transf
     }
 }
 
-pub fn flutter_masthead_pennant(
-    mut pennants: Query<&mut Transform, With<Pennant>>,
-    ships: Query<(&Transform, &Velocity), (With<Ship>, Without<Pennant>)>,
+pub fn flutter_pennant(
+    mut pennants: Query<(&mut Transform, &Pennant)>,
+    rigs: Query<(&Transform, Option<&Velocity>), (Or<(With<Ship>, With<ShootingTarget>)>, Without<Pennant>)>,
     winds: Query<&Wind>,
     time: Res<Time>,
 ) {
@@ -76,13 +77,18 @@ pub fn flutter_masthead_pennant(
     let elapsed_time = time.elapsed().as_secs_f32();
 
     for wind in &winds {
-        for (ship_transform, ship_velocity) in &ships {
-            for mut pennant_transform in &mut pennants {
-                let flutter = ship_velocity.linvel.xz().length().to_radians()
-                    * (elapsed_time * TIME_SCALE).sin();
-                let ship_forward = ship_transform.local_z();
-                let angle = wind.direction.xz().angle_between(ship_forward.xz()) + PI;
-                pennant_transform.rotation = Quat::from_rotation_y(angle + flutter);
+        for (mut pennant_transform, pennant) in &mut pennants {
+            if let Some(rig_entity) = pennant.rig {
+                if let Ok((rig_transform, rig_velocity)) = rigs.get(rig_entity) {
+                    let mut speed_factor = 2_f32.to_radians();
+                    if let Some(velocity) = rig_velocity {
+                        speed_factor = velocity.linvel.xz().length().to_radians();
+                    }
+                    let flutter = speed_factor * (elapsed_time * TIME_SCALE).sin();
+                    let rig_forward = rig_transform.local_z();
+                    let angle = wind.direction.xz().angle_between(rig_forward.xz()) + PI;
+                    pennant_transform.rotation = Quat::from_rotation_y(angle + flutter);
+                }
             }
         }
     }
