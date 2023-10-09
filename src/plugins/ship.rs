@@ -1,6 +1,5 @@
 use crate::game_state::GameState;
 use crate::resources::despawn::ShipDespawnEntities;
-use crate::systems::assets;
 use crate::systems::{movement, ship};
 use bevy::prelude::*;
 
@@ -9,7 +8,6 @@ pub struct ShipPlugin;
 impl Plugin for ShipPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ShipDespawnEntities::default())
-            .add_systems(OnEnter(GameState::LoadingAssets), assets::load_assets)
             .add_systems(OnEnter(GameState::InGame), ship::spawn_ship)
             .add_systems(
                 Update,

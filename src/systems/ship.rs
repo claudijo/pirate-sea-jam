@@ -1,6 +1,7 @@
+use crate::components::cannon::Cannon;
 use crate::components::pontoon::Pontoon;
 use crate::components::ship::{Booster, Helm, Pennant, Sail, Ship, TurnRate};
-use crate::resources::assets::ShipAssets;
+use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::ShipDespawnEntities;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -8,8 +9,8 @@ use std::f32::consts::PI;
 
 pub fn spawn_ship(
     mut commands: Commands,
-    ship_assets: Res<ShipAssets>,
-    mut despawn_entities: ResMut<ShipDespawnEntities>,
+    model_assets: Res<ModelAssets>,
+    mut ship_despawn: ResMut<ShipDespawnEntities>,
 ) {
     let parent = commands
         .spawn((
@@ -31,9 +32,9 @@ pub fn spawn_ship(
         ))
         .id();
 
-    let child_3d_model = commands
+    let child_3d_models = commands
         .spawn(SceneBundle {
-            scene: ship_assets.scene_handles["medium_hull"].clone(),
+            scene: model_assets.scene_handles["medium_hull"].clone(),
             transform: Transform::from_xyz(0., -0.5, 0.),
             ..default()
         })
@@ -41,7 +42,7 @@ pub fn spawn_ship(
             parent.spawn((
                 Helm,
                 SceneBundle {
-                    scene: ship_assets.scene_handles["medium_helm"].clone(),
+                    scene: model_assets.scene_handles["medium_helm"].clone(),
                     transform: Transform::from_xyz(0., 5.5806, -1.0694),
                     ..default()
                 },
@@ -50,7 +51,7 @@ pub fn spawn_ship(
             parent.spawn((
                 Sail,
                 SceneBundle {
-                    scene: ship_assets.scene_handles["medium_pirate_sail"].clone(),
+                    scene: model_assets.scene_handles["medium_pirate_sail"].clone(),
                     transform: Transform::from_xyz(0., 2.3248, 1.3574),
                     ..default()
                 },
@@ -59,41 +60,53 @@ pub fn spawn_ship(
             parent.spawn((
                 Pennant,
                 SceneBundle {
-                    scene: ship_assets.scene_handles["medium_flag"].clone(),
+                    scene: model_assets.scene_handles["medium_flag"].clone(),
                     transform: Transform::from_xyz(0., 9.38793, 1.35834),
                     ..default()
                 },
             ));
 
-            parent.spawn(SceneBundle {
-                scene: ship_assets.scene_handles["port_back_canon"].clone(),
-                transform: Transform::from_xyz(1.1769, 1.4593, -0.5485)
-                    .with_rotation(Quat::from_rotation_z(PI)),
-                ..default()
-            });
+            parent.spawn((
+                Cannon { ..default() },
+                SceneBundle {
+                    scene: model_assets.scene_handles["port_back_canon"].clone(),
+                    transform: Transform::from_xyz(1.1769, 1.4593, -0.5485)
+                        .with_rotation(Quat::from_rotation_z(PI)),
+                    ..default()
+                },
+            ));
 
-            parent.spawn(SceneBundle {
-                scene: ship_assets.scene_handles["port_front_canon"].clone(),
-                transform: Transform::from_xyz(1.13846, 1.54822, 1.54781)
-                    .with_rotation(Quat::from_rotation_z(PI)),
-                ..default()
-            });
+            parent.spawn((
+                Cannon { ..default() },
+                SceneBundle {
+                    scene: model_assets.scene_handles["port_front_canon"].clone(),
+                    transform: Transform::from_xyz(1.13846, 1.54822, 1.54781)
+                        .with_rotation(Quat::from_rotation_z(PI)),
+                    ..default()
+                },
+            ));
 
-            parent.spawn(SceneBundle {
-                scene: ship_assets.scene_handles["starboard_back_canon"].clone(),
-                transform: Transform::from_xyz(-1.1769, 1.4593, -0.5485),
-                ..default()
-            });
+            parent.spawn((
+                Cannon { ..default() },
+                SceneBundle {
+                    scene: model_assets.scene_handles["starboard_back_canon"].clone(),
+                    transform: Transform::from_xyz(-1.1769, 1.4593, -0.5485),
+                    ..default()
+                },
+            ));
 
-            parent.spawn(SceneBundle {
-                scene: ship_assets.scene_handles["starboard_front_canon"].clone(),
-                transform: Transform::from_xyz(-1.13846, 1.54822, 1.54781),
-                ..default()
-            });
+            parent.spawn((
+                Cannon { ..default() },
+                SceneBundle {
+                    scene: model_assets.scene_handles["starboard_front_canon"].clone(),
+                    transform: Transform::from_xyz(-1.13846, 1.54822, 1.54781),
+                    ..default()
+                },
+            ));
         })
         .id();
 
-    commands.entity(parent).push_children(&[child_3d_model]);
+    commands.entity(parent).push_children(&[child_3d_models]);
 
     let pontoon_positions = [
         [-0.8, 0., 2.],
@@ -105,8 +118,6 @@ pub fn spawn_ship(
     ];
 
     let pontoon_radius = 0.5;
-
-    let mut despawn_entity_register = Vec::new();
 
     for pontoon_position in pontoon_positions {
         let position = Vec3::from_array(pontoon_position);
@@ -127,18 +138,14 @@ pub fn spawn_ship(
             .id();
 
         // Need to add pontoon to registry for later despawn
-        despawn_entity_register.push(child_pontoon);
+        ship_despawn.entities.push(child_pontoon);
 
         let joint = FixedJointBuilder::new().local_anchor2(position);
         commands.entity(child_pontoon).with_children(|children| {
             let joint_entity = children.spawn(ImpulseJoint::new(parent, joint)).id();
 
             // Need to add joint to registry for later despawn
-            despawn_entity_register.push(joint_entity);
+            ship_despawn.entities.push(joint_entity);
         });
     }
-
-    despawn_entities
-        .entities
-        .insert(parent, despawn_entity_register);
 }

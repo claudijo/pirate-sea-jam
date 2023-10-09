@@ -4,5 +4,10 @@ use std::collections::HashMap;
 
 #[derive(Resource, Default)]
 pub struct ShipDespawnEntities {
-    pub entities: HashMap<Entity, Vec<Entity>>,
+    pub entities: Vec<Entity>,
+}
+
+#[derive(Resource, Default)]
+pub struct ShootingTargetDespawnEntities {
+    pub entities: Vec<Entity>,
 }

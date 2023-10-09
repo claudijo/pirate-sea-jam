@@ -1,11 +1,11 @@
 use crate::game_state::GameState;
-use crate::plugins::assets_ready_checker::LoadingAssets;
-use crate::resources::assets::ShipAssets;
+use crate::plugins::assets::LoadingAssets;
+use crate::resources::assets::ModelAssets;
 use bevy::asset::LoadState;
 use bevy::prelude::*;
 use std::collections::HashMap;
 
-const ASSET_NAMES: [&str; 8] = [
+const ASSET_NAMES: [&str; 10] = [
     "medium_flag",
     "medium_helm",
     "medium_hull",
@@ -14,6 +14,8 @@ const ASSET_NAMES: [&str; 8] = [
     "port_front_canon",
     "starboard_back_canon",
     "starboard_front_canon",
+    "pirate_flag",
+    "raft_with_mast",
 ];
 
 pub fn load_assets(
@@ -27,7 +29,7 @@ pub fn load_assets(
         loading_assets.0.push(handle.clone_untyped());
         scene_handles.insert(name, handle);
     }
-    commands.insert_resource(ShipAssets { scene_handles });
+    commands.insert_resource(ModelAssets { scene_handles });
 }
 
 pub fn check_load_state(
@@ -40,7 +42,7 @@ pub fn check_load_state(
             next_state.set(GameState::InGame);
         }
         LoadState::Failed => {
-            error!("asset loading error");
+            error!("Asset loading error");
         }
         _ => {} // NotLoaded / Loading / Unloaded
     };

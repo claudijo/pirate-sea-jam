@@ -5,4 +5,5 @@ pub mod light;
 pub mod movement;
 pub mod player_input;
 pub mod ship;
+pub mod shooting_target;
 pub mod text;
