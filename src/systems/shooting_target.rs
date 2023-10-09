@@ -1,11 +1,10 @@
 use crate::components::pontoon::Pontoon;
+use crate::components::ship::Pennant;
 use crate::components::shooting_target::ShootingTarget;
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::ShootingTargetDespawnEntities;
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::ColliderMassProperties::Density;
 use bevy_rapier3d::prelude::*;
-use crate::components::ship::Pennant;
 
 pub fn spawn_shooting_target(
     mut commands: Commands,
@@ -16,18 +15,26 @@ pub fn spawn_shooting_target(
         .spawn((
             TransformBundle::from(Transform::from_xyz(20., 0., 20.)),
             RigidBody::Dynamic,
-            Collider::cuboid(0.7, 0.35, 0.7),
-            Density(2.),
-            CollisionGroups::new(Group::NONE, Group::NONE),
             VisibilityBundle { ..default() }, // Necessary to display child scene bundle
             ShootingTarget,
         ))
+        .with_children(|parent| {
+            parent.spawn((
+                TransformBundle::from(Transform::from_xyz(0., 2., 0.)),
+                Collider::cuboid(0.2, 2., 0.2),
+                ColliderMassProperties::Density(0.),
+            ));
+            parent.spawn((
+                TransformBundle::from(Transform::from_xyz(0., 0., 0.)),
+                Collider::cuboid(0.7, 0.3, 0.7),
+            ));
+        })
         .id();
 
     let child_3d_models = commands
         .spawn(SceneBundle {
             scene: model_assets.scene_handles["raft_with_mast"].clone(),
-            transform: Transform::from_xyz(0., 0.2, 0.),
+            transform: Transform::from_xyz(0., 0.1, 0.),
             ..default()
         })
         .with_children(|parent| {
@@ -44,7 +51,9 @@ pub fn spawn_shooting_target(
         })
         .id();
 
-    commands.entity(physics_parent).push_children(&[child_3d_models]);
+    commands
+        .entity(physics_parent)
+        .push_children(&[child_3d_models]);
 
     let pontoon_positions = [
         [-0.7, 0., 0.7],
@@ -53,7 +62,7 @@ pub fn spawn_shooting_target(
         [0.7, 0., -0.7],
     ];
 
-    let pontoon_radius = 0.35;
+    let pontoon_radius = 0.3;
 
     for pontoon_position in pontoon_positions {
         let position = Vec3::from_array(pontoon_position);
@@ -78,7 +87,9 @@ pub fn spawn_shooting_target(
 
         let joint = FixedJointBuilder::new().local_anchor2(position);
         commands.entity(child_pontoon).with_children(|children| {
-            let joint_entity = children.spawn(ImpulseJoint::new(physics_parent, joint)).id();
+            let joint_entity = children
+                .spawn(ImpulseJoint::new(physics_parent, joint))
+                .id();
 
             // Need to add joint to registry for later despawn
             shooting_target_despawn.entities.push(joint_entity);

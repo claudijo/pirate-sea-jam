@@ -12,7 +12,8 @@ impl Plugin for KeyboadControllerPlugin {
                 player_input::turn_ship_using_keyboard,
                 player_input::boost_ship_using_keyboard,
                 player_input::fire_canons_at_nearest_target_using_keyboard,
-                player_input::reset_game,
+                player_input::reset_ship,
+                player_input::reset_shooting_target,
             )
                 .run_if(in_state(GameState::InGame)),
         );

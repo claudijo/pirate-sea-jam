@@ -126,7 +126,9 @@ pub fn spawn_ship(
         })
         .id();
 
-    commands.entity(physics_parent).push_children(&[child_3d_models]);
+    commands
+        .entity(physics_parent)
+        .push_children(&[child_3d_models]);
 
     let pontoon_positions = [
         [-0.8, 0., 2.],
@@ -162,7 +164,9 @@ pub fn spawn_ship(
 
         let joint = FixedJointBuilder::new().local_anchor2(position);
         commands.entity(child_pontoon).with_children(|children| {
-            let joint_entity = children.spawn(ImpulseJoint::new(physics_parent, joint)).id();
+            let joint_entity = children
+                .spawn(ImpulseJoint::new(physics_parent, joint))
+                .id();
 
             // Need to add joint to registry for later despawn
             ship_despawn.entities.push(joint_entity);

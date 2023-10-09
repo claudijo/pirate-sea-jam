@@ -1,11 +1,11 @@
 use crate::components::ship::{Booster, Helm, Pennant, Sail, Ship, TurnRate};
+use crate::components::shooting_target::ShootingTarget;
 use crate::components::wind::Wind;
 use crate::utils::number::scale_into_range;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::{PI, TAU};
-use crate::components::shooting_target::ShootingTarget;
 
 pub fn push_ship(
     mut ships: Query<(&mut ExternalImpulse, &Transform, &Booster, &Ship)>,
@@ -69,7 +69,10 @@ pub fn rotate_helm(rate_of_turns: Query<&TurnRate>, mut helms: Query<&mut Transf
 
 pub fn flutter_pennant(
     mut pennants: Query<(&mut Transform, &Pennant)>,
-    rigs: Query<(&Transform, Option<&Velocity>), (Or<(With<Ship>, With<ShootingTarget>)>, Without<Pennant>)>,
+    rigs: Query<
+        (&Transform, Option<&Velocity>),
+        (Or<(With<Ship>, With<ShootingTarget>)>, Without<Pennant>),
+    >,
     winds: Query<&Wind>,
     time: Res<Time>,
 ) {
