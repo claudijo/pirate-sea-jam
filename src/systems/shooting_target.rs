@@ -13,7 +13,7 @@ pub fn spawn_shooting_target(
 ) {
     let physics_parent = commands
         .spawn((
-            TransformBundle::from(Transform::from_xyz(20., 0., 20.)),
+            TransformBundle::from(Transform::from_xyz(10., 10., 10.)),
             RigidBody::Dynamic,
             VisibilityBundle { ..default() }, // Necessary to display child scene bundle
             ShootingTarget,
@@ -22,11 +22,12 @@ pub fn spawn_shooting_target(
             parent.spawn((
                 TransformBundle::from(Transform::from_xyz(0., 2., 0.)),
                 Collider::cuboid(0.2, 2., 0.2),
-                ColliderMassProperties::Density(0.),
+                ColliderMassProperties::Density(0.25),
             ));
             parent.spawn((
                 TransformBundle::from(Transform::from_xyz(0., 0., 0.)),
                 Collider::cuboid(0.7, 0.3, 0.7),
+                ColliderMassProperties::Density(4.),
             ));
         })
         .id();
@@ -34,7 +35,7 @@ pub fn spawn_shooting_target(
     let child_3d_models = commands
         .spawn(SceneBundle {
             scene: model_assets.scene_handles["raft_with_mast"].clone(),
-            transform: Transform::from_xyz(0., 0.1, 0.),
+            transform: Transform::from_xyz(0., 0., 0.),
             ..default()
         })
         .with_children(|parent| {
@@ -56,10 +57,11 @@ pub fn spawn_shooting_target(
         .push_children(&[child_3d_models]);
 
     let pontoon_positions = [
-        [-0.7, 0., 0.7],
-        [0.7, 0., 0.7],
-        [-0.7, 0., -0.7],
-        [0.7, 0., -0.7],
+        [-0.8, 0., 0.8],
+        [0.8, 0., 0.8],
+        [-0.8, 0., -0.8],
+        [0.8, 0., -0.8],
+        [0., 2., 0.],
     ];
 
     let pontoon_radius = 0.3;
@@ -74,6 +76,7 @@ pub fn spawn_shooting_target(
                 ExternalForce { ..default() },
                 Damping { ..default() },
                 Velocity { ..default() },
+                GravityScale(0.),
                 CollisionGroups::new(Group::NONE, Group::NONE),
                 Pontoon {
                     radius: pontoon_radius,
@@ -85,14 +88,17 @@ pub fn spawn_shooting_target(
         // Need to add pontoon to registry for later despawn
         shooting_target_despawn.entities.push(child_pontoon);
 
-        let joint = FixedJointBuilder::new().local_anchor2(position);
+        let fixed_joint = FixedJointBuilder::new().local_anchor1(position);
+
         commands.entity(child_pontoon).with_children(|children| {
             let joint_entity = children
-                .spawn(ImpulseJoint::new(physics_parent, joint))
+                .spawn(ImpulseJoint::new(physics_parent, fixed_joint))
                 .id();
 
             // Need to add joint to registry for later despawn
             shooting_target_despawn.entities.push(joint_entity);
         });
     }
+
+
 }
