@@ -4,8 +4,8 @@ use crate::components::shooting_target::ShootingTarget;
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::{ShipDespawnEntities, ShootingTargetDespawnEntities};
 use crate::systems::ship::spawn_ship;
-use bevy::prelude::*;
 use crate::systems::shooting_target::spawn_shooting_target;
+use bevy::prelude::*;
 
 const RATE_OF_ROTATION: f32 = 1.5;
 const TURN_RATE_LIMIT: f32 = 1.;
