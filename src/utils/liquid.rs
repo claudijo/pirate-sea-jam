@@ -1,17 +1,17 @@
 use bevy::prelude::*;
 
-pub const LIQUID_DENCITY: f32 = 1025.;
+pub const LIQUID_DENSITY: f32 = 1025.;
 pub const GRAVITY: f32 = 9.81;
 pub const SPHERE_DRAG_COEFFICIENT: f32 = 0.47;
 
 // https://www.omnicalculator.com/physics/buoyancy
 pub fn buoyant_force(displaced_liquid_volume: f32) -> Vec3 {
-    Vec3::Y * LIQUID_DENCITY * displaced_liquid_volume * GRAVITY
+    Vec3::Y * LIQUID_DENSITY * displaced_liquid_volume * GRAVITY
 }
 
 // https://www.omnicalculator.com/physics/drag-equation
 pub fn damping(relative_velocity: f32, reference_area: f32, drag_coefficient: f32) -> f32 {
-    0.5 * LIQUID_DENCITY * relative_velocity.powi(2) * reference_area * drag_coefficient
+    0.5 * LIQUID_DENSITY * relative_velocity.powi(2) * reference_area * drag_coefficient
 }
 
 // http://www-evasion.imag.fr/Membres/Fabrice.Neyret/NaturalScenes/fluids/water/waves/fluids-nuages/waves/Jonathan/articlesCG/simulating-ocean-water-01.pdf
