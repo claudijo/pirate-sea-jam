@@ -14,12 +14,11 @@ pub fn spawn_ship(
     model_assets: Res<ModelAssets>,
     mut ship_despawn: ResMut<ShipDespawnEntities>,
 ) {
-    let physics_parent = commands
+    let parent_entity = commands
+        // Rigid body
         .spawn((
             TransformBundle::from(Transform::from_xyz(0., 0., 0.)),
             RigidBody::Dynamic,
-            Collider::cuboid(0.8, 0.5, 2.),
-            CollisionGroups::new(Group::NONE, Group::NONE),
             VisibilityBundle { ..default() }, // Necessary to display child scene bundle
             ExternalImpulse { ..default() },
             ExternalForce { ..default() },
@@ -32,36 +31,48 @@ pub fn spawn_ship(
             Booster { ..default() },
             TurnRate { ..default() },
         ))
+        .with_children(|child_builder| {
+            // Colliders
+            child_builder.spawn((
+                Collider::cuboid(0.8, 0.5, 2.),
+            ));
+
+            // Models
+            child_builder
+                .spawn(SceneBundle {
+                    scene: model_assets.scene_handles["medium_hull"].clone(),
+                    transform: Transform::from_xyz(0., -0.5, 0.),
+                    ..default()
+                })
+                .with_children(|parent| {
+                    parent.spawn((
+                        Helm,
+                        SceneBundle {
+                            scene: model_assets.scene_handles["medium_helm"].clone(),
+                            transform: Transform::from_xyz(0., 5.5806, -1.0694),
+                            ..default()
+                        },
+                    ));
+
+                    parent.spawn((
+                        Sail,
+                        SceneBundle {
+                            scene: model_assets.scene_handles["medium_pirate_sail"].clone(),
+                            transform: Transform::from_xyz(0., 2.3248, 1.3574),
+                            ..default()
+                        },
+                    ));
+                });
+        })
         .id();
 
-    let child_3d_models = commands
-        .spawn(SceneBundle {
-            scene: model_assets.scene_handles["medium_hull"].clone(),
-            transform: Transform::from_xyz(0., -0.5, 0.),
-            ..default()
-        })
-        .with_children(|parent| {
-            parent.spawn((
-                Helm,
-                SceneBundle {
-                    scene: model_assets.scene_handles["medium_helm"].clone(),
-                    transform: Transform::from_xyz(0., 5.5806, -1.0694),
-                    ..default()
-                },
-            ));
-
-            parent.spawn((
-                Sail,
-                SceneBundle {
-                    scene: model_assets.scene_handles["medium_pirate_sail"].clone(),
-                    transform: Transform::from_xyz(0., 2.3248, 1.3574),
-                    ..default()
-                },
-            ));
-
-            parent.spawn((
+    // Spawn children that need a reference to the parent entity
+    commands
+        .entity(parent_entity)
+        .with_children(|child_builder| {
+            child_builder.spawn((
                 Pennant {
-                    rig: Some(physics_parent),
+                    rig: Some(parent_entity),
                 },
                 SceneBundle {
                     scene: model_assets.scene_handles["medium_flag"].clone(),
@@ -70,9 +81,9 @@ pub fn spawn_ship(
                 },
             ));
 
-            parent.spawn((
+            child_builder.spawn((
                 Cannon {
-                    rig: Some(physics_parent),
+                    rig: Some(parent_entity),
                     power: CANNON_POWER,
                     ..default()
                 },
@@ -84,9 +95,9 @@ pub fn spawn_ship(
                 },
             ));
 
-            parent.spawn((
+            child_builder.spawn((
                 Cannon {
-                    rig: Some(physics_parent),
+                    rig: Some(parent_entity),
                     power: CANNON_POWER,
                     ..default()
                 },
@@ -98,9 +109,9 @@ pub fn spawn_ship(
                 },
             ));
 
-            parent.spawn((
+            child_builder.spawn((
                 Cannon {
-                    rig: Some(physics_parent),
+                    rig: Some(parent_entity),
                     power: CANNON_POWER,
                     ..default()
                 },
@@ -111,9 +122,9 @@ pub fn spawn_ship(
                 },
             ));
 
-            parent.spawn((
+            child_builder.spawn((
                 Cannon {
-                    rig: Some(physics_parent),
+                    rig: Some(parent_entity),
                     power: CANNON_POWER,
                     ..default()
                 },
@@ -123,12 +134,7 @@ pub fn spawn_ship(
                     ..default()
                 },
             ));
-        })
-        .id();
-
-    commands
-        .entity(physics_parent)
-        .push_children(&[child_3d_models]);
+        });
 
     let pontoon_positions = [
         [-0.8, 0., 2.],
@@ -143,6 +149,8 @@ pub fn spawn_ship(
 
     for pontoon_position in pontoon_positions {
         let position = Vec3::from_array(pontoon_position);
+        let joint = FixedJointBuilder::new().local_anchor1(position);
+
         let child_pontoon = commands
             .spawn((
                 TransformBundle::from(Transform::from_translation(position)),
@@ -156,20 +164,11 @@ pub fn spawn_ship(
                     radius: pontoon_radius,
                     ..default()
                 },
+                ImpulseJoint::new(parent_entity, joint),
             ))
             .id();
 
         // Need to add pontoon to registry for later despawn
         ship_despawn.entities.push(child_pontoon);
-
-        let joint = FixedJointBuilder::new().local_anchor2(position);
-        commands.entity(child_pontoon).with_children(|children| {
-            let joint_entity = children
-                .spawn(ImpulseJoint::new(physics_parent, joint))
-                .id();
-
-            // Need to add joint to registry for later despawn
-            ship_despawn.entities.push(joint_entity);
-        });
     }
 }

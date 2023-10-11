@@ -29,7 +29,6 @@ pub fn spawn_shooting_target(
                 ColliderMassProperties::Density(0.5),
             ));
             child_builder.spawn((
-                TransformBundle::from(Transform::from_xyz(0., 0., 0.)),
                 Collider::cuboid(0.7, 0.3, 0.7),
                 ColliderMassProperties::Density(2.),
             ));
@@ -43,6 +42,7 @@ pub fn spawn_shooting_target(
         })
         .id();
 
+    // Spawn children that need a reference to the parent entity
     commands
         .entity(parent_entity)
         .with_children(|child_builder| {
@@ -70,7 +70,6 @@ pub fn spawn_shooting_target(
 
     for pontoon_position in pontoon_positions {
         let position = Vec3::from_array(pontoon_position);
-
         let joint = FixedJointBuilder::new().local_anchor1(position);
 
         let child_pontoon = commands
