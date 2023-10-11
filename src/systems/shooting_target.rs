@@ -11,50 +11,52 @@ pub fn spawn_shooting_target(
     model_assets: Res<ModelAssets>,
     mut shooting_target_despawn: ResMut<ShootingTargetDespawnEntities>,
 ) {
-    let physics_parent = commands
+    let spawn_at = Vec3::new(10., 0., 10.);
+
+    let parent_entity = commands
+        // Rigid body
         .spawn((
-            TransformBundle::from(Transform::from_xyz(10., 10., 10.)),
+            TransformBundle::from(Transform::from_translation(spawn_at)),
             RigidBody::Dynamic,
             VisibilityBundle { ..default() }, // Necessary to display child scene bundle
             ShootingTarget,
         ))
-        .with_children(|parent| {
-            parent.spawn((
+        .with_children(|child_builder| {
+            // Colliders
+            child_builder.spawn((
                 TransformBundle::from(Transform::from_xyz(0., 2., 0.)),
                 Collider::cuboid(0.2, 2., 0.2),
-                ColliderMassProperties::Density(0.25),
+                ColliderMassProperties::Density(0.5),
             ));
-            parent.spawn((
+            child_builder.spawn((
                 TransformBundle::from(Transform::from_xyz(0., 0., 0.)),
                 Collider::cuboid(0.7, 0.3, 0.7),
-                ColliderMassProperties::Density(4.),
+                ColliderMassProperties::Density(2.),
             ));
+
+            // Models
+            child_builder.spawn(SceneBundle {
+                scene: model_assets.scene_handles["raft_with_mast"].clone(),
+                transform: Transform::from_xyz(0., 0., 0.),
+                ..default()
+            });
         })
         .id();
 
-    let child_3d_models = commands
-        .spawn(SceneBundle {
-            scene: model_assets.scene_handles["raft_with_mast"].clone(),
-            transform: Transform::from_xyz(0., 0., 0.),
-            ..default()
-        })
-        .with_children(|parent| {
-            parent.spawn((
-                Pennant {
-                    rig: Some(physics_parent),
-                },
+    commands
+        .entity(parent_entity)
+        .with_children(|child_builder| {
+            child_builder.spawn((
                 SceneBundle {
                     scene: model_assets.scene_handles["pirate_flag"].clone(),
                     transform: Transform::from_xyz(0.0829, 3.2132, 0.0581),
                     ..default()
                 },
+                Pennant {
+                    rig: Some(parent_entity),
+                },
             ));
-        })
-        .id();
-
-    commands
-        .entity(physics_parent)
-        .push_children(&[child_3d_models]);
+        });
 
     let pontoon_positions = [
         [-0.8, 0., 0.8],
@@ -64,13 +66,16 @@ pub fn spawn_shooting_target(
         [0., 2., 0.],
     ];
 
-    let pontoon_radius = 0.3;
+    let pontoon_radius = 0.4;
 
     for pontoon_position in pontoon_positions {
         let position = Vec3::from_array(pontoon_position);
+
+        let joint = FixedJointBuilder::new().local_anchor1(position);
+
         let child_pontoon = commands
             .spawn((
-                TransformBundle::from(Transform::from_translation(position)),
+                TransformBundle::from(Transform::from_translation(spawn_at + position)),
                 RigidBody::Dynamic,
                 Collider::ball(pontoon_radius),
                 ExternalForce { ..default() },
@@ -82,23 +87,11 @@ pub fn spawn_shooting_target(
                     radius: pontoon_radius,
                     ..default()
                 },
+                ImpulseJoint::new(parent_entity, joint),
             ))
             .id();
 
         // Need to add pontoon to registry for later despawn
         shooting_target_despawn.entities.push(child_pontoon);
-
-        let fixed_joint = FixedJointBuilder::new().local_anchor1(position);
-
-        commands.entity(child_pontoon).with_children(|children| {
-            let joint_entity = children
-                .spawn(ImpulseJoint::new(physics_parent, fixed_joint))
-                .id();
-
-            // Need to add joint to registry for later despawn
-            shooting_target_despawn.entities.push(joint_entity);
-        });
     }
-
-
 }
