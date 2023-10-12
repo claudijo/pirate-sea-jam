@@ -1,4 +1,6 @@
-use crate::components::cannon::{Cannon, CannonBall, CannonBarrelTilt, CannonGunPowder};
+use crate::components::cannon::{
+    Cannon, CannonBall, CannonBarrelTilt, CannonCarriage, CannonGunPowder,
+};
 use crate::components::ship::Ship;
 use crate::resources::assets::ModelAssets;
 use crate::resources::wave_machine::WaveMachine;
@@ -11,10 +13,10 @@ use rand::Rng;
 pub fn fire_cannons(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
-    mut cannons: Query<(&GlobalTransform, &Cannon, &mut Transform,  &mut CannonBarrelTilt, &mut CannonGunPowder)>,
+    mut cannons: Query<(&GlobalTransform, &Cannon, &mut CannonGunPowder)>,
     rigs: Query<&Velocity, With<Ship>>,
 ) {
-    for (global_transform, cannon, mut transform, mut barrel_tilt, mut gun_powder) in &mut cannons {
+    for (global_transform, cannon, mut gun_powder) in &mut cannons {
         if gun_powder.is_lit {
             gun_powder.is_lit = false;
             let mut rng = rand::thread_rng();
@@ -45,9 +47,29 @@ pub fn fire_cannons(
                     ));
                 }
             }
+        }
+    }
+}
 
-            // Reset cannons
-            barrel_tilt.angle = 0.;
+pub fn rewind_cannon_tilt(
+    mut cannons: Query<(
+        &mut Transform,
+        &mut CannonBarrelTilt,
+        &CannonCarriage,
+        &Cannon,
+    )>,
+    time: Res<Time>,
+) {
+    for (mut transform, mut barrel_tilt, carriage, cannon) in &mut cannons {
+        if !carriage.is_aiming && barrel_tilt.angle != 0. {
+            let angle = barrel_tilt.angle + time.delta_seconds() * cannon.tilt_factor * -2.;
+
+            if cannon.tilt_factor > 0. {
+                barrel_tilt.angle = angle.max(0.);
+            } else {
+                barrel_tilt.angle = angle.min(0.);
+            }
+
             transform.rotation =
                 Quat::from_rotation_z(cannon.default_tilt + barrel_tilt.angle.to_radians());
         }

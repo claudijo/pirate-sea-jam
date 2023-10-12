@@ -77,9 +77,9 @@ pub fn spawn_ship(
                     ));
 
                     let cannons = [
-                        ([1.1769, 1.4593, -0.5485], PI, 30.), // Port back cannon
-                        ([1.13846, 1.54822, 1.54781], PI, 30.), // Port front cannon
-                        ([-1.1769, 1.4593, -0.5485], 0., -30.), // Starboard back cannon
+                        ([1.1769, 1.4593, -0.5485], PI, 30.),     // Port back cannon
+                        ([1.13846, 1.54822, 1.54781], PI, 30.),   // Port front cannon
+                        ([-1.1769, 1.4593, -0.5485], 0., -30.),   // Starboard back cannon
                         ([-1.13846, 1.54822, 1.54781], 0., -30.), // Starboard front cannon
                     ];
 
@@ -96,8 +96,10 @@ pub fn spawn_ship(
                             },
                             SceneBundle {
                                 scene: model_assets.scene_handles["medium_canon"].clone(),
-                                transform: Transform::from_translation(Vec3::from_array(cannon_transform))
-                                    .with_rotation(Quat::from_rotation_z(cannon_tilt)),
+                                transform: Transform::from_translation(Vec3::from_array(
+                                    cannon_transform,
+                                ))
+                                .with_rotation(Quat::from_rotation_z(cannon_tilt)),
                                 ..default()
                             },
                         ));
