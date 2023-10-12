@@ -1,4 +1,4 @@
-use crate::components::cannon::{Cannon, CannonBall};
+use crate::components::cannon::{Cannon, CannonBall, CannonBarrelTilt, CannonGunPowder};
 use crate::components::ship::Ship;
 use crate::resources::assets::ModelAssets;
 use crate::resources::wave_machine::WaveMachine;
@@ -11,11 +11,12 @@ use rand::Rng;
 pub fn fire_cannons(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
-    cannons: Query<(&GlobalTransform, &Cannon)>,
+    mut cannons: Query<(&GlobalTransform, &Cannon, &mut Transform,  &mut CannonBarrelTilt, &mut CannonGunPowder)>,
     rigs: Query<&Velocity, With<Ship>>,
 ) {
-    for (global_transform, cannon) in &cannons {
-        if cannon.is_lit {
+    for (global_transform, cannon, mut transform, mut barrel_tilt, mut gun_powder) in &mut cannons {
+        if gun_powder.is_lit {
+            gun_powder.is_lit = false;
             let mut rng = rand::thread_rng();
 
             if let Some(rig_entity) = cannon.rig {
@@ -44,6 +45,11 @@ pub fn fire_cannons(
                     ));
                 }
             }
+
+            // Reset cannons
+            barrel_tilt.angle = 0.;
+            transform.rotation =
+                Quat::from_rotation_z(cannon.default_tilt + barrel_tilt.angle.to_radians());
         }
     }
 }

@@ -19,29 +19,23 @@ impl Default for Ship {
     }
 }
 
-#[derive(Component)]
-pub struct TurnRate {
+#[derive(Component, Default)]
+pub struct ShipTurnRate {
     pub value: f32,
 }
 
-impl Default for TurnRate {
-    fn default() -> Self {
-        Self { value: 0. }
-    }
-}
-
 #[derive(Component, Default)]
-pub struct Booster {
+pub struct ShipBooster {
     pub active: bool,
 }
 
 #[derive(Component)]
-pub struct Helm;
+pub struct ShipHelm;
 
 #[derive(Component)]
-pub struct Pennant {
+pub struct ShipFlag {
     pub rig: Option<Entity>,
 }
 
 #[derive(Component)]
-pub struct Sail;
+pub struct ShipSail;

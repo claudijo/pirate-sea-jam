@@ -1,5 +1,5 @@
 use crate::components::pontoon::Pontoon;
-use crate::components::ship::Pennant;
+use crate::components::ship::ShipFlag;
 use crate::components::shooting_target::ShootingTarget;
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::ShootingTargetDespawnEntities;
@@ -52,7 +52,7 @@ pub fn spawn_shooting_target(
                     transform: Transform::from_xyz(0.0829, 3.2132, 0.0581),
                     ..default()
                 },
-                Pennant {
+                ShipFlag {
                     rig: Some(parent_entity),
                 },
             ));

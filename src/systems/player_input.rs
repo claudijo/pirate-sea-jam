@@ -1,5 +1,5 @@
-use crate::components::cannon::Cannon;
-use crate::components::ship::{Booster, Ship, TurnRate};
+use crate::components::cannon::{Cannon, CannonBarrelTilt, CannonCarriage, CannonGunPowder};
+use crate::components::ship::{Ship, ShipBooster, ShipTurnRate};
 use crate::components::shooting_target::ShootingTarget;
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::{ShipDespawnEntities, ShootingTargetDespawnEntities};
@@ -12,7 +12,7 @@ const TURN_RATE_LIMIT: f32 = 1.;
 
 pub fn turn_ship_using_keyboard(
     keys: Res<Input<KeyCode>>,
-    mut rate_of_turns: Query<&mut TurnRate>,
+    mut rate_of_turns: Query<&mut ShipTurnRate>,
     time: Res<Time>,
 ) {
     for mut rate_of_turn in &mut rate_of_turns {
@@ -43,7 +43,7 @@ pub fn turn_ship_using_keyboard(
     }
 }
 
-pub fn boost_ship_using_keyboard(keys: Res<Input<KeyCode>>, mut boosters: Query<&mut Booster>) {
+pub fn boost_ship_using_keyboard(keys: Res<Input<KeyCode>>, mut boosters: Query<&mut ShipBooster>) {
     let active = keys.just_pressed(KeyCode::ShiftLeft);
 
     for mut boosters in &mut boosters {
@@ -51,20 +51,29 @@ pub fn boost_ship_using_keyboard(keys: Res<Input<KeyCode>>, mut boosters: Query<
     }
 }
 
-pub fn fire_canons_at_nearest_target_using_keyboard(
+pub fn start_aiming_cannons_at_nearest_target_using_keyboard(
     keys: Res<Input<KeyCode>>,
-    ships: Query<&Transform, With<Ship>>,
-    targets: Query<&Transform, With<ShootingTarget>>,
-    mut cannons: Query<(&GlobalTransform, &mut Cannon)>,
+    shooting_targets: Query<&Transform, With<ShootingTarget>>,
+    ships: Query<(Entity, &Transform), With<Ship>>,
+    mut cannons: Query<(&GlobalTransform, &Cannon, &mut CannonCarriage)>,
 ) {
     if keys.just_pressed(KeyCode::Space) {
-        for ship_transform in &ships {
-            let mut closest_target: Option<(Vec3, f32)> = None;
+        for (ship_entity, ship_transform) in &ships {
+            // Bail if there's already an aiming cannon on this ship
+            for (_, cannon, cannon_carriage) in &cannons {
+                if let Some(rig) = cannon.rig {
+                    if rig == ship_entity && cannon_carriage.is_aiming {
+                        return;
+                    }
+                }
+            }
 
-            for target_transform in &targets {
+            let mut closest_target: Option<(Vec3, f32)> = None;
+            for target_transform in &shooting_targets {
                 let distance = ship_transform
                     .translation
                     .distance(target_transform.translation);
+
                 if let Some((_, closest_distance)) = closest_target {
                     if closest_distance > distance {
                         closest_target = Some((target_transform.translation, distance));
@@ -75,16 +84,54 @@ pub fn fire_canons_at_nearest_target_using_keyboard(
             }
 
             if let Some((closest_translation, _)) = closest_target {
-                for (cannon_global_transform, mut cannon) in &mut cannons {
+                for (cannon_global_transform, _, mut cannon_carriage) in &mut cannons {
                     let target_direction =
                         closest_translation - cannon_global_transform.translation();
-                    cannon.is_lit = cannon_global_transform.left().dot(target_direction) > 0.;
+                    cannon_carriage.is_aiming =
+                        cannon_global_transform.left().dot(target_direction) > 0.;
                 }
             }
         }
-    } else {
-        for (_, mut cannon) in &mut cannons {
-            cannon.is_lit = false;
+    }
+}
+
+pub fn tilt_aiming_cannons_using_keyboard(
+    keys: Res<Input<KeyCode>>,
+    mut cannons: Query<(
+        &mut Transform,
+        &mut CannonBarrelTilt,
+        &CannonCarriage,
+        &Cannon,
+    )>,
+    time: Res<Time>,
+) {
+    if keys.pressed(KeyCode::Space) {
+        for (mut transform, mut barrel_tilt, carriage, cannon) in &mut cannons {
+            if carriage.is_aiming {
+                let angle = barrel_tilt.angle + time.delta_seconds() * cannon.tilt_factor;
+
+                if cannon.tilt_factor > 0. {
+                    barrel_tilt.angle = angle.min(cannon.max_tilt);
+                } else {
+                    barrel_tilt.angle = angle.max(-cannon.max_tilt);
+                }
+                transform.rotation =
+                    Quat::from_rotation_z(cannon.default_tilt + barrel_tilt.angle.to_radians());
+            }
+        }
+    }
+}
+
+pub fn fire_aiming_cannons_using_keyboard(
+    keys: Res<Input<KeyCode>>,
+    mut cannons: Query<(&mut CannonCarriage, &mut CannonGunPowder), With<Cannon>>,
+) {
+    if keys.just_released(KeyCode::Space) {
+        for (mut carriage, mut gun_powder) in &mut cannons {
+            if carriage.is_aiming {
+                carriage.is_aiming = false;
+                gun_powder.is_lit = true;
+            }
         }
     }
 }

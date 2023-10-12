@@ -29,7 +29,7 @@ fn main() {
         plugins::keyboard_controller::KeyboadControllerPlugin,
         plugins::wind::WindPlugin,
         plugins::text::TextOverlayPlugin,
-        plugins::arsenal::ArsenalPlugin,
+        plugins::artillery::ArsenalPlugin,
     ))
     .add_state::<game_state::GameState>();
 

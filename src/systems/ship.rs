@@ -1,13 +1,11 @@
-use crate::components::cannon::Cannon;
+use crate::components::cannon::{Cannon, CannonBarrelTilt, CannonCarriage, CannonGunPowder};
 use crate::components::pontoon::Pontoon;
-use crate::components::ship::{Booster, Helm, Pennant, Sail, Ship, TurnRate};
+use crate::components::ship::{Ship, ShipBooster, ShipFlag, ShipHelm, ShipSail, ShipTurnRate};
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::ShipDespawnEntities;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
-
-const CANNON_POWER: f32 = 1.;
 
 pub fn spawn_ship(
     mut commands: Commands,
@@ -28,41 +26,12 @@ pub fn spawn_ship(
                 linear_damping: 4.,
             },
             Ship { ..default() },
-            Booster { ..default() },
-            TurnRate { ..default() },
+            ShipBooster { ..default() },
+            ShipTurnRate { ..default() },
         ))
         .with_children(|child_builder| {
             // Colliders
-            child_builder.spawn((
-                Collider::cuboid(0.8, 0.5, 2.),
-            ));
-
-            // Models
-            child_builder
-                .spawn(SceneBundle {
-                    scene: model_assets.scene_handles["medium_hull"].clone(),
-                    transform: Transform::from_xyz(0., -0.5, 0.),
-                    ..default()
-                })
-                .with_children(|parent| {
-                    parent.spawn((
-                        Helm,
-                        SceneBundle {
-                            scene: model_assets.scene_handles["medium_helm"].clone(),
-                            transform: Transform::from_xyz(0., 5.5806, -1.0694),
-                            ..default()
-                        },
-                    ));
-
-                    parent.spawn((
-                        Sail,
-                        SceneBundle {
-                            scene: model_assets.scene_handles["medium_pirate_sail"].clone(),
-                            transform: Transform::from_xyz(0., 2.3248, 1.3574),
-                            ..default()
-                        },
-                    ));
-                });
+            child_builder.spawn((Collider::cuboid(0.8, 0.5, 2.),));
         })
         .id();
 
@@ -70,70 +39,70 @@ pub fn spawn_ship(
     commands
         .entity(parent_entity)
         .with_children(|child_builder| {
-            child_builder.spawn((
-                Pennant {
-                    rig: Some(parent_entity),
-                },
-                SceneBundle {
-                    scene: model_assets.scene_handles["medium_flag"].clone(),
-                    transform: Transform::from_xyz(0., 9.38793, 1.35834),
+            // Models
+            child_builder
+                .spawn(SceneBundle {
+                    scene: model_assets.scene_handles["medium_hull"].clone(),
+                    transform: Transform::from_xyz(0., -0.5, 0.),
                     ..default()
-                },
-            ));
+                })
+                .with_children(|child_builder| {
+                    child_builder.spawn((
+                        ShipHelm,
+                        SceneBundle {
+                            scene: model_assets.scene_handles["medium_helm"].clone(),
+                            transform: Transform::from_xyz(0., 5.5806, -1.0694),
+                            ..default()
+                        },
+                    ));
 
-            child_builder.spawn((
-                Cannon {
-                    rig: Some(parent_entity),
-                    power: CANNON_POWER,
-                    ..default()
-                },
-                SceneBundle {
-                    scene: model_assets.scene_handles["port_back_canon"].clone(),
-                    transform: Transform::from_xyz(1.1769, 1.4593, -0.5485)
-                        .with_rotation(Quat::from_rotation_z(PI)),
-                    ..default()
-                },
-            ));
+                    child_builder.spawn((
+                        ShipSail,
+                        SceneBundle {
+                            scene: model_assets.scene_handles["medium_pirate_sail"].clone(),
+                            transform: Transform::from_xyz(0., 2.3248, 1.3574),
+                            ..default()
+                        },
+                    ));
 
-            child_builder.spawn((
-                Cannon {
-                    rig: Some(parent_entity),
-                    power: CANNON_POWER,
-                    ..default()
-                },
-                SceneBundle {
-                    scene: model_assets.scene_handles["port_front_canon"].clone(),
-                    transform: Transform::from_xyz(1.13846, 1.54822, 1.54781)
-                        .with_rotation(Quat::from_rotation_z(PI)),
-                    ..default()
-                },
-            ));
+                    child_builder.spawn((
+                        ShipFlag {
+                            rig: Some(parent_entity),
+                        },
+                        SceneBundle {
+                            scene: model_assets.scene_handles["medium_flag"].clone(),
+                            transform: Transform::from_xyz(0., 9.38793, 1.35834),
+                            ..default()
+                        },
+                    ));
 
-            child_builder.spawn((
-                Cannon {
-                    rig: Some(parent_entity),
-                    power: CANNON_POWER,
-                    ..default()
-                },
-                SceneBundle {
-                    scene: model_assets.scene_handles["starboard_back_canon"].clone(),
-                    transform: Transform::from_xyz(-1.1769, 1.4593, -0.5485),
-                    ..default()
-                },
-            ));
+                    let cannons = [
+                        ([1.1769, 1.4593, -0.5485], PI, 30.), // Port back cannon
+                        ([1.13846, 1.54822, 1.54781], PI, 30.), // Port front cannon
+                        ([-1.1769, 1.4593, -0.5485], 0., -30.), // Starboard back cannon
+                        ([-1.13846, 1.54822, 1.54781], 0., -30.), // Starboard front cannon
+                    ];
 
-            child_builder.spawn((
-                Cannon {
-                    rig: Some(parent_entity),
-                    power: CANNON_POWER,
-                    ..default()
-                },
-                SceneBundle {
-                    scene: model_assets.scene_handles["starboard_front_canon"].clone(),
-                    transform: Transform::from_xyz(-1.13846, 1.54822, 1.54781),
-                    ..default()
-                },
-            ));
+                    for (cannon_transform, cannon_tilt, tilt_factor) in cannons {
+                        child_builder.spawn((
+                            CannonCarriage { ..default() },
+                            CannonGunPowder { ..default() },
+                            CannonBarrelTilt { ..default() },
+                            Cannon {
+                                rig: Some(parent_entity),
+                                default_tilt: cannon_tilt,
+                                tilt_factor,
+                                ..default()
+                            },
+                            SceneBundle {
+                                scene: model_assets.scene_handles["medium_canon"].clone(),
+                                transform: Transform::from_translation(Vec3::from_array(cannon_transform))
+                                    .with_rotation(Quat::from_rotation_z(cannon_tilt)),
+                                ..default()
+                            },
+                        ));
+                    }
+                });
         });
 
     let pontoon_positions = [

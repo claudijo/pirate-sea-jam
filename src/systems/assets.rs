@@ -5,15 +5,12 @@ use bevy::asset::LoadState;
 use bevy::prelude::*;
 use std::collections::HashMap;
 
-const ASSET_NAMES: [&str; 11] = [
+const ASSET_NAMES: [&str; 8] = [
     "medium_flag",
     "medium_helm",
     "medium_hull",
     "medium_pirate_sail",
-    "port_back_canon",
-    "port_front_canon",
-    "starboard_back_canon",
-    "starboard_front_canon",
+    "medium_canon",
     "pirate_flag",
     "raft_with_mast",
     "cannon_ball",

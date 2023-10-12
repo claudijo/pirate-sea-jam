@@ -1,4 +1,4 @@
-use crate::components::ship::{Booster, Helm, Pennant, Sail, Ship, TurnRate};
+use crate::components::ship::{Ship, ShipBooster, ShipFlag, ShipHelm, ShipSail, ShipTurnRate};
 use crate::components::shooting_target::ShootingTarget;
 use crate::components::wind::Wind;
 use crate::utils::number::scale_into_range;
@@ -8,7 +8,7 @@ use bevy_rapier3d::prelude::*;
 use std::f32::consts::{PI, TAU};
 
 pub fn push_ship(
-    mut ships: Query<(&mut ExternalImpulse, &Transform, &Booster, &Ship)>,
+    mut ships: Query<(&mut ExternalImpulse, &Transform, &ShipBooster, &Ship)>,
     winds: Query<&Wind>,
 ) {
     for wind in &winds {
@@ -39,7 +39,7 @@ pub fn turn_ship(
         &Transform,
         &Velocity,
         &Ship,
-        &TurnRate,
+        &ShipTurnRate,
     )>,
 ) {
     for (mut external_impulse, transform, velocity, ship, rate_of_turn) in &mut ships {
@@ -59,7 +59,10 @@ pub fn turn_ship(
     }
 }
 
-pub fn rotate_helm(rate_of_turns: Query<&TurnRate>, mut helms: Query<&mut Transform, With<Helm>>) {
+pub fn rotate_helm(
+    rate_of_turns: Query<&ShipTurnRate>,
+    mut helms: Query<&mut Transform, With<ShipHelm>>,
+) {
     for rate_of_turn in &rate_of_turns {
         for mut transform in &mut helms {
             transform.rotation = Quat::from_rotation_z(rate_of_turn.value * TAU);
@@ -68,10 +71,10 @@ pub fn rotate_helm(rate_of_turns: Query<&TurnRate>, mut helms: Query<&mut Transf
 }
 
 pub fn flutter_pennant(
-    mut pennants: Query<(&mut Transform, &Pennant)>,
+    mut pennants: Query<(&mut Transform, &ShipFlag)>,
     rigs: Query<
         (&Transform, Option<&Velocity>),
-        (Or<(With<Ship>, With<ShootingTarget>)>, Without<Pennant>),
+        (Or<(With<Ship>, With<ShootingTarget>)>, Without<ShipFlag>),
     >,
     winds: Query<&Wind>,
     time: Res<Time>,
@@ -98,8 +101,8 @@ pub fn flutter_pennant(
 }
 
 pub fn flutter_sails(
-    mut sails: Query<&mut Transform, With<Sail>>,
-    ships: Query<&Transform, (With<Ship>, Without<Sail>)>,
+    mut sails: Query<&mut Transform, With<ShipSail>>,
+    ships: Query<&Transform, (With<Ship>, Without<ShipSail>)>,
     winds: Query<&Wind>,
     time: Res<Time>,
 ) {

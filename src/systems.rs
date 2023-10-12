@@ -1,4 +1,4 @@
-pub mod arsenal;
+pub mod artillery;
 pub mod assets;
 pub mod camera;
 pub mod fluid_dynamics;
