@@ -28,7 +28,7 @@ pub fn push_ship(
                 1.
             };
 
-            external_impulse.impulse = ship_forward * ship.speed * wind_factor * boost_factor;
+            external_impulse.impulse += ship_forward * ship.speed * wind_factor * boost_factor;
         }
     }
 }
@@ -55,7 +55,7 @@ pub fn turn_ship(
         torque_impulse += transform.local_z() * roll_factor;
 
         // Pass the vector3 of the axis around which you want to rotate
-        external_impulse.torque_impulse = torque_impulse;
+        external_impulse.torque_impulse += torque_impulse;
     }
 }
 

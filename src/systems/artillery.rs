@@ -14,15 +14,20 @@ pub fn fire_cannons(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
     mut cannons: Query<(&GlobalTransform, &Cannon, &mut CannonGunPowder)>,
-    rigs: Query<&Velocity, With<Ship>>,
+    mut ships: Query<(&Velocity, &mut ExternalImpulse), With<Ship>>,
 ) {
     for (global_transform, cannon, mut gun_powder) in &mut cannons {
         if gun_powder.is_lit {
             gun_powder.is_lit = false;
             let mut rng = rand::thread_rng();
 
-            if let Some(rig_entity) = cannon.rig {
-                if let Ok(rig_velocity) = rigs.get(rig_entity) {
+            if let Some(ship_entity) = cannon.rig {
+                if let Ok((ship_velocity, mut external_impulse)) = ships.get_mut(ship_entity) {
+                    // Make ship recoil
+                    let recoil_scale = if cannon.tilt_factor > 0. { -10. } else { 10. };
+                    external_impulse.torque_impulse += global_transform.forward() * recoil_scale;
+
+                    // Spawn cannon ball
                     commands.spawn((
                         SceneBundle {
                             scene: model_assets.scene_handles["cannon_ball"].clone(),
@@ -41,7 +46,7 @@ pub fn fire_cannons(
                         Collider::ball(0.3),
                         Density(10.),
                         Velocity {
-                            linvel: rig_velocity.linvel,
+                            linvel: ship_velocity.linvel,
                             ..default()
                         },
                     ));
