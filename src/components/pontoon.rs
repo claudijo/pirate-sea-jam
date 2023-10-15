@@ -12,7 +12,7 @@ impl Default for Pontoon {
         Self {
             radius: 1.,
             buoyant_force_scale: 0.01,
-            water_damping_scale: 0.01,
+            water_damping_scale: 0.2,
         }
     }
 }

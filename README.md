@@ -6,6 +6,7 @@ Jam-sized pirate game in development. Written in Rust and Bevy. Made with ❤️
 
 ## Changelog and Feature List
 The following brief changelog includes main concepts and features
+* Firing cannons (version 0.5.0)
 * Player control (version 0.4.0)
 * 3D models with textures (version 0.3.0)
 * Buoyancy (version 0.2.0)

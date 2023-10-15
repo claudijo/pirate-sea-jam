@@ -1,4 +1,5 @@
-use crate::components::ship::{Booster, Helm, Pennant, Sail, Ship, TurnRate};
+use crate::components::ship::{Ship, ShipBooster, ShipFlag, ShipHelm, ShipSail, ShipTurnRate};
+use crate::components::shooting_target::ShootingTarget;
 use crate::components::wind::Wind;
 use crate::utils::number::scale_into_range;
 use bevy::math::Vec3Swizzles;
@@ -7,7 +8,7 @@ use bevy_rapier3d::prelude::*;
 use std::f32::consts::{PI, TAU};
 
 pub fn push_ship(
-    mut ships: Query<(&mut ExternalImpulse, &Transform, &Booster, &Ship)>,
+    mut ships: Query<(&mut ExternalImpulse, &Transform, &ShipBooster, &Ship)>,
     winds: Query<&Wind>,
 ) {
     for wind in &winds {
@@ -27,7 +28,7 @@ pub fn push_ship(
                 1.
             };
 
-            external_impulse.impulse = ship_forward * ship.speed * wind_factor * boost_factor;
+            external_impulse.impulse += ship_forward * ship.speed * wind_factor * boost_factor;
         }
     }
 }
@@ -38,7 +39,7 @@ pub fn turn_ship(
         &Transform,
         &Velocity,
         &Ship,
-        &TurnRate,
+        &ShipTurnRate,
     )>,
 ) {
     for (mut external_impulse, transform, velocity, ship, rate_of_turn) in &mut ships {
@@ -54,11 +55,14 @@ pub fn turn_ship(
         torque_impulse += transform.local_z() * roll_factor;
 
         // Pass the vector3 of the axis around which you want to rotate
-        external_impulse.torque_impulse = torque_impulse;
+        external_impulse.torque_impulse += torque_impulse;
     }
 }
 
-pub fn rotate_helm(rate_of_turns: Query<&TurnRate>, mut helms: Query<&mut Transform, With<Helm>>) {
+pub fn rotate_helm(
+    rate_of_turns: Query<&ShipTurnRate>,
+    mut helms: Query<&mut Transform, With<ShipHelm>>,
+) {
     for rate_of_turn in &rate_of_turns {
         for mut transform in &mut helms {
             transform.rotation = Quat::from_rotation_z(rate_of_turn.value * TAU);
@@ -66,9 +70,12 @@ pub fn rotate_helm(rate_of_turns: Query<&TurnRate>, mut helms: Query<&mut Transf
     }
 }
 
-pub fn flutter_masthead_pennant(
-    mut pennants: Query<&mut Transform, With<Pennant>>,
-    ships: Query<(&Transform, &Velocity), (With<Ship>, Without<Pennant>)>,
+pub fn flutter_pennant(
+    mut pennants: Query<(&mut Transform, &ShipFlag)>,
+    rigs: Query<
+        (&Transform, Option<&Velocity>),
+        (Or<(With<Ship>, With<ShootingTarget>)>, Without<ShipFlag>),
+    >,
     winds: Query<&Wind>,
     time: Res<Time>,
 ) {
@@ -76,21 +83,26 @@ pub fn flutter_masthead_pennant(
     let elapsed_time = time.elapsed().as_secs_f32();
 
     for wind in &winds {
-        for (ship_transform, ship_velocity) in &ships {
-            for mut pennant_transform in &mut pennants {
-                let flutter = ship_velocity.linvel.xz().length().to_radians()
-                    * (elapsed_time * TIME_SCALE).sin();
-                let ship_forward = ship_transform.local_z();
-                let angle = wind.direction.xz().angle_between(ship_forward.xz()) + PI;
-                pennant_transform.rotation = Quat::from_rotation_y(angle + flutter);
+        for (mut pennant_transform, pennant) in &mut pennants {
+            if let Some(rig_entity) = pennant.rig {
+                if let Ok((rig_transform, rig_velocity)) = rigs.get(rig_entity) {
+                    let mut speed_factor = 2_f32.to_radians();
+                    if let Some(velocity) = rig_velocity {
+                        speed_factor = velocity.linvel.xz().length().to_radians();
+                    }
+                    let flutter = speed_factor * (elapsed_time * TIME_SCALE).sin();
+                    let rig_forward = rig_transform.local_z();
+                    let angle = wind.direction.xz().angle_between(rig_forward.xz()) + PI;
+                    pennant_transform.rotation = Quat::from_rotation_y(angle + flutter);
+                }
             }
         }
     }
 }
 
 pub fn flutter_sails(
-    mut sails: Query<&mut Transform, With<Sail>>,
-    ships: Query<&Transform, (With<Ship>, Without<Sail>)>,
+    mut sails: Query<&mut Transform, With<ShipSail>>,
+    ships: Query<&Transform, (With<Ship>, Without<ShipSail>)>,
     winds: Query<&Wind>,
     time: Res<Time>,
 ) {

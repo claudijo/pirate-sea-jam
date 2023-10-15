@@ -19,15 +19,17 @@ fn main() {
     app.add_plugins(DefaultPlugins);
     app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
     app.add_plugins((
-        plugins::assets_ready_checker::AssetsReadyCheckerPlugin,
+        plugins::assets::AssetsPlugin,
         plugins::camera::CameraPlugin,
         plugins::ocean::OceanPlugin,
         plugins::light::LightPlugin,
         plugins::ship::ShipPlugin,
+        plugins::shooting_target::ShootingTargetPlugin,
         plugins::pontoon::PontoonPlugin,
         plugins::keyboard_controller::KeyboadControllerPlugin,
         plugins::wind::WindPlugin,
         plugins::text::TextOverlayPlugin,
+        plugins::artillery::ArsenalPlugin,
     ))
     .add_state::<game_state::GameState>();
 

@@ -7,13 +7,15 @@ use bevy::prelude::*;
 #[derive(Resource, Default)]
 pub struct LoadingAssets(pub Vec<HandleUntyped>);
 
-pub struct AssetsReadyCheckerPlugin;
+pub struct AssetsPlugin;
 
-impl Plugin for AssetsReadyCheckerPlugin {
+impl Plugin for AssetsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<LoadingAssets>().add_systems(
-            Update,
-            (assets::check_load_state).run_if(in_state(GameState::LoadingAssets)),
-        );
+        app.init_resource::<LoadingAssets>()
+            .add_systems(OnEnter(GameState::LoadingAssets), assets::load_assets)
+            .add_systems(
+                Update,
+                (assets::check_load_state).run_if(in_state(GameState::LoadingAssets)),
+            );
     }
 }
