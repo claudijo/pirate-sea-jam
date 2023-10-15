@@ -2,7 +2,7 @@
 
 Jam-sized pirate game prototype in the making. Written in Rust and Bevy. Made with ❤️
 
-Free demo available at [https://claudijo.itch.io/pirate-sea-jam](https://claudijo.itch.io/pirate-sea-jam)
+Demo and devlog available at [https://claudijo.itch.io/pirate-sea-jam](https://claudijo.itch.io/pirate-sea-jam)
 
 > Learning game development is a journey on the open seas
 
