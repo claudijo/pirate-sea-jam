@@ -16,7 +16,14 @@ mod utils;
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins);
+    app.add_plugins( DefaultPlugins.set(WindowPlugin {
+        primary_window: Some(Window {
+            title: "Pirate Sea Jam".into(),
+            fit_canvas_to_parent: true,
+            ..default()
+        }),
+        ..default()
+    }));
     app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
     app.add_plugins((
         plugins::assets::AssetsPlugin,
@@ -31,6 +38,7 @@ fn main() {
         plugins::wind::WindPlugin,
         plugins::text::TextOverlayPlugin,
         plugins::artillery::ArsenalPlugin,
+        // plugins::viewport::ViewportPlugin,
     ))
     .add_state::<game_state::GameState>();
 
