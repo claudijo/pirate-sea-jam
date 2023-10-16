@@ -1,3 +1,4 @@
+pub mod button;
 pub mod cannon;
 pub mod ocean;
 pub mod pontoon;

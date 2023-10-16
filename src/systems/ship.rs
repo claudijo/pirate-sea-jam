@@ -42,7 +42,7 @@ pub fn spawn_ship(
             // Models
             child_builder
                 .spawn(SceneBundle {
-                    scene: model_assets.scene_handles["medium_hull"].clone(),
+                    scene: model_assets.scene_handles["medium_hull.glb"].clone(),
                     transform: Transform::from_xyz(0., -0.5, 0.),
                     ..default()
                 })
@@ -50,7 +50,7 @@ pub fn spawn_ship(
                     child_builder.spawn((
                         ShipHelm,
                         SceneBundle {
-                            scene: model_assets.scene_handles["medium_helm"].clone(),
+                            scene: model_assets.scene_handles["medium_helm.glb"].clone(),
                             transform: Transform::from_xyz(0., 5.5806, -1.0694),
                             ..default()
                         },
@@ -59,7 +59,7 @@ pub fn spawn_ship(
                     child_builder.spawn((
                         ShipSail,
                         SceneBundle {
-                            scene: model_assets.scene_handles["medium_pirate_sail"].clone(),
+                            scene: model_assets.scene_handles["medium_pirate_sail.glb"].clone(),
                             transform: Transform::from_xyz(0., 2.3248, 1.3574),
                             ..default()
                         },
@@ -70,7 +70,7 @@ pub fn spawn_ship(
                             rig: Some(parent_entity),
                         },
                         SceneBundle {
-                            scene: model_assets.scene_handles["medium_flag"].clone(),
+                            scene: model_assets.scene_handles["medium_flag.glb"].clone(),
                             transform: Transform::from_xyz(0., 9.38793, 1.35834),
                             ..default()
                         },
@@ -95,7 +95,7 @@ pub fn spawn_ship(
                                 ..default()
                             },
                             SceneBundle {
-                                scene: model_assets.scene_handles["medium_canon"].clone(),
+                                scene: model_assets.scene_handles["medium_canon.glb"].clone(),
                                 transform: Transform::from_translation(Vec3::from_array(
                                     cannon_transform,
                                 ))
