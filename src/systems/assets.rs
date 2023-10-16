@@ -49,7 +49,7 @@ pub fn check_load_state(
 ) {
     match asset_server.get_group_load_state(assets.0.iter().map(|a| a.id())) {
         LoadState::Loaded => {
-            next_state.set(GameState::InGame);
+            next_state.set(GameState::SplashScreen);
         }
         LoadState::Failed => {
             error!("Asset loading error");

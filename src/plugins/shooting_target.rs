@@ -9,7 +9,7 @@ impl Plugin for ShootingTargetPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ShootingTargetDespawnEntities::default())
             .add_systems(
-                OnEnter(GameState::InGame),
+                OnEnter(GameState::SplashScreen),
                 shooting_target::spawn_shooting_target,
             );
     }
