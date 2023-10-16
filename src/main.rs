@@ -16,9 +16,10 @@ mod utils;
 
 fn main() {
     let mut app = App::new();
-    app.add_plugins( DefaultPlugins.set(WindowPlugin {
+    app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "Pirate Sea Jam".into(),
+            // This requires css html, body {margin: 0;height: 100%;} as explained https://github.com/bevyengine/bevy/commit/fed93a0edce9d66586dc70c1207a2092694b9a7d
             fit_canvas_to_parent: true,
             ..default()
         }),
@@ -38,7 +39,6 @@ fn main() {
         plugins::wind::WindPlugin,
         plugins::text::TextOverlayPlugin,
         plugins::artillery::ArsenalPlugin,
-        // plugins::viewport::ViewportPlugin,
     ))
     .add_state::<game_state::GameState>();
 
