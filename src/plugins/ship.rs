@@ -12,13 +12,16 @@ impl Plugin for ShipPlugin {
             .add_systems(
                 Update,
                 (
-                    movement::push_ship,
-                    movement::turn_ship,
-                    movement::rotate_helm,
-                    movement::flutter_pennant,
-                    movement::flutter_sails,
-                )
-                    .run_if(in_state(GameState::InGame)),
+                    (
+                        movement::push_ship,
+                        movement::turn_ship,
+                        movement::rotate_helm,
+                        movement::flutter_sails,
+                        movement::flutter_pennant,
+                    )
+                        .run_if(in_state(GameState::InGame)),
+                    movement::flutter_pennant.run_if(in_state(GameState::SplashScreen)),
+                ),
             );
     }
 }

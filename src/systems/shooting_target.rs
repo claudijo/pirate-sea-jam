@@ -35,7 +35,7 @@ pub fn spawn_shooting_target(
 
             // Models
             child_builder.spawn(SceneBundle {
-                scene: model_assets.scene_handles["raft_with_mast"].clone(),
+                scene: model_assets.scene_handles["raft_with_mast.glb"].clone(),
                 transform: Transform::from_xyz(0., 0., 0.),
                 ..default()
             });
@@ -48,7 +48,7 @@ pub fn spawn_shooting_target(
         .with_children(|child_builder| {
             child_builder.spawn((
                 SceneBundle {
-                    scene: model_assets.scene_handles["pirate_flag"].clone(),
+                    scene: model_assets.scene_handles["pirate_flag.glb"].clone(),
                     transform: Transform::from_xyz(0.0829, 3.2132, 0.0581),
                     ..default()
                 },

@@ -3,6 +3,7 @@ pub mod assets;
 pub mod camera;
 pub mod keyboard_controller;
 pub mod light;
+pub mod menu;
 pub mod ocean;
 pub mod pontoon;
 pub mod ship;

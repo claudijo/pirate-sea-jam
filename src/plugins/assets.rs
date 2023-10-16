@@ -15,7 +15,7 @@ impl Plugin for AssetsPlugin {
             .add_systems(OnEnter(GameState::LoadingAssets), assets::load_assets)
             .add_systems(
                 Update,
-                (assets::check_load_state).run_if(in_state(GameState::LoadingAssets)),
+                assets::check_load_state.run_if(in_state(GameState::LoadingAssets)),
             );
     }
 }

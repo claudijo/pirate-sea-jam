@@ -78,3 +78,16 @@ The release flow can be configured to push the releases to itch.io:
 3. Uncomment `env.itch_target` in `release.yaml` and set it to the itch.io username and the name of the game on itch.io, separated by a slash (`/`)
 
 Once that is done, any tag pushed to GitHub will trigger an itch.io release and use the tag as the [user version](https://itch.io/docs/butler/pushing.html#specifying-your-own-version-number).
+
+### Addendum
+
+#### Local web development
+
+For local web development a `just` file has been added as described [here](https://github.com/bevyengine/bevy_github_ci_template/issues/8#issuecomment-1326555190) has been added.
+
+It runs the same commands as in CI. `$ just run` to build for WASM and start local server.
+
+Prerequisites: 
+* `$ cargo install just`
+* `$ cargo install wasm-bindgen-cli`
+* `$ cargo install sfz`

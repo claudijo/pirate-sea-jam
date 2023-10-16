@@ -21,6 +21,7 @@ fn main() {
     app.add_plugins((
         plugins::assets::AssetsPlugin,
         plugins::camera::CameraPlugin,
+        plugins::menu::StartMenuPlugin,
         plugins::ocean::OceanPlugin,
         plugins::light::LightPlugin,
         plugins::ship::ShipPlugin,

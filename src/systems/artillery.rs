@@ -30,7 +30,7 @@ pub fn fire_cannons(
                     // Spawn cannon ball
                     commands.spawn((
                         SceneBundle {
-                            scene: model_assets.scene_handles["cannon_ball"].clone(),
+                            scene: model_assets.scene_handles["cannon_ball.glb"].clone(),
                             transform: Transform::from_translation(global_transform.translation()),
                             ..default()
                         },
