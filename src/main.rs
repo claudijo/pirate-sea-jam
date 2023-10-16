@@ -19,7 +19,7 @@ fn main() {
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "Pirate Sea Jam".into(),
-            // This requires css html, body {margin: 0;height: 100%;} as explained https://github.com/bevyengine/bevy/commit/fed93a0edce9d66586dc70c1207a2092694b9a7d
+            // This requires css html, body {margin: 0;height: 100%;} as explained https://github.com/bevyengine/bevy/pull/4726
             fit_canvas_to_parent: true,
             ..default()
         }),
