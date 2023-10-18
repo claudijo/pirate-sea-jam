@@ -16,6 +16,7 @@ mod utils;
 
 fn main() {
     let mut app = App::new();
+
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "Pirate Sea Jam".into(),
@@ -25,7 +26,9 @@ fn main() {
         }),
         ..default()
     }));
+
     app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
+
     app.add_plugins((
         plugins::assets::AssetsPlugin,
         plugins::camera::CameraPlugin,
@@ -35,12 +38,14 @@ fn main() {
         plugins::ship::ShipPlugin,
         plugins::shooting_target::ShootingTargetPlugin,
         plugins::pontoon::PontoonPlugin,
-        plugins::keyboard_controller::KeyboadControllerPlugin,
+        plugins::keyboard_controller::KeyboardControllerPlugin,
         plugins::wind::WindPlugin,
         plugins::text::TextOverlayPlugin,
         plugins::artillery::ArsenalPlugin,
-    ))
-    .add_state::<game_state::GameState>();
+        plugins::virtual_gamepad_controller::VirtualGamepadControllerPlugin,
+    ));
+
+    app.add_state::<game_state::GameState>();
 
     #[cfg(debug_assertions)]
     app.add_plugins(RapierDebugRenderPlugin::default());

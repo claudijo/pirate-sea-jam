@@ -2,12 +2,18 @@ use crate::components::button::StartButton;
 use crate::components::layout::StartMenuLayout;
 use crate::game_state::GameState;
 use crate::resources::assets::FontAssets;
+use crate::resources::player::InputDevice;
+use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
 
 const NORMAL_BUTTON: Color = Color::rgb(0.96, 0.49, 0.18);
 const HOVERED_BUTTON: Color = Color::rgb(0.94, 0.42, 0.18);
 
+// Menu button mainly used for determining input device as well as focusing canvas element when
+// loaded in browser
 pub fn setup_start_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
+    commands.insert_resource(InputDevice::default());
+
     commands
         .spawn((
             StartMenuLayout,
@@ -70,10 +76,21 @@ pub fn update_start_menu(
         (Changed<Interaction>, With<StartButton>),
     >,
     mut next_state: ResMut<NextState<GameState>>,
+    mut touch_events: EventReader<TouchInput>,
+    mut device: ResMut<InputDevice>,
 ) {
     for (interaction, mut background_color) in &mut interactions {
         match *interaction {
             Interaction::Pressed => {
+                for event in touch_events.iter() {
+                    match event.phase {
+                        TouchPhase::Started => {
+                            *device = InputDevice::Touch;
+                        }
+                        _ => {}
+                    }
+                }
+
                 next_state.set(GameState::InGame);
             }
             Interaction::Hovered => {

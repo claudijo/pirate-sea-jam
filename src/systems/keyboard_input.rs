@@ -10,7 +10,7 @@ use bevy::prelude::*;
 const RATE_OF_ROTATION: f32 = 1.5;
 const TURN_RATE_LIMIT: f32 = 1.;
 
-pub fn turn_ship_using_keyboard(
+pub fn turn_ship(
     keys: Res<Input<KeyCode>>,
     mut rate_of_turns: Query<&mut ShipTurnRate>,
     time: Res<Time>,
@@ -43,7 +43,7 @@ pub fn turn_ship_using_keyboard(
     }
 }
 
-pub fn boost_ship_using_keyboard(keys: Res<Input<KeyCode>>, mut boosters: Query<&mut ShipBooster>) {
+pub fn boost_ship(keys: Res<Input<KeyCode>>, mut boosters: Query<&mut ShipBooster>) {
     let active = keys.just_pressed(KeyCode::ShiftLeft);
 
     for mut boosters in &mut boosters {
@@ -51,7 +51,7 @@ pub fn boost_ship_using_keyboard(keys: Res<Input<KeyCode>>, mut boosters: Query<
     }
 }
 
-pub fn start_aiming_cannons_at_nearest_target_using_keyboard(
+pub fn start_aiming_cannons_at_nearest_target(
     keys: Res<Input<KeyCode>>,
     shooting_targets: Query<&Transform, With<ShootingTarget>>,
     ships: Query<(Entity, &Transform), With<Ship>>,
@@ -95,7 +95,7 @@ pub fn start_aiming_cannons_at_nearest_target_using_keyboard(
     }
 }
 
-pub fn tilt_aiming_cannons_using_keyboard(
+pub fn tilt_aiming_cannons(
     keys: Res<Input<KeyCode>>,
     mut cannons: Query<(
         &mut Transform,
@@ -122,7 +122,7 @@ pub fn tilt_aiming_cannons_using_keyboard(
     }
 }
 
-pub fn fire_aiming_cannons_using_keyboard(
+pub fn fire_aiming_cannons(
     keys: Res<Input<KeyCode>>,
     mut cannons: Query<(&mut CannonCarriage, &mut CannonGunPowder), With<Cannon>>,
 ) {

@@ -1,21 +1,21 @@
 use crate::game_state::GameState;
-use crate::systems::player_input;
+use crate::systems::keyboard_input;
 use bevy::prelude::*;
 
-pub struct KeyboadControllerPlugin;
+pub struct KeyboardControllerPlugin;
 
-impl Plugin for KeyboadControllerPlugin {
+impl Plugin for KeyboardControllerPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
             (
-                player_input::turn_ship_using_keyboard,
-                player_input::boost_ship_using_keyboard,
-                player_input::reset_ship,
-                player_input::reset_shooting_target,
-                player_input::start_aiming_cannons_at_nearest_target_using_keyboard,
-                player_input::tilt_aiming_cannons_using_keyboard,
-                player_input::fire_aiming_cannons_using_keyboard,
+                keyboard_input::turn_ship,
+                keyboard_input::boost_ship,
+                keyboard_input::reset_ship,
+                keyboard_input::reset_shooting_target,
+                keyboard_input::start_aiming_cannons_at_nearest_target,
+                keyboard_input::tilt_aiming_cannons,
+                keyboard_input::fire_aiming_cannons,
             )
                 .run_if(in_state(GameState::InGame)),
         );
