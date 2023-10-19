@@ -56,7 +56,7 @@ fn spawn_touch_anchor_marker(
                     left: Val::Px(touch_position.x - GAMEPAD_ANCHOR_SIZE / 2.),
                     top: Val::Px(touch_position.y - GAMEPAD_ANCHOR_SIZE / 2.),
                     position_type: PositionType::Absolute,
-                    border: UiRect::all(Val::Px(5.0)),
+                    border: UiRect::all(Val::Px(4.0)),
                     ..default()
                 },
                 background_color: Color::rgba(0.5, 0.5, 0.5, 0.4).into(),
@@ -78,7 +78,7 @@ fn spawn_touch_marker(commands: &mut Commands, touch_position: Vec2, touch_id: u
                     left: Val::Px(touch_position.x - GAMEPAD_TOUCH_SIZE / 2.),
                     top: Val::Px(touch_position.y - GAMEPAD_TOUCH_SIZE / 2.),
                     position_type: PositionType::Absolute,
-                    border: UiRect::all(Val::Px(5.0)),
+                    border: UiRect::all(Val::Px(4.0)),
                     ..default()
                 },
                 background_color: Color::rgba(0.5, 0.5, 0.5, 0.8).into(),
@@ -117,6 +117,13 @@ pub fn show_debug_text(mut commands: Commands) {
         DebugText,
     ));
 }
+
+pub fn spawn_reset_button() {
+
+}
+
+pub fn spawn_fire_button() {}
+
 
 pub fn init_movement_gamepad(mut commands: Commands, mut texts: Query<&mut Text, With<DebugText>>) {
     for mut text in &mut texts {

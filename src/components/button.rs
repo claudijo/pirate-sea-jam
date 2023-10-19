@@ -1,4 +1,9 @@
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct StartButton;
+pub struct StartGameButton;
+
+#[derive(Component)]
+pub struct ResetGameButton;
+
+
