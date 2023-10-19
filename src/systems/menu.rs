@@ -83,11 +83,8 @@ pub fn update_start_menu(
         match *interaction {
             Interaction::Pressed => {
                 for event in touch_events.iter() {
-                    match event.phase {
-                        TouchPhase::Started => {
-                            *device = InputDevice::Touch;
-                        }
-                        _ => {}
+                    if event.phase == TouchPhase::Started {
+                        *device = InputDevice::Touch;
                     }
                 }
 
