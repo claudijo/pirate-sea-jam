@@ -6,6 +6,7 @@
 
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
+use crate::events::input::RestartGameEvent;
 
 mod components;
 mod game_state;
@@ -13,6 +14,7 @@ mod plugins;
 mod resources;
 mod systems;
 mod utils;
+mod events;
 
 fn main() {
     let mut app = App::new();
@@ -46,6 +48,8 @@ fn main() {
     ));
 
     app.add_state::<game_state::GameState>();
+
+    app.add_event::<RestartGameEvent>();
 
     #[cfg(debug_assertions)]
     app.add_plugins(RapierDebugRenderPlugin::default());

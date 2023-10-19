@@ -11,8 +11,7 @@ impl Plugin for KeyboardPlugin {
             (
                 keyboard_input::turn_ship,
                 keyboard_input::boost_ship,
-                keyboard_input::reset_ship,
-                keyboard_input::reset_shooting_target,
+                keyboard_input::handle_restart_game_key_pressed,
                 keyboard_input::start_aiming_cannons_at_nearest_target,
                 keyboard_input::tilt_aiming_cannons,
                 keyboard_input::fire_aiming_cannons,

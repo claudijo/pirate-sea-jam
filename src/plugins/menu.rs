@@ -16,7 +16,7 @@ impl Plugin for StartMenuPlugin {
         app.add_systems(OnEnter(GameState::InGame), menu::spawn_restart_game_button)
             .add_systems(
                 Update,
-                menu::handler_restart_game_button_interactions.run_if(in_state(GameState::InGame)),
+                menu::handle_restart_game_button_interactions.run_if(in_state(GameState::InGame)),
             );
     }
 }

@@ -6,6 +6,7 @@ use crate::resources::despawn::ShipDespawnEntities;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
+use crate::events::input::RestartGameEvent;
 
 pub fn spawn_ship(
     mut commands: Commands,
@@ -142,4 +143,32 @@ pub fn spawn_ship(
         // Need to add pontoon to registry for later despawn
         ship_despawn.entities.push(child_pontoon);
     }
+}
+
+pub fn reset_ship(
+    mut commands: Commands,
+    model_assets: Res<ModelAssets>,
+    mut ship_despawn: ResMut<ShipDespawnEntities>,
+    ships: Query<Entity, With<Ship>>,
+    mut restart_game_event_reader: EventReader<RestartGameEvent>
+) {
+    if restart_game_event_reader.is_empty() {
+        return;
+    }
+    restart_game_event_reader.clear();
+
+    // Note that some joint related child entities seem to be missing from the normal
+    // parent-child-hierarchy when despawning, so those are registered and handled "manually".
+    // (See https://github.com/dimforge/bevy_rapier/blob/master/bevy_rapier3d/examples/joints_despawn3.rs)
+    for parent in &ships {
+        for entity in &ship_despawn.entities {
+            commands.entity(*entity).despawn();
+        }
+
+        ship_despawn.entities.clear();
+        commands.entity(parent).despawn_recursive();
+    }
+
+    // Spawn new ship
+    spawn_ship(commands, model_assets, ship_despawn);
 }

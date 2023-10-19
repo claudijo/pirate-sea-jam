@@ -5,6 +5,7 @@ use crate::resources::assets::FontAssets;
 use crate::resources::player::InputDevice;
 use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
+use crate::events::input::RestartGameEvent;
 
 const START_BUTTON_NORMAL: Color = Color::rgb(0.9, 0.45, 0.21);
 const START_BUTTON_HOVER: Color = Color::rgb(0.87, 0.36, 0.18);
@@ -139,17 +140,17 @@ pub fn spawn_restart_game_button(mut commands: Commands, font_assets: Res<FontAs
         });
 }
 
-pub fn handler_restart_game_button_interactions(
+pub fn handle_restart_game_button_interactions(
     mut interactions: Query<
         (&Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<ResetGameButton>),
     >,
-    mut touch_events: EventReader<TouchInput>,
+    mut restart_game_event_writer: EventWriter<RestartGameEvent>,
 ) {
     for (interaction, mut background_color) in &mut interactions {
         match *interaction {
             Interaction::Pressed => {
-
+                restart_game_event_writer.send(RestartGameEvent);
             }
             Interaction::Hovered => {
                 *background_color = RESTART_BUTTON_HOVER.into();

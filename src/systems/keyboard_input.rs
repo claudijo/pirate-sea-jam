@@ -4,8 +4,8 @@ use crate::components::shooting_target::ShootingTarget;
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::{ShipDespawnEntities, ShootingTargetDespawnEntities};
 use crate::systems::ship::spawn_ship;
-use crate::systems::shooting_target::spawn_shooting_target;
 use bevy::prelude::*;
+use crate::events::input::RestartGameEvent;
 
 const RATE_OF_ROTATION: f32 = 1.5;
 const TURN_RATE_LIMIT: f32 = 1.;
@@ -136,50 +136,11 @@ pub fn fire_aiming_cannons(
     }
 }
 
-// Temporary escape hatch so that the player can restart the game if ship is lost
-pub fn reset_ship(
-    mut commands: Commands,
-    model_assets: Res<ModelAssets>,
-    mut ship_despawn: ResMut<ShipDespawnEntities>,
-    ships: Query<Entity, With<Ship>>,
+pub fn handle_restart_game_key_pressed(
     keys: Res<Input<KeyCode>>,
+    mut restart_game_event_writer: EventWriter<RestartGameEvent>,
 ) {
     if keys.just_pressed(KeyCode::R) {
-        // Note that some joint related child entities seem to be missing from the normal
-        // parent-child-hierarchy when despawning, so those are registered and handled "manually".
-        // (See https://github.com/dimforge/bevy_rapier/blob/master/bevy_rapier3d/examples/joints_despawn3.rs)
-        for parent in &ships {
-            for entity in &ship_despawn.entities {
-                commands.entity(*entity).despawn();
-            }
-
-            ship_despawn.entities.clear();
-            commands.entity(parent).despawn_recursive();
-        }
-
-        // Spawn new ship
-        spawn_ship(commands, model_assets, ship_despawn);
-    }
-}
-
-pub fn reset_shooting_target(
-    mut commands: Commands,
-    model_assets: Res<ModelAssets>,
-    mut shooting_target_despawn: ResMut<ShootingTargetDespawnEntities>,
-    shooting_targets: Query<Entity, With<ShootingTarget>>,
-    keys: Res<Input<KeyCode>>,
-) {
-    if keys.just_pressed(KeyCode::R) {
-        for parent in &shooting_targets {
-            for entity in &shooting_target_despawn.entities {
-                commands.entity(*entity).despawn();
-            }
-
-            shooting_target_despawn.entities.clear();
-            commands.entity(parent).despawn_recursive();
-        }
-
-        // Spawn new shooting target
-        spawn_shooting_target(commands, model_assets, shooting_target_despawn);
+        restart_game_event_writer.send(RestartGameEvent);
     }
 }
