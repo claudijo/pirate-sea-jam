@@ -2,9 +2,9 @@ use crate::game_state::GameState;
 use crate::systems::keyboard_input;
 use bevy::prelude::*;
 
-pub struct KeyboardControllerPlugin;
+pub struct KeyboardPlugin;
 
-impl Plugin for KeyboardControllerPlugin {
+impl Plugin for KeyboardPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,

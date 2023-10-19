@@ -38,7 +38,7 @@ fn main() {
         plugins::ship::ShipPlugin,
         plugins::shooting_target::ShootingTargetPlugin,
         plugins::pontoon::PontoonPlugin,
-        plugins::keyboard_controller::KeyboardControllerPlugin,
+        plugins::keyboard::KeyboardPlugin,
         plugins::wind::WindPlugin,
         plugins::text::TextOverlayPlugin,
         plugins::artillery::ArsenalPlugin,

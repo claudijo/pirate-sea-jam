@@ -18,8 +18,8 @@ impl Plugin for VirtualGamepadPlugin {
         app.add_systems(
             Update,
             (
-                virtual_gamepad_input::capture_virtual_gamepad,
                 virtual_gamepad_input::track_virtual_gamepad,
+                virtual_gamepad_input::capture_virtual_gamepad,
                 virtual_gamepad_input::release_virtual_gamepad,
                 virtual_gamepad_input::arrange_knob_trail_dots,
             )

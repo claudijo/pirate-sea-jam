@@ -1,7 +1,7 @@
 pub mod artillery;
 pub mod assets;
 pub mod camera;
-pub mod keyboard_controller;
+pub mod keyboard;
 pub mod light;
 pub mod menu;
 pub mod ocean;

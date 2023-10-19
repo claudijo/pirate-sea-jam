@@ -6,7 +6,7 @@ use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
 use std::cmp::Ordering;
 
-const GAMEPAD_ANCHOR_SIZE: f32 = 32.;
+const GAMEPAD_ANCHOR_SIZE: f32 = 24.;
 const GAMEPAD_TOUCH_SIZE: f32 = 48.;
 const GAMEPAD_TRAIL_DOT_SIZE: f32 = 16.;
 const MIN_DISTANCE_BETWEEN_TOUCH_TRAIL_MARKERS: f32 = 24.;
@@ -29,11 +29,11 @@ fn spawn_touch_trail_marker(
                     left: Val::Px(touch_position.x - GAMEPAD_TRAIL_DOT_SIZE / 2.),
                     top: Val::Px(touch_position.y - GAMEPAD_TRAIL_DOT_SIZE / 2.),
                     position_type: PositionType::Absolute,
-                    border: UiRect::all(Val::Px(5.0)),
+                    border: UiRect::all(Val::Px(2.0)),
                     ..default()
                 },
-                background_color: Color::GRAY.into(),
-                border_color: BorderColor(Color::WHITE),
+                background_color: Color::rgba(0.5, 0.5, 0.5, 0.2).into(),
+                border_color: BorderColor(Color::rgba(1., 1., 1., 0.2)),
                 ..default()
             },
             TouchMarker { touch_id },
@@ -59,8 +59,8 @@ fn spawn_touch_anchor_marker(
                     border: UiRect::all(Val::Px(5.0)),
                     ..default()
                 },
-                background_color: Color::GRAY.into(),
-                border_color: BorderColor(Color::WHITE),
+                background_color: Color::rgba(0.5, 0.5, 0.5, 0.4).into(),
+                border_color: BorderColor(Color::rgba(1., 1., 1., 0.4)),
                 ..default()
             },
             TouchMarker { touch_id },
@@ -81,8 +81,8 @@ fn spawn_touch_marker(commands: &mut Commands, touch_position: Vec2, touch_id: u
                     border: UiRect::all(Val::Px(5.0)),
                     ..default()
                 },
-                background_color: Color::SILVER.into(),
-                border_color: BorderColor(Color::WHITE),
+                background_color: Color::rgba(0.5, 0.5, 0.5, 0.8).into(),
+                border_color: BorderColor(Color::rgba(1., 1., 1., 0.8)),
                 ..default()
             },
             TouchController {
