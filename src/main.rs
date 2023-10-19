@@ -42,7 +42,7 @@ fn main() {
         plugins::wind::WindPlugin,
         plugins::text::TextOverlayPlugin,
         plugins::artillery::ArsenalPlugin,
-        plugins::virtual_gamepad_controller::VirtualGamepadControllerPlugin,
+        plugins::virtual_gamepad::VirtualGamepadPlugin,
     ));
 
     app.add_state::<game_state::GameState>();

@@ -3,9 +3,9 @@ use crate::resources::player::InputDevice;
 use crate::systems::virtual_gamepad_input;
 use bevy::prelude::*;
 
-pub struct VirtualGamepadControllerPlugin;
+pub struct VirtualGamepadPlugin;
 
-impl Plugin for VirtualGamepadControllerPlugin {
+impl Plugin for VirtualGamepadPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, virtual_gamepad_input::show_debug_text);
 

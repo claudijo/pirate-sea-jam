@@ -9,5 +9,5 @@ pub mod pontoon;
 pub mod ship;
 pub mod shooting_target;
 pub mod text;
-pub mod virtual_gamepad_controller;
+pub mod virtual_gamepad;
 pub mod wind;

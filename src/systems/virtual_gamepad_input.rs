@@ -1,50 +1,23 @@
+use crate::components::virtual_gamepad::{
+    DebugText, GamepadTracker, TouchController, TouchMarker, TouchTrailMarker,
+};
+use crate::resources::virtual_gamepad::TouchTrailEntities;
 use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
 use std::cmp::Ordering;
-use std::collections::HashMap;
 
-#[derive(Component, Default)]
-pub struct GamepadTracker {
-    pub touch_id: Option<u64>,
-    // TODO: Add GamepadInteractionArea
+const GAMEPAD_ANCHOR_SIZE: f32 = 32.;
+const GAMEPAD_TOUCH_SIZE: f32 = 48.;
+const GAMEPAD_TRAIL_DOT_SIZE: f32 = 16.;
+const MIN_DISTANCE_BETWEEN_TOUCH_TRAIL_MARKERS: f32 = 24.;
+
+pub fn distance_between_dots(total_distance: f32) -> f32 {
+    MIN_DISTANCE_BETWEEN_TOUCH_TRAIL_MARKERS + total_distance * 0.1
 }
 
-#[derive(Component, Default)]
-pub struct GamepadInteractionArea {
-    pub rect: Rect,
-}
-
-#[derive(Component)]
-pub struct DebugText;
-
-#[derive(Component)]
-pub struct TouchController {
-    pub start_position: Vec2,
-    // For convenient access to current touch position
-    pub touch_position: Vec2,
-}
-
-#[derive(Component)]
-pub struct TouchMarker {
-    pub touch_id: u64,
-}
-
-#[derive(Resource, Default)]
-pub struct TouchTrailEntities {
-    pub for_touch_id: HashMap<u64, Vec<Entity>>,
-}
-
-#[derive(Component)]
-pub struct TouchTrailMarker;
-
-pub fn distance_between_dots(min_distance: f32, total_distance: f32) -> f32 {
-    min_distance + total_distance * 0.1
-}
-
-pub fn spawn_touch_trail_marker(
+fn spawn_touch_trail_marker(
     commands: &mut Commands,
-    left: f32,
-    top: f32,
+    touch_position: Vec2,
     touch_id: u64,
 ) -> Entity {
     commands
@@ -53,14 +26,8 @@ pub fn spawn_touch_trail_marker(
                 style: Style {
                     width: Val::Px(GAMEPAD_TRAIL_DOT_SIZE),
                     height: Val::Px(GAMEPAD_TRAIL_DOT_SIZE),
-                    left: Val::Px(
-                        left, // controller.start_position.x
-                             //     - GAMEPAD_TRAIL_DOT_SIZE / 2.,
-                    ),
-                    top: Val::Px(
-                        top, // controller.start_position.y
-                            //     - GAMEPAD_TRAIL_DOT_SIZE / 2.,
-                    ),
+                    left: Val::Px(touch_position.x - GAMEPAD_TRAIL_DOT_SIZE / 2.),
+                    top: Val::Px(touch_position.y - GAMEPAD_TRAIL_DOT_SIZE / 2.),
                     position_type: PositionType::Absolute,
                     border: UiRect::all(Val::Px(5.0)),
                     ..default()
@@ -75,10 +42,57 @@ pub fn spawn_touch_trail_marker(
         .id()
 }
 
-const GAMEPAD_ANCHOR_SIZE: f32 = 32.;
-const GAMEPAD_TOUCH_SIZE: f32 = 48.;
+fn spawn_touch_anchor_marker(
+    commands: &mut Commands,
+    touch_position: Vec2,
+    touch_id: u64,
+) -> Entity {
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Px(GAMEPAD_ANCHOR_SIZE),
+                    height: Val::Px(GAMEPAD_ANCHOR_SIZE),
+                    left: Val::Px(touch_position.x - GAMEPAD_ANCHOR_SIZE / 2.),
+                    top: Val::Px(touch_position.y - GAMEPAD_ANCHOR_SIZE / 2.),
+                    position_type: PositionType::Absolute,
+                    border: UiRect::all(Val::Px(5.0)),
+                    ..default()
+                },
+                background_color: Color::GRAY.into(),
+                border_color: BorderColor(Color::WHITE),
+                ..default()
+            },
+            TouchMarker { touch_id },
+        ))
+        .id()
+}
 
-const GAMEPAD_TRAIL_DOT_SIZE: f32 = 16.;
+fn spawn_touch_marker(commands: &mut Commands, touch_position: Vec2, touch_id: u64) -> Entity {
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Px(GAMEPAD_TOUCH_SIZE),
+                    height: Val::Px(GAMEPAD_TOUCH_SIZE),
+                    left: Val::Px(touch_position.x - GAMEPAD_TOUCH_SIZE / 2.),
+                    top: Val::Px(touch_position.y - GAMEPAD_TOUCH_SIZE / 2.),
+                    position_type: PositionType::Absolute,
+                    border: UiRect::all(Val::Px(5.0)),
+                    ..default()
+                },
+                background_color: Color::SILVER.into(),
+                border_color: BorderColor(Color::WHITE),
+                ..default()
+            },
+            TouchController {
+                start_position: touch_position,
+                touch_position,
+            },
+            TouchMarker { touch_id },
+        ))
+        .id()
+}
 
 pub fn show_debug_text(mut commands: Commands) {
     commands.spawn((
@@ -116,63 +130,23 @@ pub fn capture_virtual_gamepad(
     mut commands: Commands,
     mut touch_events: EventReader<TouchInput>,
     mut gamepad_trackers: Query<&mut GamepadTracker>,
-    mut texts: Query<&mut Text, With<DebugText>>,
     mut touch_trail_entities: ResMut<TouchTrailEntities>,
 ) {
     for event in touch_events.iter() {
         if event.phase == TouchPhase::Started {
             for mut tracker in &mut gamepad_trackers {
-                if tracker.touch_id.is_none() {
-                    for mut text in &mut texts {
-                        text.sections[0].value = format!("capturing at {:?}", event.position);
-                    }
-
-                    tracker.touch_id = Some(event.id);
-
-                    commands.spawn((
-                        NodeBundle {
-                            style: Style {
-                                width: Val::Px(GAMEPAD_ANCHOR_SIZE),
-                                height: Val::Px(GAMEPAD_ANCHOR_SIZE),
-                                left: Val::Px(event.position.x - GAMEPAD_ANCHOR_SIZE / 2.),
-                                top: Val::Px(event.position.y - GAMEPAD_ANCHOR_SIZE / 2.),
-                                position_type: PositionType::Absolute,
-                                border: UiRect::all(Val::Px(5.0)),
-                                ..default()
-                            },
-                            background_color: Color::GRAY.into(),
-                            border_color: BorderColor(Color::WHITE),
-                            ..default()
-                        },
-                        TouchMarker { touch_id: event.id },
-                    ));
-
-                    commands.spawn((
-                        NodeBundle {
-                            style: Style {
-                                width: Val::Px(GAMEPAD_TOUCH_SIZE),
-                                height: Val::Px(GAMEPAD_TOUCH_SIZE),
-                                left: Val::Px(event.position.x - GAMEPAD_TOUCH_SIZE / 2.),
-                                top: Val::Px(event.position.y - GAMEPAD_TOUCH_SIZE / 2.),
-                                position_type: PositionType::Absolute,
-                                border: UiRect::all(Val::Px(5.0)),
-                                ..default()
-                            },
-                            background_color: Color::SILVER.into(),
-                            border_color: BorderColor(Color::WHITE),
-                            ..default()
-                        },
-                        TouchController {
-                            start_position: event.position,
-                            touch_position: event.position,
-                        },
-                        TouchMarker { touch_id: event.id },
-                    ));
-
-                    touch_trail_entities
-                        .for_touch_id
-                        .insert(event.id, Vec::new());
+                if tracker.touch_id.is_some() {
+                    continue;
                 }
+
+                tracker.touch_id = Some(event.id);
+
+                spawn_touch_anchor_marker(&mut commands, event.position, event.id);
+                spawn_touch_marker(&mut commands, event.position, event.id);
+
+                touch_trail_entities
+                    .for_touch_id
+                    .insert(event.id, Vec::new());
             }
         }
     }
@@ -207,7 +181,7 @@ pub fn track_virtual_gamepad(
                         {
                             let touch_drag_distance =
                                 event.position.distance(controller.start_position);
-                            let dot_spacing = distance_between_dots(24., touch_drag_distance);
+                            let dot_spacing = distance_between_dots(touch_drag_distance);
                             let num_of_dots = (touch_drag_distance / dot_spacing) as usize;
 
                             match entities.len().cmp(&num_of_dots) {
@@ -220,14 +194,9 @@ pub fn track_virtual_gamepad(
                                 }
                                 Ordering::Less => {
                                     while entities.len() < num_of_dots {
-                                        let left = controller.start_position.x
-                                            - GAMEPAD_TRAIL_DOT_SIZE / 2.;
-                                        let top = controller.start_position.y
-                                            - GAMEPAD_TRAIL_DOT_SIZE / 2.;
                                         let entity = spawn_touch_trail_marker(
                                             &mut commands,
-                                            left,
-                                            top,
+                                            controller.start_position,
                                             event.id,
                                         );
                                         entities.push(entity);
@@ -287,7 +256,7 @@ pub fn arrange_knob_trail_dots(
                     let touch_drag_distance = touch_marker_controller
                         .start_position
                         .distance(touch_marker_controller.touch_position);
-                    let dot_spacing = distance_between_dots(24., touch_drag_distance);
+                    let dot_spacing = distance_between_dots(touch_drag_distance);
                     let drag_inverse_vector = touch_marker_controller.start_position
                         - touch_marker_controller.touch_position;
 
