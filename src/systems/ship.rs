@@ -1,12 +1,12 @@
-use crate::components::cannon::{Cannon, CannonBarrelTilt, CannonCarriage, CannonGunPowder};
+use crate::components::cannon::{Aim, Cannon, CannonGunPowder, Tilt};
 use crate::components::pontoon::Pontoon;
 use crate::components::ship::{Ship, ShipBooster, ShipFlag, ShipHelm, ShipSail, ShipTurnRate};
+use crate::events::game::RestartGameEvent;
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::ShipDespawnEntities;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::PI;
-use crate::events::input::RestartGameEvent;
 
 pub fn spawn_ship(
     mut commands: Commands,
@@ -86,9 +86,9 @@ pub fn spawn_ship(
 
                     for (cannon_transform, cannon_tilt, tilt_factor) in cannons {
                         child_builder.spawn((
-                            CannonCarriage { ..default() },
+                            Aim { ..default() },
                             CannonGunPowder { ..default() },
-                            CannonBarrelTilt { ..default() },
+                            Tilt { ..default() },
                             Cannon {
                                 rig: Some(parent_entity),
                                 default_tilt: cannon_tilt,
@@ -146,11 +146,11 @@ pub fn spawn_ship(
 }
 
 pub fn reset_ship(
-    mut commands: Commands,
     model_assets: Res<ModelAssets>,
-    mut ship_despawn: ResMut<ShipDespawnEntities>,
     ships: Query<Entity, With<Ship>>,
-    mut restart_game_event_reader: EventReader<RestartGameEvent>
+    mut commands: Commands,
+    mut ship_despawn: ResMut<ShipDespawnEntities>,
+    mut restart_game_event_reader: EventReader<RestartGameEvent>,
 ) {
     if restart_game_event_reader.is_empty() {
         return;
@@ -172,3 +172,4 @@ pub fn reset_ship(
     // Spawn new ship
     spawn_ship(commands, model_assets, ship_despawn);
 }
+

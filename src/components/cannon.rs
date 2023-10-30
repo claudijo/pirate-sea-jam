@@ -7,7 +7,7 @@ pub struct Cannon {
     pub default_tilt: f32,
     pub tilt_factor: f32,
 
-    // Entity of the rigid body parent for querying properties such as velocity
+    // Entity of parent for querying properties such as velocity
     pub rig: Option<Entity>,
 }
 
@@ -29,12 +29,12 @@ pub struct CannonGunPowder {
 }
 
 #[derive(Component, Default)]
-pub struct CannonCarriage {
-    pub is_aiming: bool,
+pub struct Aim {
+    pub is_targeting: bool,
 }
 
 #[derive(Component, Default)]
-pub struct CannonBarrelTilt {
+pub struct Tilt {
     pub angle: f32,
 }
 

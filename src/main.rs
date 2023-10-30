@@ -4,17 +4,18 @@
 // Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
+use crate::events::game::RestartGameEvent;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use crate::events::input::RestartGameEvent;
 
 mod components;
+mod events;
 mod game_state;
 mod plugins;
 mod resources;
 mod systems;
 mod utils;
-mod events;
 
 fn main() {
     let mut app = App::new();
@@ -50,6 +51,8 @@ fn main() {
     app.add_state::<game_state::GameState>();
 
     app.add_event::<RestartGameEvent>();
+    app.add_event::<FireCannonEvent>();
+    app.add_event::<AimCannonEvent>();
 
     #[cfg(debug_assertions)]
     app.add_plugins(RapierDebugRenderPlugin::default());

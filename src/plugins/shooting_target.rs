@@ -14,8 +14,7 @@ impl Plugin for ShootingTargetPlugin {
             )
             .add_systems(
                 Update,
-                (shooting_target::reset_shooting_target)
-                    .run_if(in_state(GameState::InGame)),
+                (shooting_target::reset_shooting_target).run_if(in_state(GameState::InGame)),
             );
     }
 }

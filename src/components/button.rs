@@ -5,5 +5,3 @@ pub struct StartGameButton;
 
 #[derive(Component)]
 pub struct ResetGameButton;
-
-

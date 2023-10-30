@@ -118,12 +118,9 @@ pub fn show_debug_text(mut commands: Commands) {
     ));
 }
 
-pub fn spawn_reset_button() {
-
-}
+pub fn spawn_reset_button() {}
 
 pub fn spawn_fire_button() {}
-
 
 pub fn init_movement_gamepad(mut commands: Commands, mut texts: Query<&mut Text, With<DebugText>>) {
     for mut text in &mut texts {

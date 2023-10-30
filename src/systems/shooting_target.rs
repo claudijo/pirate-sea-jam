@@ -1,11 +1,11 @@
 use crate::components::pontoon::Pontoon;
 use crate::components::ship::ShipFlag;
 use crate::components::shooting_target::ShootingTarget;
+use crate::events::game::RestartGameEvent;
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::ShootingTargetDespawnEntities;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use crate::events::input::RestartGameEvent;
 
 pub fn spawn_shooting_target(
     mut commands: Commands,
@@ -101,7 +101,7 @@ pub fn reset_shooting_target(
     model_assets: Res<ModelAssets>,
     mut shooting_target_despawn: ResMut<ShootingTargetDespawnEntities>,
     shooting_targets: Query<Entity, With<ShootingTarget>>,
-    mut restart_game_event_reader: EventReader<RestartGameEvent>
+    mut restart_game_event_reader: EventReader<RestartGameEvent>,
 ) {
     if restart_game_event_reader.is_empty() {
         return;

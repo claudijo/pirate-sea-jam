@@ -1,18 +1,17 @@
 use crate::components::button::{ResetGameButton, StartGameButton};
 use crate::components::layout::StartMenuLayout;
+use crate::events::game::RestartGameEvent;
 use crate::game_state::GameState;
 use crate::resources::assets::FontAssets;
 use crate::resources::player::InputDevice;
 use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
-use crate::events::input::RestartGameEvent;
 
 const START_BUTTON_NORMAL: Color = Color::rgb(0.9, 0.45, 0.21);
 const START_BUTTON_HOVER: Color = Color::rgb(0.87, 0.36, 0.18);
 // const RESTART_BUTTON_NORMAL: Color =  Color::rgb(0.05, 0.51, 0.56);
-const RESTART_BUTTON_NORMAL: Color =  Color::rgb(0.31, 0.69, 0.32);
+const RESTART_BUTTON_NORMAL: Color = Color::rgb(0.31, 0.69, 0.32);
 const RESTART_BUTTON_HOVER: Color = Color::rgb(0., 0.61, 0.45);
-
 
 // Start game button mainly used for determining input device as well as focusing canvas element when
 // loaded in browser
@@ -66,10 +65,7 @@ pub fn spawn_main_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
         });
 }
 
-pub fn despawn_main_menu(
-    mut commands: Commands,
-    entities: Query<Entity, With<StartMenuLayout>>,
-) {
+pub fn despawn_main_menu(mut commands: Commands, entities: Query<Entity, With<StartMenuLayout>>) {
     for entity in &entities {
         commands.entity(entity).despawn_recursive();
     }

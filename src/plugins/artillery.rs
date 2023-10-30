@@ -10,9 +10,11 @@ impl Plugin for ArsenalPlugin {
         app.add_systems(
             Update,
             (
-                artillery::fire_cannons,
+                // artillery::fire_cannons,
                 artillery::despawn_cannon_ball,
                 artillery::rewind_cannon_tilt,
+                artillery::handle_cannon_aim_event,
+                artillery::handle_cannon_fire_event,
             )
                 .run_if(in_state(GameState::InGame)),
         );

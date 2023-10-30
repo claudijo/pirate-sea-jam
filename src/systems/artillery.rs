@@ -1,55 +1,103 @@
-use crate::components::cannon::{
-    Cannon, CannonBall, CannonBarrelTilt, CannonCarriage, CannonGunPowder,
-};
-use crate::components::ship::Ship;
-use crate::resources::assets::ModelAssets;
+use crate::components::cannon::{Aim, Cannon, CannonBall, Tilt};
 use crate::resources::wave_machine::WaveMachine;
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::ColliderMassProperties::Density;
-use bevy_rapier3d::prelude::Velocity;
+use bevy_rapier3d::geometry::ColliderMassProperties::Density;
+use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
+use crate::resources::assets::ModelAssets;
 use bevy_rapier3d::prelude::*;
+use crate::components::ship::Ship;
+use crate::components::shooting_target::ShootingTarget;
+use crate::utils::targeting;
 use rand::Rng;
 
-pub fn fire_cannons(
+// Will start aiming cannons facing closes target
+pub fn handle_cannon_aim_event(
+    shooting_target_query: Query<&Transform, With<ShootingTarget>>,
+    ship_query: Query<&Transform, With<Ship>>,
+    mut cannon_query: Query<(Entity, &mut Aim, &GlobalTransform, &Cannon)>,
+    mut event_reader: EventReader<AimCannonEvent>,
+) {
+    for event in event_reader.iter() {
+        if let Ok(ship_transform) = ship_query.get(event.source) {
+            let target_translations = shooting_target_query
+                .iter()
+                .map(|transform| transform.translation)
+                .collect();
+
+            if let Some(closest_target) =
+                targeting::find_closest_target(&ship_transform.translation, &target_translations)
+            {
+                for (entity, mut aim, transform, cannon) in &mut cannon_query {
+                    if let Some(rig) = cannon.rig {
+                        if rig != event.source {
+                            continue;
+                        }
+
+                        let target_direction = *closest_target - transform.translation();
+                        if transform.left().dot(target_direction) > 0. {
+                            aim.is_targeting = true;
+
+                            println!("Aim cannon {:?}", entity);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Will fire aiming cannons
+pub fn handle_cannon_fire_event(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
-    mut cannons: Query<(&GlobalTransform, &Cannon, &mut CannonGunPowder)>,
-    mut ships: Query<(&Velocity, &mut ExternalImpulse), With<Ship>>,
+    mut cannon_query: Query<(Entity, &GlobalTransform, &mut Aim, &Cannon)>,
+    mut event_reader: EventReader<FireCannonEvent>,
+    mut ship_query: Query<(&Velocity, &mut ExternalImpulse), With<Ship>>,
 ) {
-    for (global_transform, cannon, mut gun_powder) in &mut cannons {
-        if gun_powder.is_lit {
-            gun_powder.is_lit = false;
-            let mut rng = rand::thread_rng();
+    for event in event_reader.iter() {
+        let mut rng = rand::thread_rng();
 
-            if let Some(ship_entity) = cannon.rig {
-                if let Ok((ship_velocity, mut external_impulse)) = ships.get_mut(ship_entity) {
-                    // Make ship recoil
-                    let recoil_scale = if cannon.tilt_factor > 0. { -10. } else { 10. };
-                    external_impulse.torque_impulse += global_transform.forward() * recoil_scale;
+        for (entity, global_transform, mut aim, cannon) in &mut cannon_query {
+            if let Some(rig) = cannon.rig {
+                if event.source != rig {
+                    continue;
+                }
 
-                    // Spawn cannon ball
-                    commands.spawn((
-                        SceneBundle {
-                            scene: model_assets.scene_handles["cannon_ball.glb"].clone(),
-                            transform: Transform::from_translation(global_transform.translation()),
-                            ..default()
-                        },
-                        CannonBall,
-                        RigidBody::Dynamic,
-                        ExternalImpulse {
-                            impulse: global_transform.left()
-                                * 20.
-                                * cannon.power
-                                * rng.gen_range(0.9..1.1),
-                            ..default()
-                        },
-                        Collider::ball(0.3),
-                        Density(10.),
-                        Velocity {
-                            linvel: ship_velocity.linvel,
-                            ..default()
-                        },
-                    ));
+                if aim.is_targeting {
+                    aim.is_targeting = false;
+
+                    if let Ok((ship_velocity, mut external_impulse)) = ship_query.get_mut(rig) {
+                        // Make ship recoil
+                        let recoil_scale = if cannon.tilt_factor > 0. { -10. } else { 10. };
+                        external_impulse.torque_impulse +=
+                            global_transform.forward() * recoil_scale;
+
+                        // Spawn cannon ball
+                        commands.spawn((
+                            SceneBundle {
+                                scene: model_assets.scene_handles["cannon_ball.glb"].clone(),
+                                transform: Transform::from_translation(
+                                    global_transform.translation(),
+                                ),
+                                ..default()
+                            },
+                            CannonBall,
+                            RigidBody::Dynamic,
+                            ExternalImpulse {
+                                impulse: global_transform.left()
+                                    * 20.
+                                    * cannon.power
+                                    * rng.gen_range(0.9..1.1),
+                                ..default()
+                            },
+                            Collider::ball(0.3),
+                            Density(10.),
+                            Velocity {
+                                linvel: ship_velocity.linvel,
+                                ..default()
+                            },
+                        ));
+                    }
                 }
             }
         }
@@ -57,16 +105,11 @@ pub fn fire_cannons(
 }
 
 pub fn rewind_cannon_tilt(
-    mut cannons: Query<(
-        &mut Transform,
-        &mut CannonBarrelTilt,
-        &CannonCarriage,
-        &Cannon,
-    )>,
+    mut cannons: Query<(&mut Transform, &mut Tilt, &Aim, &Cannon)>,
     time: Res<Time>,
 ) {
     for (mut transform, mut barrel_tilt, carriage, cannon) in &mut cannons {
-        if !carriage.is_aiming && barrel_tilt.angle != 0. {
+        if !carriage.is_targeting && barrel_tilt.angle != 0. {
             let angle = barrel_tilt.angle + time.delta_seconds() * cannon.tilt_factor * -2.;
 
             if cannon.tilt_factor > 0. {
