@@ -89,6 +89,8 @@ pub fn spawn_ship(
                             Aim { ..default() },
                             CannonGunPowder { ..default() },
                             Tilt { ..default() },
+                            Velocity { ..default() },
+                            RigidBody::Dynamic,
                             Cannon {
                                 rig: Some(parent_entity),
                                 default_tilt: cannon_tilt,
@@ -172,4 +174,3 @@ pub fn reset_ship(
     // Spawn new ship
     spawn_ship(commands, model_assets, ship_despawn);
 }
-
