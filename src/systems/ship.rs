@@ -148,7 +148,7 @@ pub fn spawn_ship(
 
 pub fn reset_ship(
     model_assets: Res<ModelAssets>,
-    ships: Query<Entity, With<Ship>>,
+    ship_query: Query<Entity, With<Ship>>,
     mut commands: Commands,
     mut ship_despawn: ResMut<ShipDespawnEntities>,
     mut restart_game_event_reader: EventReader<RestartGameEvent>,
@@ -161,7 +161,7 @@ pub fn reset_ship(
     // Note that some joint related child entities seem to be missing from the normal
     // parent-child-hierarchy when despawning, so those are registered and handled "manually".
     // (See https://github.com/dimforge/bevy_rapier/blob/master/bevy_rapier3d/examples/joints_despawn3.rs)
-    for parent in &ships {
+    for parent in &ship_query {
         for entity in &ship_despawn.entities {
             commands.entity(*entity).despawn();
         }

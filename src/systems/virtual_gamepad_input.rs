@@ -217,30 +217,6 @@ fn spawn_touch_marker(commands: &mut Commands, touch_position: Vec2, touch_id: u
         .id()
 }
 
-pub fn show_debug_text(mut commands: Commands) {
-    commands.spawn((
-        // Create a TextBundle that has a Text with a single section.
-        TextBundle::from_section(
-            // Accepts a `String` or any type that converts into a `String`, such as `&str`
-            "Debug...",
-            TextStyle {
-                // This font is loaded and will be used instead of the default font.
-                font_size: 24.0,
-                color: Color::WHITE,
-                ..default()
-            },
-        )
-        // Set the style of the TextBundle itself.
-        .with_style(Style {
-            position_type: PositionType::Absolute,
-            top: Val::Px(64.0),
-            left: Val::Px(16.0),
-            ..default()
-        }),
-        DebugText,
-    ));
-}
-
 pub fn init_movement_gamepad(mut commands: Commands) {
     commands.insert_resource(TouchTrailEntities::default());
     commands.spawn(JoystickTracker::default());
@@ -249,7 +225,7 @@ pub fn init_movement_gamepad(mut commands: Commands) {
 pub fn capture_virtual_joystick(
     mut commands: Commands,
     mut touch_events: EventReader<TouchInput>,
-    mut gamepad_trackers: Query<&mut JoystickTracker>,
+    mut joystick_tracker_query: Query<&mut JoystickTracker>,
     mut touch_trail_entities: ResMut<TouchTrailEntities>,
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<Button>)>,
 ) {
@@ -262,7 +238,7 @@ pub fn capture_virtual_joystick(
 
     for event in touch_events.iter() {
         if event.phase == TouchPhase::Started {
-            for mut tracker in &mut gamepad_trackers {
+            for mut tracker in &mut joystick_tracker_query {
                 if tracker.touch_id.is_some() {
                     continue;
                 }
@@ -284,7 +260,7 @@ pub fn track_virtual_joystick(
     gamepad_trackers: Query<&JoystickTracker>,
     mut commands: Commands,
     mut touch_events: EventReader<TouchInput>,
-    mut touch_controllers: Query<(&mut Style, &TouchMarker, &mut TouchController)>,
+    mut touch_controller_query: Query<(&mut Style, &TouchMarker, &mut TouchController)>,
     mut touch_trail_entities: ResMut<TouchTrailEntities>,
 ) {
     for event in touch_events.iter() {
@@ -295,7 +271,7 @@ pub fn track_virtual_joystick(
                         continue;
                     }
 
-                    for (mut style, marker, mut controller) in &mut touch_controllers {
+                    for (mut style, marker, mut controller) in &mut touch_controller_query {
                         if marker.touch_id != event.id {
                             continue;
                         }
@@ -342,11 +318,11 @@ pub fn track_virtual_joystick(
 
 pub fn release_virtual_joystick(
     mut commands: Commands,
-    mut gamepad_trackers: Query<&mut JoystickTracker>,
+    mut joystick_tracker_query: Query<&mut JoystickTracker>,
     mut touch_events: EventReader<TouchInput>,
     touch_markers: Query<(Entity, &TouchMarker)>,
 ) {
-    for mut tracker in &mut gamepad_trackers {
+    for mut tracker in &mut joystick_tracker_query {
         if let Some(touch_id) = tracker.touch_id {
             for event in touch_events.iter() {
                 if event.phase == TouchPhase::Ended || event.phase == TouchPhase::Canceled {

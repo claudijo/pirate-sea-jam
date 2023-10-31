@@ -92,7 +92,7 @@ pub fn rotate_helm(
 }
 
 pub fn flutter_pennant(
-    mut pennants: Query<(&mut Transform, &ShipFlag)>,
+    mut pennant_query: Query<(&mut Transform, &ShipFlag)>,
     rig_query: Query<
         (&Transform, Option<&Velocity>),
         (Or<(With<Ship>, With<ShootingTarget>)>, Without<ShipFlag>),
@@ -104,7 +104,7 @@ pub fn flutter_pennant(
     let elapsed_time = time.elapsed().as_secs_f32();
 
     for wind in &winds {
-        for (mut pennant_transform, pennant) in &mut pennants {
+        for (mut pennant_transform, pennant) in &mut pennant_query {
             if let Ok((rig_transform, rig_velocity)) = rig_query.get(pennant.rig) {
                 let mut speed_factor = 2_f32.to_radians();
                 if let Some(velocity) = rig_velocity {

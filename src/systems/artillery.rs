@@ -1,4 +1,4 @@
-use crate::components::cannon::{Aim, Cannon, CannonBall, Tilt};
+use crate::components::cannon::{Aim, Cannon, CannonBall};
 use crate::components::ship::Ship;
 use crate::components::shooting_target::ShootingTarget;
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
@@ -9,8 +9,6 @@ use bevy::prelude::*;
 use bevy_rapier3d::geometry::ColliderMassProperties::Density;
 use bevy_rapier3d::prelude::*;
 use rand::Rng;
-
-// Will start aiming cannons facing closes target
 pub fn handle_cannon_aim_event(
     shooting_target_query: Query<&Transform, With<ShootingTarget>>,
     ship_query: Query<&Transform, With<Ship>>,
@@ -147,12 +145,12 @@ pub fn tilt_cannon(
 
 pub fn despawn_cannon_ball(
     mut commands: Commands,
-    cannon_balls: Query<(Entity, &GlobalTransform), With<CannonBall>>,
+    cannon_ball_query: Query<(Entity, &GlobalTransform), With<CannonBall>>,
     wave_machine: Res<WaveMachine>,
     time: Res<Time>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
-    for (entity, global_transform) in &cannon_balls {
+    for (entity, global_transform) in &cannon_ball_query {
         let translation = global_transform.translation();
         let water_height = wave_machine.surface_height(translation, elapsed_time);
         if translation.y + 2. < water_height {

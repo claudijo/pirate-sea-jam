@@ -64,14 +64,14 @@ pub fn spawn_main_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
         });
 }
 
-pub fn despawn_main_menu(mut commands: Commands, entities: Query<Entity, With<StartMenuLayout>>) {
-    for entity in &entities {
+pub fn despawn_main_menu(mut commands: Commands, start_menu_query: Query<Entity, With<StartMenuLayout>>) {
+    for entity in &start_menu_query {
         commands.entity(entity).despawn_recursive();
     }
 }
 
 pub fn handle_main_menu_interactions(
-    mut interactions: Query<
+    mut button_query: Query<
         (&Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<StartGameButton>),
     >,
@@ -79,7 +79,7 @@ pub fn handle_main_menu_interactions(
     mut touch_events: EventReader<TouchInput>,
     mut device: ResMut<InputDevice>,
 ) {
-    for (interaction, mut background_color) in &mut interactions {
+    for (interaction, mut background_color) in &mut button_query {
         match *interaction {
             Interaction::Pressed => {
                 for event in touch_events.iter() {
@@ -136,13 +136,13 @@ pub fn spawn_restart_game_button(mut commands: Commands, font_assets: Res<FontAs
 }
 
 pub fn handle_restart_game_button_interactions(
-    mut interactions: Query<
+    mut button_query: Query<
         (Entity, &Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<ResetGameButton>),
     >,
     mut restart_game_event_writer: EventWriter<RestartGameEvent>,
 ) {
-    for (entity, interaction, mut background_color) in &mut interactions {
+    for (entity, interaction, mut background_color) in &mut button_query {
         match *interaction {
             Interaction::Pressed => {
                 restart_game_event_writer.send(RestartGameEvent(entity));
