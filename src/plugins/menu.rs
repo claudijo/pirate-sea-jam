@@ -1,4 +1,5 @@
 use crate::game_state::GameState;
+use crate::resources::player::InputDevice;
 use crate::systems::menu;
 use bevy::prelude::*;
 
@@ -13,10 +14,16 @@ impl Plugin for StartMenuPlugin {
                 menu::handle_main_menu_interactions.run_if(in_state(GameState::SplashScreen)),
             );
 
-        app.add_systems(OnEnter(GameState::InGame), menu::spawn_restart_game_button)
-            .add_systems(
-                Update,
-                menu::handle_restart_game_button_interactions.run_if(in_state(GameState::InGame)),
-            );
+        app.add_systems(
+            OnEnter(GameState::InGame),
+            menu::spawn_restart_game_button.run_if(resource_exists_and_equals(InputDevice::Touch)),
+        );
+
+        app.add_systems(
+            Update,
+            menu::handle_restart_game_button_interactions
+                .run_if(resource_exists_and_equals(InputDevice::Touch))
+                .run_if(in_state(GameState::InGame)),
+        );
     }
 }

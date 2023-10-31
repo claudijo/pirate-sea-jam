@@ -31,8 +31,8 @@ pub fn spawn_main_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
                 ..default()
             },
         ))
-        .with_children(|parent| {
-            parent
+        .with_children(|child_builder| {
+            child_builder
                 .spawn((
                     StartGameButton,
                     ButtonBundle {
@@ -108,7 +108,7 @@ pub fn spawn_restart_game_button(mut commands: Commands, font_assets: Res<FontAs
                 style: Style {
                     width: Val::Px(80.0),
                     height: Val::Px(32.0),
-                    border: UiRect::all(Val::Px(2.0)),
+                    border: UiRect::all(Val::Px(4.0)),
                     top: Val::Px(16.),
                     right: Val::Px(16.),
                     position_type: PositionType::Absolute,

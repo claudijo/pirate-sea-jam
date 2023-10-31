@@ -1,4 +1,4 @@
-use crate::components::ship::{Ship, ShipBooster, ShipFlag, ShipHelm, ShipSail, ShipRudder};
+use crate::components::ship::{Ship, ShipBooster, ShipFlag, ShipHelm, ShipRudder, ShipSail};
 use crate::components::shooting_target::ShootingTarget;
 use crate::components::wind::Wind;
 use crate::utils::number::scale_into_range;
@@ -63,10 +63,7 @@ pub fn turn_ship(
     }
 }
 
-pub fn straighten_up_ship(
-    mut rudder_query: Query<&mut ShipRudder>,
-    time: Res<Time>,
-) {
+pub fn straighten_up_ship(mut rudder_query: Query<&mut ShipRudder>, time: Res<Time>) {
     // Return rudder to zero if not not turning
     for mut rudder in &mut rudder_query {
         if rudder.turn_rate != 0. && !rudder.is_turning {

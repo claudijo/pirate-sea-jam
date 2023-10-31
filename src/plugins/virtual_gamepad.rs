@@ -7,8 +7,6 @@ pub struct VirtualGamepadPlugin;
 
 impl Plugin for VirtualGamepadPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, virtual_gamepad_input::show_debug_text);
-
         app.add_systems(
             OnEnter(GameState::InGame),
             (

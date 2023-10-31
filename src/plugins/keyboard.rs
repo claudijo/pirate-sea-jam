@@ -1,7 +1,7 @@
 use crate::game_state::GameState;
+use crate::resources::player::InputDevice;
 use crate::systems::keyboard_input;
 use bevy::prelude::*;
-use crate::resources::player::InputDevice;
 
 pub struct KeyboardPlugin;
 

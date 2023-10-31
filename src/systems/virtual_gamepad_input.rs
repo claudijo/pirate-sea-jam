@@ -6,7 +6,7 @@ use crate::components::virtual_gamepad::{
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::events::button::ButtonReleasedEvent;
 use crate::resources::virtual_gamepad::TouchTrailEntities;
-use crate::systems::movement::{RATE_OF_ROTATION, TURN_RATE_LIMIT};
+use crate::systems::movement::TURN_RATE_LIMIT;
 use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
 use std::cmp::Ordering;
@@ -241,10 +241,7 @@ pub fn show_debug_text(mut commands: Commands) {
     ));
 }
 
-pub fn init_movement_gamepad(mut commands: Commands, mut texts: Query<&mut Text, With<DebugText>>) {
-    for mut text in &mut texts {
-        text.sections[0].value = "Init movement gamepad".to_string();
-    }
+pub fn init_movement_gamepad(mut commands: Commands) {
     commands.insert_resource(TouchTrailEntities::default());
     commands.spawn(JoystickTracker::default());
 }
@@ -419,7 +416,6 @@ pub fn handle_joystick_control(
     joystick_tracker_query: Query<&JoystickTracker>,
     touch_controller_query: Query<(&TouchMarker, &TouchController)>,
     mut rudder_query: Query<&mut ShipRudder>,
-    time: Res<Time>,
 ) {
     for tracker in &joystick_tracker_query {
         let mut is_turning = false;
