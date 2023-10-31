@@ -1,6 +1,7 @@
 use crate::game_state::GameState;
 use crate::systems::keyboard_input;
 use bevy::prelude::*;
+use crate::resources::player::InputDevice;
 
 pub struct KeyboardPlugin;
 
@@ -14,10 +15,8 @@ impl Plugin for KeyboardPlugin {
                 keyboard_input::handle_restart_game_key_pressed,
                 keyboard_input::handle_fire_key_pressed,
                 keyboard_input::handle_fire_key_released,
-                // keyboard_input::start_aiming_cannons_at_nearest_target,
-                // keyboard_input::tilt_aiming_cannons,
-                // keyboard_input::fire_aiming_cannons,
             )
+                .run_if(resource_exists_and_equals(InputDevice::Mouse))
                 .run_if(in_state(GameState::InGame)),
         );
     }

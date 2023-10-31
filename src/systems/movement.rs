@@ -1,4 +1,4 @@
-use crate::components::ship::{Ship, ShipBooster, ShipFlag, ShipHelm, ShipSail, ShipTurnRate};
+use crate::components::ship::{Ship, ShipBooster, ShipFlag, ShipHelm, ShipSail, ShipRudder};
 use crate::components::shooting_target::ShootingTarget;
 use crate::components::wind::Wind;
 use crate::utils::number::scale_into_range;
@@ -8,6 +8,7 @@ use bevy_rapier3d::prelude::*;
 use std::f32::consts::{PI, TAU};
 
 pub const TURN_RATE_LIMIT: f32 = 1.;
+pub const RATE_OF_ROTATION: f32 = 1.5;
 
 pub fn push_ship(
     mut ship_query: Query<(&mut ExternalImpulse, &Transform, &mut ShipBooster, &Ship)>,
@@ -42,7 +43,7 @@ pub fn turn_ship(
         &Transform,
         &Velocity,
         &Ship,
-        &ShipTurnRate,
+        &ShipRudder,
     )>,
 ) {
     for (mut external_impulse, transform, velocity, ship, rate_of_turn) in &mut ship_query {
@@ -52,7 +53,7 @@ pub fn turn_ship(
 
         let roll_factor = velocity.angvel.y * ship_speed / ship.stability;
         let yaw_factor =
-            -rate_of_turn.value * velocity.linvel.xz().length().sqrt() * ship.maneuverability;
+            -rate_of_turn.turn_rate * velocity.linvel.xz().length().sqrt() * ship.maneuverability;
 
         torque_impulse += transform.local_y() * yaw_factor;
         torque_impulse += transform.local_z() * roll_factor;
@@ -62,13 +63,33 @@ pub fn turn_ship(
     }
 }
 
+pub fn straighten_up_ship(
+    mut rudder_query: Query<&mut ShipRudder>,
+    time: Res<Time>,
+) {
+    // Return rudder to zero if not not turning
+    for mut rudder in &mut rudder_query {
+        if rudder.turn_rate != 0. && !rudder.is_turning {
+            if rudder.turn_rate > 0. {
+                let new_angle = rudder.turn_rate - time.delta_seconds() * RATE_OF_ROTATION;
+                rudder.turn_rate = new_angle.max(0.);
+            }
+
+            if rudder.turn_rate < 0. {
+                let new_angle = rudder.turn_rate + time.delta_seconds() * RATE_OF_ROTATION;
+                rudder.turn_rate = new_angle.min(0.);
+            }
+        }
+    }
+}
+
 pub fn rotate_helm(
-    turn_rate_query: Query<&ShipTurnRate>,
+    turn_rate_query: Query<&ShipRudder>,
     mut helm_query: Query<&mut Transform, With<ShipHelm>>,
 ) {
     for rate_of_turn in &turn_rate_query {
         for mut transform in &mut helm_query {
-            transform.rotation = Quat::from_rotation_z(rate_of_turn.value * TAU);
+            transform.rotation = Quat::from_rotation_z(rate_of_turn.turn_rate * TAU);
         }
     }
 }

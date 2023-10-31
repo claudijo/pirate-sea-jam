@@ -27,8 +27,9 @@ impl Default for Ship {
 }
 
 #[derive(Component, Default)]
-pub struct ShipTurnRate {
-    pub value: f32,
+pub struct ShipRudder {
+    pub turn_rate: f32,
+    pub is_turning: bool,
 }
 
 #[derive(Component, Default)]

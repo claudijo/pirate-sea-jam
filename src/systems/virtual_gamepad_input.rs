@@ -1,14 +1,15 @@
 use crate::components::button::{CircleGamepadButton, CrossGamepadButton, ReleasableTouchButton};
+use crate::components::ship::{PlayerId, Ship, ShipBooster, ShipRudder};
 use crate::components::virtual_gamepad::{
     DebugText, JoystickTracker, TouchController, TouchMarker, TouchTrailMarker,
 };
+use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::events::button::ButtonReleasedEvent;
 use crate::resources::virtual_gamepad::TouchTrailEntities;
+use crate::systems::movement::{RATE_OF_ROTATION, TURN_RATE_LIMIT};
 use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
 use std::cmp::Ordering;
-use crate::components::ship::{PlayerId, Ship, ShipBooster};
-use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 
 const TOUCH_MARKER_SIZE: f32 = 48.;
 const TOUCH_ANCHOR_SIZE: f32 = 24.;
@@ -102,7 +103,7 @@ pub fn handle_circle_button_interaction(
         (&Interaction, &mut BackgroundColor, &mut BorderColor),
         (Changed<Interaction>, With<CircleGamepadButton>),
     >,
-    mut ship_query: Query<(&mut ShipBooster, &Ship)>
+    mut ship_query: Query<(&mut ShipBooster, &Ship)>,
 ) {
     for (interaction, mut background_color, mut border_color) in &mut interaction_query {
         match *interaction {
@@ -125,7 +126,6 @@ pub fn handle_circle_button_interaction(
         }
     }
 }
-
 
 pub fn handle_cross_button_release(
     ship_query: Query<(Entity, &Ship)>,
@@ -370,15 +370,15 @@ pub fn release_virtual_joystick(
     }
 }
 
-pub fn arrange_knob_trail_dots(
-    gamepad_trackers: Query<&JoystickTracker>,
+pub fn arrange_touch_trail(
+    joystick_tracker_query: Query<&JoystickTracker>,
     touch_trail_entities: Res<TouchTrailEntities>,
-    touch_controllers: Query<(&TouchMarker, &TouchController)>,
+    touch_controller_query: Query<(&TouchMarker, &TouchController)>,
     mut touch_trail_markers: Query<&mut Style, (With<TouchTrailMarker>, Without<TouchController>)>,
 ) {
-    for tracker in &gamepad_trackers {
+    for tracker in &joystick_tracker_query {
         if let Some(touch_id) = tracker.touch_id {
-            for (touch_marker_label, touch_marker_controller) in &touch_controllers {
+            for (touch_marker_label, touch_marker_controller) in &touch_controller_query {
                 if touch_marker_label.touch_id != touch_id {
                     continue;
                 }
@@ -411,6 +411,37 @@ pub fn arrange_knob_trail_dots(
                     }
                 }
             }
+        }
+    }
+}
+
+pub fn handle_joystick_control(
+    joystick_tracker_query: Query<&JoystickTracker>,
+    touch_controller_query: Query<(&TouchMarker, &TouchController)>,
+    mut rudder_query: Query<&mut ShipRudder>,
+    time: Res<Time>,
+) {
+    for tracker in &joystick_tracker_query {
+        let mut is_turning = false;
+
+        for mut rudder in &mut rudder_query {
+            if let Some(touch_id) = tracker.touch_id {
+                for (touch_marker_label, touch_marker_controller) in &touch_controller_query {
+                    if touch_marker_label.touch_id != touch_id {
+                        continue;
+                    }
+
+                    is_turning = true;
+
+                    let horizontal_distance = touch_marker_controller.touch_position.x
+                        - touch_marker_controller.start_position.x;
+
+                    rudder.turn_rate =
+                        (horizontal_distance / 100.).clamp(-TURN_RATE_LIMIT, TURN_RATE_LIMIT);
+                }
+            }
+
+            rudder.is_turning = is_turning;
         }
     }
 }

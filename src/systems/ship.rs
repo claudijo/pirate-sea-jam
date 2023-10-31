@@ -1,6 +1,6 @@
 use crate::components::cannon::{Aim, Cannon, CannonGunPowder, Tilt};
 use crate::components::pontoon::Pontoon;
-use crate::components::ship::{Ship, ShipBooster, ShipFlag, ShipHelm, ShipSail, ShipTurnRate};
+use crate::components::ship::{Ship, ShipBooster, ShipFlag, ShipHelm, ShipSail, ShipRudder};
 use crate::events::game::RestartGameEvent;
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::ShipDespawnEntities;
@@ -28,7 +28,7 @@ pub fn spawn_ship(
             },
             Ship { ..default() },
             ShipBooster { ..default() },
-            ShipTurnRate { ..default() },
+            ShipRudder { ..default() },
         ))
         .with_children(|child_builder| {
             // Colliders
