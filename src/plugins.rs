@@ -1,5 +1,6 @@
 pub mod artillery;
 pub mod assets;
+pub mod button;
 pub mod camera;
 pub mod keyboard;
 pub mod light;
@@ -11,4 +12,3 @@ pub mod shooting_target;
 pub mod text;
 pub mod virtual_gamepad;
 pub mod wind;
-pub mod button;

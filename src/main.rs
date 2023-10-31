@@ -46,6 +46,7 @@ fn main() {
         plugins::text::TextOverlayPlugin,
         plugins::artillery::ArsenalPlugin,
         plugins::virtual_gamepad::VirtualGamepadPlugin,
+        plugins::button::ButtonsReleasedPlugin,
     ));
 
     app.add_state::<game_state::GameState>();

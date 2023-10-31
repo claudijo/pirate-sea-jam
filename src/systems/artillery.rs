@@ -46,7 +46,10 @@ pub fn handle_cannon_aim_event(
 pub fn handle_cannon_fire_event(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
-    mut cannon_query: Query<(Entity, &GlobalTransform,&mut Velocity, &mut Aim, &Cannon), Without<Ship>>,
+    mut cannon_query: Query<
+        (Entity, &GlobalTransform, &mut Velocity, &mut Aim, &Cannon),
+        Without<Ship>,
+    >,
     mut event_reader: EventReader<FireCannonEvent>,
     mut ship_query: Query<(&Velocity, &mut ExternalImpulse), With<Ship>>,
 ) {
@@ -64,16 +67,13 @@ pub fn handle_cannon_fire_event(
                 if let Ok((ship_velocity, mut external_impulse)) = ship_query.get_mut(cannon.rig) {
                     // Make ship recoil
                     let recoil_scale = cannon.power * 10.;
-                    external_impulse.torque_impulse +=
-                        global_transform.forward() * recoil_scale;
+                    external_impulse.torque_impulse += global_transform.forward() * recoil_scale;
 
                     // Spawn cannon ball
                     commands.spawn((
                         SceneBundle {
                             scene: model_assets.scene_handles["cannon_ball.glb"].clone(),
-                            transform: Transform::from_translation(
-                                global_transform.translation(),
-                            ),
+                            transform: Transform::from_translation(global_transform.translation()),
                             ..default()
                         },
                         CannonBall,
@@ -119,14 +119,14 @@ pub fn tilt_cannon(
                     velocity.angvel.z += cannon.tilt_torque * time.delta_seconds();
                 }
             } else {
-               if tilt > 0_f32.to_radians() {
-                   // Stop tilting down and force fire cannon
-                   velocity.angvel.z = 0.;
-                   event_writer.send(FireCannonEvent { source: cannon.rig });
-               } else {
-                   // Accelerate tilting down
-                   velocity.angvel.z += -cannon.tilt_torque * time.delta_seconds();
-               }
+                if tilt > 0_f32.to_radians() {
+                    // Stop tilting down and force fire cannon
+                    velocity.angvel.z = 0.;
+                    event_writer.send(FireCannonEvent { source: cannon.rig });
+                } else {
+                    // Accelerate tilting down
+                    velocity.angvel.z += -cannon.tilt_torque * time.delta_seconds();
+                }
             }
         } else if velocity.angvel.z != 0. {
             if velocity.angvel.z > 0. {

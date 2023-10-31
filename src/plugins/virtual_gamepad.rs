@@ -26,6 +26,8 @@ impl Plugin for VirtualGamepadPlugin {
                 virtual_gamepad_input::capture_virtual_joystick,
                 virtual_gamepad_input::release_virtual_joystick,
                 virtual_gamepad_input::arrange_knob_trail_dots,
+                virtual_gamepad_input::handle_cross_button_interactions,
+                virtual_gamepad_input::handle_cross_button_release,
             )
                 .run_if(resource_exists_and_equals(InputDevice::Touch))
                 .run_if(in_state(GameState::InGame)),

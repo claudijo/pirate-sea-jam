@@ -53,9 +53,7 @@ pub fn spawn_shooting_target(
                     transform: Transform::from_xyz(0.0829, 3.2132, 0.0581),
                     ..default()
                 },
-                ShipFlag {
-                    rig: parent_entity,
-                },
+                ShipFlag { rig: parent_entity },
             ));
         });
 

@@ -67,9 +67,7 @@ pub fn spawn_ship(
                     ));
 
                     child_builder.spawn((
-                        ShipFlag {
-                            rig: parent_entity,
-                        },
+                        ShipFlag { rig: parent_entity },
                         SceneBundle {
                             scene: model_assets.scene_handles["medium_flag.glb"].clone(),
                             transform: Transform::from_xyz(0., 9.38793, 1.35834),
@@ -78,8 +76,8 @@ pub fn spawn_ship(
                     ));
 
                     let cannons = [
-                        ([1.1769, 1.4593, -0.5485], PI),     // Port back cannon
-                        ([1.13846, 1.54822, 1.54781], PI),   // Port front cannon
+                        ([1.1769, 1.4593, -0.5485], PI),    // Port back cannon
+                        ([1.13846, 1.54822, 1.54781], PI),  // Port front cannon
                         ([-1.1769, 1.4593, -0.5485], 0.),   // Starboard back cannon
                         ([-1.13846, 1.54822, 1.54781], 0.), // Starboard front cannon
                     ];
@@ -91,7 +89,6 @@ pub fn spawn_ship(
                             Tilt { ..default() },
                             Velocity { ..default() },
                             RigidBody::Dynamic,
-
                             GravityScale(0.),
                             Cannon {
                                 rig: parent_entity,

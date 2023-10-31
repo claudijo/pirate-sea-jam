@@ -6,7 +6,7 @@ pub struct Cannon {
     pub max_tilt: f32,
 
     pub tilt_torque: f32,
-    pub rig: Entity,  // Entity of parent (ship)
+    pub rig: Entity, // Entity of parent (ship)
 }
 
 #[derive(Component, Default)]
