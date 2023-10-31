@@ -117,7 +117,7 @@ pub fn tilt_cannon(
         }
 
         // Start tilting down
-        if aim.is_targeting && velocity.angvel.z > 0. && tilt < -45_f32.to_radians() {
+        if aim.is_targeting && velocity.angvel.z > 0. && tilt < -cannon.max_tilt.to_radians() {
             velocity.angvel.z = -cannon.tilt_torque * time.delta_seconds();
         }
 

@@ -78,29 +78,25 @@ pub fn spawn_ship(
                     ));
 
                     let cannons = [
-                        ([1.1769, 1.4593, -0.5485], PI, 30.),     // Port back cannon
-                        ([1.13846, 1.54822, 1.54781], PI, 30.),   // Port front cannon
-                        ([-1.1769, 1.4593, -0.5485], 0., -30.),   // Starboard back cannon
-                        ([-1.13846, 1.54822, 1.54781], 0., -30.), // Starboard front cannon
+                        ([1.1769, 1.4593, -0.5485], PI),     // Port back cannon
+                        ([1.13846, 1.54822, 1.54781], PI),   // Port front cannon
+                        ([-1.1769, 1.4593, -0.5485], 0.),   // Starboard back cannon
+                        ([-1.13846, 1.54822, 1.54781], 0.), // Starboard front cannon
                     ];
 
-                    for (cannon_transform, cannon_rotation, tilt_factor) in cannons {
+                    for (cannon_transform, cannon_y_rotation) in cannons {
                         child_builder.spawn((
                             Aim { ..default() },
                             CannonGunPowder { ..default() },
                             Tilt { ..default() },
                             Velocity { ..default() },
-                            // ExternalForce { ..default() },
                             RigidBody::Dynamic,
-                            // AdditionalMassProperties::MassProperties(MassProperties{principal_inertia: Vec3::Z, ..default() }),
 
                             GravityScale(0.),
                             Cannon {
                                 rig: parent_entity,
-                                default_tilt: cannon_rotation, // TODO: Remove or use
-                                tilt_factor, // TODO: Remove or use
                                 power: 1.,
-                                max_tilt: 30.,
+                                max_tilt: 45.,
                                 tilt_torque: 10.,
                             },
                             SceneBundle {
@@ -108,7 +104,7 @@ pub fn spawn_ship(
                                 transform: Transform::from_translation(Vec3::from_array(
                                     cannon_transform,
                                 ))
-                                .with_rotation(Quat::from_rotation_y(cannon_rotation)),
+                                .with_rotation(Quat::from_rotation_y(cannon_y_rotation)),
                                 ..default()
                             },
                         ));

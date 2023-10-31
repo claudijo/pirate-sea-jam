@@ -4,8 +4,6 @@ use bevy::prelude::*;
 pub struct Cannon {
     pub power: f32,
     pub max_tilt: f32,
-    pub default_tilt: f32,
-    pub tilt_factor: f32,
 
     pub tilt_torque: f32,
     pub rig: Entity,  // Entity of parent (ship)
