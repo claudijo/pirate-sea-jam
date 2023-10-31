@@ -137,15 +137,15 @@ pub fn spawn_restart_game_button(mut commands: Commands, font_assets: Res<FontAs
 
 pub fn handle_restart_game_button_interactions(
     mut interactions: Query<
-        (&Interaction, &mut BackgroundColor),
+        (Entity, &Interaction, &mut BackgroundColor),
         (Changed<Interaction>, With<ResetGameButton>),
     >,
     mut restart_game_event_writer: EventWriter<RestartGameEvent>,
 ) {
-    for (interaction, mut background_color) in &mut interactions {
+    for (entity, interaction, mut background_color) in &mut interactions {
         match *interaction {
             Interaction::Pressed => {
-                restart_game_event_writer.send(RestartGameEvent);
+                restart_game_event_writer.send(RestartGameEvent(entity));
             }
             Interaction::Hovered => {
                 *background_color = RESTART_BUTTON_HOVER.into();

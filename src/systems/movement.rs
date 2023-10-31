@@ -7,6 +7,8 @@ use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 use std::f32::consts::{PI, TAU};
 
+pub const TURN_RATE_LIMIT: f32 = 1.;
+
 pub fn push_ship(
     mut ship_query: Query<(&mut ExternalImpulse, &Transform, &mut ShipBooster, &Ship)>,
     wind_query: Query<&Wind>,

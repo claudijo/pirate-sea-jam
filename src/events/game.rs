@@ -1,4 +1,4 @@
 use bevy::prelude::*;
 
-#[derive(Event)]
-pub struct RestartGameEvent;
+#[derive(Deref, Event)]
+pub struct RestartGameEvent(pub Entity);

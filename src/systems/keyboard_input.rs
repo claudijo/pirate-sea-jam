@@ -1,15 +1,11 @@
-use crate::components::cannon::{Aim, Cannon, CannonGunPowder, Tilt};
 use crate::components::ship::{PlayerId, Ship, ShipBooster, ShipTurnRate};
-use crate::components::shooting_target::ShootingTarget;
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::events::game::RestartGameEvent;
-use crate::resources::assets::ModelAssets;
-use crate::resources::despawn::{ShipDespawnEntities, ShootingTargetDespawnEntities};
-use crate::systems::ship::spawn_ship;
 use bevy::prelude::*;
+use crate::systems::movement::TURN_RATE_LIMIT;
 
 const RATE_OF_ROTATION: f32 = 1.5;
-const TURN_RATE_LIMIT: f32 = 1.;
+
 
 pub fn turn_ship(
     keys: Res<Input<KeyCode>>,
@@ -65,7 +61,7 @@ pub fn handle_fire_key_pressed(
     if keys.just_pressed(KeyCode::Space) {
         for (entity, ship) in &ship_query {
             if ship.player_id == PlayerId::PlayerOne {
-                event_writer.send(AimCannonEvent { source: entity });
+                event_writer.send(AimCannonEvent(entity));
             }
         }
     }
@@ -79,7 +75,7 @@ pub fn handle_fire_key_released(
     if keys.just_released(KeyCode::Space) {
         for (entity, ship) in &ship_query {
             if ship.player_id == PlayerId::PlayerOne {
-                event_writer.send(FireCannonEvent { source: entity });
+                event_writer.send(FireCannonEvent(entity));
             }
         }
     }
@@ -90,6 +86,6 @@ pub fn handle_restart_game_key_pressed(
     mut event_writer: EventWriter<RestartGameEvent>,
 ) {
     if keys.just_pressed(KeyCode::R) {
-        event_writer.send(RestartGameEvent);
+        event_writer.send(RestartGameEvent(Entity::PLACEHOLDER));
     }
 }

@@ -1,11 +1,7 @@
 use bevy::prelude::*;
 
-#[derive(Event)]
-pub struct AimCannonEvent {
-    pub source: Entity, // Ship entity
-}
+#[derive(Deref, Event)]
+pub struct AimCannonEvent(pub Entity);
 
-#[derive(Event)]
-pub struct FireCannonEvent {
-    pub source: Entity, // Ship entity
-}
+#[derive(Deref, Event)]
+pub struct FireCannonEvent(pub Entity);

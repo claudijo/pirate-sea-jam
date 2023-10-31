@@ -18,7 +18,7 @@ pub fn handle_cannon_aim_event(
     mut event_reader: EventReader<AimCannonEvent>,
 ) {
     for event in event_reader.iter() {
-        if let Ok(ship_transform) = ship_query.get(event.source) {
+        if let Ok(ship_transform) = ship_query.get(**event) {
             let target_translations = shooting_target_query
                 .iter()
                 .map(|transform| transform.translation)
@@ -28,7 +28,7 @@ pub fn handle_cannon_aim_event(
                 targeting::find_closest_target(&ship_transform.translation, &target_translations)
             {
                 for (entity, mut aim, mut velocity, global_transform, cannon) in &mut cannon_query {
-                    if cannon.rig != event.source {
+                    if cannon.rig != **event {
                         continue;
                     }
 
@@ -57,7 +57,7 @@ pub fn handle_cannon_fire_event(
         let mut rng = rand::thread_rng();
 
         for (entity, global_transform, mut velocity, mut aim, cannon) in &mut cannon_query {
-            if event.source != cannon.rig {
+            if **event != cannon.rig {
                 continue;
             }
 
@@ -122,7 +122,7 @@ pub fn tilt_cannon(
                 if tilt > 0_f32.to_radians() {
                     // Stop tilting down and force fire cannon
                     velocity.angvel.z = 0.;
-                    event_writer.send(FireCannonEvent { source: cannon.rig });
+                    event_writer.send(FireCannonEvent(cannon.rig));
                 } else {
                     // Accelerate tilting down
                     velocity.angvel.z += -cannon.tilt_torque * time.delta_seconds();

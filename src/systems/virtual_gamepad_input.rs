@@ -63,7 +63,7 @@ pub fn handle_cross_button_interactions(
 
                 for (entity, ship) in &ship_query {
                     if ship.player_id == PlayerId::PlayerOne {
-                        event_writer.send(AimCannonEvent { source: entity });
+                        event_writer.send(AimCannonEvent(entity));
                     }
                 }
             }
@@ -134,10 +134,10 @@ pub fn handle_cross_button_release(
     button_query: Query<Entity, With<CrossGamepadButton>>,
 ) {
     for event in event_reader.iter() {
-        if let Ok(_) = button_query.get(event.source) {
+        if let Ok(_) = button_query.get(**event) {
             for (entity, ship) in &ship_query {
                 if ship.player_id == PlayerId::PlayerOne {
-                    event_writer.send(FireCannonEvent { source: entity });
+                    event_writer.send(FireCannonEvent(entity));
                 }
             }
         }
