@@ -11,16 +11,20 @@ impl Plugin for VirtualGamepadPlugin {
 
         app.add_systems(
             OnEnter(GameState::InGame),
-            virtual_gamepad_input::init_movement_gamepad
+            (
+                virtual_gamepad_input::init_movement_gamepad,
+                virtual_gamepad_input::spawn_cross_button,
+                virtual_gamepad_input::spawn_circle_button,
+            )
                 .run_if(resource_exists_and_equals(InputDevice::Touch)),
         );
 
         app.add_systems(
             Update,
             (
-                virtual_gamepad_input::track_virtual_gamepad,
-                virtual_gamepad_input::capture_virtual_gamepad,
-                virtual_gamepad_input::release_virtual_gamepad,
+                virtual_gamepad_input::track_virtual_joystick,
+                virtual_gamepad_input::capture_virtual_joystick,
+                virtual_gamepad_input::release_virtual_joystick,
                 virtual_gamepad_input::arrange_knob_trail_dots,
             )
                 .run_if(resource_exists_and_equals(InputDevice::Touch))

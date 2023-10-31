@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Component, Default)]
-pub struct GamepadTracker {
+pub struct JoystickTracker {
     pub touch_id: Option<u64>,
     // TODO: Add GamepadInteractionArea
 }
