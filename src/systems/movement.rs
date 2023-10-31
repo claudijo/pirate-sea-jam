@@ -8,11 +8,11 @@ use bevy_rapier3d::prelude::*;
 use std::f32::consts::{PI, TAU};
 
 pub fn push_ship(
-    mut ship_query: Query<(&mut ExternalImpulse, &Transform, &ShipBooster, &Ship)>,
+    mut ship_query: Query<(&mut ExternalImpulse, &Transform, &mut ShipBooster, &Ship)>,
     wind_query: Query<&Wind>,
 ) {
     for wind in &wind_query {
-        for (mut external_impulse, transform, booster, ship) in &mut ship_query {
+        for (mut external_impulse, transform, mut booster, ship) in &mut ship_query {
             let mut ship_forward = transform.local_z();
 
             ship_forward.y = 0.;
@@ -23,6 +23,7 @@ pub fn push_ship(
             let wind_factor = scale_into_range(wind_alignment, -wind_speed, wind_speed, 0.6, 1.);
 
             let boost_factor = if booster.active {
+                booster.active = false;
                 ship.booster_power
             } else {
                 1.

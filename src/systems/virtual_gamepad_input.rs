@@ -7,7 +7,7 @@ use crate::resources::virtual_gamepad::TouchTrailEntities;
 use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
 use std::cmp::Ordering;
-use crate::components::ship::{PlayerId, Ship};
+use crate::components::ship::{PlayerId, Ship, ShipBooster};
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 
 const TOUCH_MARKER_SIZE: f32 = 48.;
@@ -20,6 +20,7 @@ const BUTTON_BORDER_PRESSED: Color = Color::rgb(1., 1., 1.);
 const CROSS_BUTTON_NORMAL: Color = Color::rgba(0.49, 0.70, 0.91, 0.6);
 const CROSS_BUTTON_PRESSED: Color = Color::rgb(0.49, 0.70, 0.91);
 const CIRCLE_BUTTON_NORMAL: Color = Color::rgba(1., 0.4, 0.4, 0.6);
+const CIRCLE_BUTTON_PRESSED: Color = Color::rgb(1., 0.4, 0.4);
 
 pub fn distance_between_dots(total_distance: f32) -> f32 {
     MIN_DISTANCE_BETWEEN_TOUCH_TRAIL_MARKERS + total_distance * 0.1
@@ -41,27 +42,6 @@ pub fn spawn_cross_button(mut commands: Commands) {
             },
             border_color: BorderColor(BUTTON_BORDER_NORMAL),
             background_color: CROSS_BUTTON_NORMAL.into(),
-            ..default()
-        },
-    ));
-}
-
-pub fn spawn_circle_button(mut commands: Commands) {
-    commands.spawn((
-        CircleGamepadButton,
-        ReleasableTouchButton::default(),
-        ButtonBundle {
-            style: Style {
-                width: Val::Px(GAMEPAD_BUTTON_SIZE),
-                height: Val::Px(GAMEPAD_BUTTON_SIZE),
-                border: UiRect::all(Val::Px(6.0)),
-                bottom: Val::Px(96.),
-                right: Val::Px(32.),
-                position_type: PositionType::Absolute,
-                ..default()
-            },
-            border_color: BorderColor(BUTTON_BORDER_NORMAL),
-            background_color: CIRCLE_BUTTON_NORMAL.into(),
             ..default()
         },
     ));
@@ -95,6 +75,57 @@ pub fn handle_cross_button_interactions(
         }
     }
 }
+
+pub fn spawn_circle_button(mut commands: Commands) {
+    commands.spawn((
+        CircleGamepadButton,
+        ReleasableTouchButton::default(),
+        ButtonBundle {
+            style: Style {
+                width: Val::Px(GAMEPAD_BUTTON_SIZE),
+                height: Val::Px(GAMEPAD_BUTTON_SIZE),
+                border: UiRect::all(Val::Px(6.0)),
+                bottom: Val::Px(96.),
+                right: Val::Px(32.),
+                position_type: PositionType::Absolute,
+                ..default()
+            },
+            border_color: BorderColor(BUTTON_BORDER_NORMAL),
+            background_color: CIRCLE_BUTTON_NORMAL.into(),
+            ..default()
+        },
+    ));
+}
+
+pub fn handle_circle_button_interaction(
+    mut interaction_query: Query<
+        (&Interaction, &mut BackgroundColor, &mut BorderColor),
+        (Changed<Interaction>, With<CircleGamepadButton>),
+    >,
+    mut ship_query: Query<(&mut ShipBooster, &Ship)>
+) {
+    for (interaction, mut background_color, mut border_color) in &mut interaction_query {
+        match *interaction {
+            Interaction::Pressed => {
+                *background_color = CIRCLE_BUTTON_PRESSED.into();
+                border_color.0 = BUTTON_BORDER_PRESSED;
+
+                for (mut booster, ship) in &mut ship_query {
+                    if ship.player_id == PlayerId::PlayerOne {
+                        booster.active = true;
+                    }
+                }
+            }
+
+            Interaction::None => {
+                *background_color = CIRCLE_BUTTON_NORMAL.into();
+                border_color.0 = BUTTON_BORDER_NORMAL;
+            }
+            Interaction::Hovered => {}
+        }
+    }
+}
+
 
 pub fn handle_cross_button_release(
     ship_query: Query<(Entity, &Ship)>,

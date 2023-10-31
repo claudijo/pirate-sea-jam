@@ -28,6 +28,7 @@ impl Plugin for VirtualGamepadPlugin {
                 virtual_gamepad_input::arrange_knob_trail_dots,
                 virtual_gamepad_input::handle_cross_button_interactions,
                 virtual_gamepad_input::handle_cross_button_release,
+                virtual_gamepad_input::handle_circle_button_interaction,
             )
                 .run_if(resource_exists_and_equals(InputDevice::Touch))
                 .run_if(in_state(GameState::InGame)),
