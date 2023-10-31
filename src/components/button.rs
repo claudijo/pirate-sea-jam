@@ -11,3 +11,8 @@ pub struct CrossGamepadButton;
 
 #[derive(Component)]
 pub struct CircleGamepadButton;
+
+#[derive(Component, Default)]
+pub struct ReleasableButton {
+    pub last_state: Interaction,
+}
