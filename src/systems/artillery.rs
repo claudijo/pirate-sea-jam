@@ -106,45 +106,41 @@ pub fn tilt_cannon(
     for (aim, transform, mut velocity, cannon) in &mut cannon_query {
         let (_, _, tilt) = transform.rotation.to_euler(EulerRot::default());
 
-        // Start tilting up
-        if aim.is_targeting && velocity.angvel.z == 0. {
-            velocity.angvel.z = cannon.tilt_torque * time.delta_seconds();
-        }
-
-        // Accelerate tilting up
-        if aim.is_targeting && velocity.angvel.z > 0. {
-            velocity.angvel.z += cannon.tilt_torque * time.delta_seconds();
-        }
-
-        // Start tilting down
-        if aim.is_targeting && velocity.angvel.z > 0. && tilt < -cannon.max_tilt.to_radians() {
-            velocity.angvel.z = -cannon.tilt_torque * time.delta_seconds();
-        }
-
-        // Accelerate tilting down
-        if aim.is_targeting && velocity.angvel.z < 0. {
-            velocity.angvel.z += -cannon.tilt_torque * time.delta_seconds();
-        }
-
-        // Stop tilting down and force fire cannon
-        if aim.is_targeting && velocity.angvel.z < 0. && tilt > 0_f32.to_radians() {
-            velocity.angvel.z = 0.;
-            event_writer.send(FireCannonEvent { source: cannon.rig });
-        }
-
-        // Start tilting down after firing shot
-        if !aim.is_targeting && velocity.angvel.z > 0. {
-            velocity.angvel.z = -cannon.tilt_torque * time.delta_seconds();
-        }
-
-        // Accelerate tilting down after firing shot
-        if !aim.is_targeting && velocity.angvel.z < 0. {
-            velocity.angvel.z += -cannon.tilt_torque * time.delta_seconds();
-        }
-
-        // Stop tilting down after firing shot
-        if !aim.is_targeting && velocity.angvel.z < 0. && tilt > 0_f32.to_radians() {
-            velocity.angvel.z = 0.;
+        if aim.is_targeting {
+            if velocity.angvel.z == 0. {
+                // Start tilting up
+                velocity.angvel.z = cannon.tilt_torque * time.delta_seconds();
+            } else if velocity.angvel.z > 0. {
+                if tilt < -cannon.max_tilt.to_radians() {
+                    // Start tilting down
+                    velocity.angvel.z = -cannon.tilt_torque * time.delta_seconds();
+                } else {
+                    // Accelerate tilting up
+                    velocity.angvel.z += cannon.tilt_torque * time.delta_seconds();
+                }
+            } else {
+               if tilt > 0_f32.to_radians() {
+                   // Stop tilting down and force fire cannon
+                   velocity.angvel.z = 0.;
+                   event_writer.send(FireCannonEvent { source: cannon.rig });
+               } else {
+                   // Accelerate tilting down
+                   velocity.angvel.z += -cannon.tilt_torque * time.delta_seconds();
+               }
+            }
+        } else if velocity.angvel.z != 0. {
+            if velocity.angvel.z > 0. {
+                // Start tilting down after firing shot
+                velocity.angvel.z = -cannon.tilt_torque * time.delta_seconds();
+            } else {
+                if tilt > 0_f32.to_radians() {
+                    // Stop tilting down after firing shot
+                    velocity.angvel.z = 0.;
+                } else {
+                    // Accelerate tilting down after firing shot
+                    velocity.angvel.z += -cannon.tilt_torque * time.delta_seconds();
+                }
+            }
         }
     }
 }
