@@ -28,18 +28,13 @@ pub fn handle_cannon_aim_event(
                 targeting::find_closest_target(&ship_transform.translation, &target_translations)
             {
                 for (entity, mut aim, mut velocity, global_transform, cannon) in &mut cannon_query {
-                    if let Some(rig) = cannon.rig {
-                        if rig != event.source {
-                            continue;
-                        }
+                    if cannon.rig != event.source {
+                        continue;
+                    }
 
-                        let target_direction = *closest_target - global_transform.translation();
-                        if global_transform.left().dot(target_direction) > 0. {
-                            aim.is_targeting = true;
-
-                            // Tilt cannons
-                            velocity.angvel = Vec3::Z * 1.;
-                        }
+                    let target_direction = *closest_target - global_transform.translation();
+                    if global_transform.left().dot(target_direction) > 0. {
+                        aim.is_targeting = true;
                     }
                 }
             }
@@ -51,7 +46,7 @@ pub fn handle_cannon_aim_event(
 pub fn handle_cannon_fire_event(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
-    mut cannon_query: Query<(Entity, &GlobalTransform, &mut Velocity, &mut Aim, &Cannon), Without<Ship>>,
+    mut cannon_query: Query<(Entity, &GlobalTransform,&mut Velocity, &mut Aim, &Cannon), Without<Ship>>,
     mut event_reader: EventReader<FireCannonEvent>,
     mut ship_query: Query<(&Velocity, &mut ExternalImpulse), With<Ship>>,
 ) {
@@ -59,71 +54,97 @@ pub fn handle_cannon_fire_event(
         let mut rng = rand::thread_rng();
 
         for (entity, global_transform, mut velocity, mut aim, cannon) in &mut cannon_query {
-            if let Some(rig) = cannon.rig {
-                if event.source != rig {
-                    continue;
-                }
+            if event.source != cannon.rig {
+                continue;
+            }
 
-                if aim.is_targeting {
-                    aim.is_targeting = false;
+            if aim.is_targeting {
+                aim.is_targeting = false;
 
-                    // Revert cannon tilt
-                    velocity.angvel = Vec3::Z * -3.;
+                if let Ok((ship_velocity, mut external_impulse)) = ship_query.get_mut(cannon.rig) {
+                    // Make ship recoil
+                    let recoil_scale = cannon.power * 10.;
+                    external_impulse.torque_impulse +=
+                        global_transform.forward() * recoil_scale;
 
-                    if let Ok((ship_velocity, mut external_impulse)) = ship_query.get_mut(rig) {
-                        // Make ship recoil
-                        let recoil_scale = if cannon.tilt_factor > 0. { -10. } else { 10. };
-                        external_impulse.torque_impulse +=
-                            global_transform.forward() * recoil_scale;
-
-                        // Spawn cannon ball
-                        commands.spawn((
-                            SceneBundle {
-                                scene: model_assets.scene_handles["cannon_ball.glb"].clone(),
-                                transform: Transform::from_translation(
-                                    global_transform.translation(),
-                                ),
-                                ..default()
-                            },
-                            CannonBall,
-                            RigidBody::Dynamic,
-                            ExternalImpulse {
-                                impulse: global_transform.left()
-                                    * 20.
-                                    * cannon.power
-                                    * rng.gen_range(0.9..1.1),
-                                ..default()
-                            },
-                            Collider::ball(0.3),
-                            Density(10.),
-                            Velocity {
-                                linvel: ship_velocity.linvel,
-                                ..default()
-                            },
-                        ));
-                    }
+                    // Spawn cannon ball
+                    commands.spawn((
+                        SceneBundle {
+                            scene: model_assets.scene_handles["cannon_ball.glb"].clone(),
+                            transform: Transform::from_translation(
+                                global_transform.translation(),
+                            ),
+                            ..default()
+                        },
+                        CannonBall,
+                        RigidBody::Dynamic,
+                        ExternalImpulse {
+                            impulse: global_transform.left()
+                                * 20.
+                                * cannon.power
+                                * rng.gen_range(0.9..1.1),
+                            ..default()
+                        },
+                        Collider::ball(0.3),
+                        Density(10.),
+                        Velocity {
+                            linvel: ship_velocity.linvel,
+                            ..default()
+                        },
+                    ));
                 }
             }
         }
     }
 }
 
-pub fn rewind_cannon_tilt(
-    mut cannons: Query<(&mut Transform, &mut Tilt, &Aim, &Cannon)>,
+pub fn tilt_cannon(
+    mut cannon_query: Query<(&Aim, &Transform, &mut Velocity, &Cannon)>,
+    mut event_writer: EventWriter<FireCannonEvent>,
     time: Res<Time>,
 ) {
-    for (mut transform, mut barrel_tilt, carriage, cannon) in &mut cannons {
-        if !carriage.is_targeting && barrel_tilt.angle != 0. {
-            let angle = barrel_tilt.angle + time.delta_seconds() * cannon.tilt_factor * -2.;
+    for (aim, transform, mut velocity, cannon) in &mut cannon_query {
+        let (_, _, tilt) = transform.rotation.to_euler(EulerRot::default());
 
-            if cannon.tilt_factor > 0. {
-                barrel_tilt.angle = angle.max(0.);
-            } else {
-                barrel_tilt.angle = angle.min(0.);
-            }
+        // Start tilting up
+        if aim.is_targeting && velocity.angvel.z == 0. {
+            velocity.angvel.z = cannon.tilt_torque * time.delta_seconds();
+        }
 
-            transform.rotation =
-                Quat::from_rotation_z(cannon.default_tilt + barrel_tilt.angle.to_radians());
+        // Accelerate tilting up
+        if aim.is_targeting && velocity.angvel.z > 0. {
+            velocity.angvel.z += cannon.tilt_torque * time.delta_seconds();
+        }
+
+        // Start tilting down
+        if aim.is_targeting && velocity.angvel.z > 0. && tilt < -45_f32.to_radians() {
+            velocity.angvel.z = -cannon.tilt_torque * time.delta_seconds();
+        }
+
+        // Accelerate tilting down
+        if aim.is_targeting && velocity.angvel.z < 0. {
+            velocity.angvel.z += -cannon.tilt_torque * time.delta_seconds();
+        }
+
+        // Stop tilting down and force fire cannon
+        if aim.is_targeting && velocity.angvel.z < 0. && tilt > 0_f32.to_radians() {
+            velocity.angvel.z = 0.;
+            event_writer.send(FireCannonEvent { source: cannon.rig });
+        }
+
+        // Start tilting down after firing shot
+        if !aim.is_targeting && velocity.angvel.z > 0. {
+            velocity.angvel.z = -cannon.tilt_torque * time.delta_seconds();
+        }
+
+        // Accelerate tilting down after firing shot
+        if !aim.is_targeting && velocity.angvel.z < 0. {
+            velocity.angvel.z += -cannon.tilt_torque * time.delta_seconds();
+        }
+
+        // Stop tilting down after firing shot
+        if !aim.is_targeting && velocity.angvel.z < 0. && tilt > 0_f32.to_radians() {
+            velocity.angvel.z = 0.;
         }
     }
 }

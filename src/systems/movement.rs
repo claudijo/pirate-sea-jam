@@ -8,11 +8,11 @@ use bevy_rapier3d::prelude::*;
 use std::f32::consts::{PI, TAU};
 
 pub fn push_ship(
-    mut ships: Query<(&mut ExternalImpulse, &Transform, &ShipBooster, &Ship)>,
-    winds: Query<&Wind>,
+    mut ship_query: Query<(&mut ExternalImpulse, &Transform, &ShipBooster, &Ship)>,
+    wind_query: Query<&Wind>,
 ) {
-    for wind in &winds {
-        for (mut external_impulse, transform, booster, ship) in &mut ships {
+    for wind in &wind_query {
+        for (mut external_impulse, transform, booster, ship) in &mut ship_query {
             let mut ship_forward = transform.local_z();
 
             ship_forward.y = 0.;
@@ -34,7 +34,7 @@ pub fn push_ship(
 }
 
 pub fn turn_ship(
-    mut ships: Query<(
+    mut ship_query: Query<(
         &mut ExternalImpulse,
         &Transform,
         &Velocity,
@@ -42,7 +42,7 @@ pub fn turn_ship(
         &ShipTurnRate,
     )>,
 ) {
-    for (mut external_impulse, transform, velocity, ship, rate_of_turn) in &mut ships {
+    for (mut external_impulse, transform, velocity, ship, rate_of_turn) in &mut ship_query {
         let mut torque_impulse = Vec3::ZERO;
 
         let ship_speed = velocity.linvel.xz().length();
@@ -60,11 +60,11 @@ pub fn turn_ship(
 }
 
 pub fn rotate_helm(
-    rate_of_turns: Query<&ShipTurnRate>,
-    mut helms: Query<&mut Transform, With<ShipHelm>>,
+    turn_rate_query: Query<&ShipTurnRate>,
+    mut helm_query: Query<&mut Transform, With<ShipHelm>>,
 ) {
-    for rate_of_turn in &rate_of_turns {
-        for mut transform in &mut helms {
+    for rate_of_turn in &turn_rate_query {
+        for mut transform in &mut helm_query {
             transform.rotation = Quat::from_rotation_z(rate_of_turn.value * TAU);
         }
     }
@@ -72,7 +72,7 @@ pub fn rotate_helm(
 
 pub fn flutter_pennant(
     mut pennants: Query<(&mut Transform, &ShipFlag)>,
-    rigs: Query<
+    rig_query: Query<
         (&Transform, Option<&Velocity>),
         (Or<(With<Ship>, With<ShootingTarget>)>, Without<ShipFlag>),
     >,
@@ -84,35 +84,33 @@ pub fn flutter_pennant(
 
     for wind in &winds {
         for (mut pennant_transform, pennant) in &mut pennants {
-            if let Some(rig_entity) = pennant.rig {
-                if let Ok((rig_transform, rig_velocity)) = rigs.get(rig_entity) {
-                    let mut speed_factor = 2_f32.to_radians();
-                    if let Some(velocity) = rig_velocity {
-                        speed_factor = velocity.linvel.xz().length().to_radians();
-                    }
-                    let flutter = speed_factor * (elapsed_time * TIME_SCALE).sin();
-                    let rig_forward = rig_transform.local_z();
-                    let angle = wind.direction.xz().angle_between(rig_forward.xz()) + PI;
-                    pennant_transform.rotation = Quat::from_rotation_y(angle + flutter);
+            if let Ok((rig_transform, rig_velocity)) = rig_query.get(pennant.rig) {
+                let mut speed_factor = 2_f32.to_radians();
+                if let Some(velocity) = rig_velocity {
+                    speed_factor = velocity.linvel.xz().length().to_radians();
                 }
+                let flutter = speed_factor * (elapsed_time * TIME_SCALE).sin();
+                let rig_forward = rig_transform.local_z();
+                let angle = wind.direction.xz().angle_between(rig_forward.xz()) + PI;
+                pennant_transform.rotation = Quat::from_rotation_y(angle + flutter);
             }
         }
     }
 }
 
 pub fn flutter_sails(
-    mut sails: Query<&mut Transform, With<ShipSail>>,
-    ships: Query<&Transform, (With<Ship>, Without<ShipSail>)>,
-    winds: Query<&Wind>,
+    mut sail_query: Query<&mut Transform, With<ShipSail>>,
+    ship_query: Query<&Transform, (With<Ship>, Without<ShipSail>)>,
+    wind_query: Query<&Wind>,
     time: Res<Time>,
 ) {
     const TIME_SCALE: f32 = 10.;
 
     let elapsed_time = time.elapsed().as_secs_f32();
 
-    for wind in &winds {
-        for ship_transform in &ships {
-            for mut sail_transform in &mut sails {
+    for wind in &wind_query {
+        for ship_transform in &ship_query {
+            for mut sail_transform in &mut sail_query {
                 let ship_forward = ship_transform.local_z();
                 let wind_alignment = wind.direction.dot(ship_forward);
                 let flutter_factor = wind_alignment - wind.direction.length();

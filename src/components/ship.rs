@@ -44,5 +44,5 @@ pub struct ShipSail;
 
 #[derive(Component)]
 pub struct ShipFlag {
-    pub rig: Option<Entity>,
+    pub rig: Entity,
 }

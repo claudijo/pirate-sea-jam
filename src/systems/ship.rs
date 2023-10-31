@@ -68,7 +68,7 @@ pub fn spawn_ship(
 
                     child_builder.spawn((
                         ShipFlag {
-                            rig: Some(parent_entity),
+                            rig: parent_entity,
                         },
                         SceneBundle {
                             scene: model_assets.scene_handles["medium_flag.glb"].clone(),
@@ -84,25 +84,31 @@ pub fn spawn_ship(
                         ([-1.13846, 1.54822, 1.54781], 0., -30.), // Starboard front cannon
                     ];
 
-                    for (cannon_transform, cannon_tilt, tilt_factor) in cannons {
+                    for (cannon_transform, cannon_rotation, tilt_factor) in cannons {
                         child_builder.spawn((
                             Aim { ..default() },
                             CannonGunPowder { ..default() },
                             Tilt { ..default() },
                             Velocity { ..default() },
+                            // ExternalForce { ..default() },
                             RigidBody::Dynamic,
+                            // AdditionalMassProperties::MassProperties(MassProperties{principal_inertia: Vec3::Z, ..default() }),
+
+                            GravityScale(0.),
                             Cannon {
-                                rig: Some(parent_entity),
-                                default_tilt: cannon_tilt,
-                                tilt_factor,
-                                ..default()
+                                rig: parent_entity,
+                                default_tilt: cannon_rotation, // TODO: Remove or use
+                                tilt_factor, // TODO: Remove or use
+                                power: 1.,
+                                max_tilt: 30.,
+                                tilt_torque: 10.,
                             },
                             SceneBundle {
                                 scene: model_assets.scene_handles["medium_canon.glb"].clone(),
                                 transform: Transform::from_translation(Vec3::from_array(
                                     cannon_transform,
                                 ))
-                                .with_rotation(Quat::from_rotation_z(cannon_tilt)),
+                                .with_rotation(Quat::from_rotation_y(cannon_rotation)),
                                 ..default()
                             },
                         ));

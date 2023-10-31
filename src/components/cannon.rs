@@ -7,20 +7,8 @@ pub struct Cannon {
     pub default_tilt: f32,
     pub tilt_factor: f32,
 
-    // Entity of parent for querying properties such as velocity
-    pub rig: Option<Entity>,
-}
-
-impl Default for Cannon {
-    fn default() -> Self {
-        Self {
-            power: 1.,
-            max_tilt: 30.0,
-            rig: None,
-            default_tilt: 0.,
-            tilt_factor: 0.,
-        }
-    }
+    pub tilt_torque: f32,
+    pub rig: Entity,  // Entity of parent (ship)
 }
 
 #[derive(Component, Default)]

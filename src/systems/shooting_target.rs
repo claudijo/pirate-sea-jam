@@ -54,7 +54,7 @@ pub fn spawn_shooting_target(
                     ..default()
                 },
                 ShipFlag {
-                    rig: Some(parent_entity),
+                    rig: parent_entity,
                 },
             ));
         });
