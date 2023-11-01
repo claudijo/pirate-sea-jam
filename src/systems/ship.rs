@@ -86,7 +86,7 @@ pub fn spawn_ship(
                         child_builder.spawn((
                             Aim { ..default() },
                             Tilt {
-                                acceleration: 20.,
+                                acceleration: 10.,
                                 velocity: 0.,
                                 stabilize_tilt_timer: Timer::from_seconds(0.4, TimerMode::Once),
                             },
