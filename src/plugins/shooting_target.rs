@@ -11,6 +11,10 @@ impl Plugin for ShootingTargetPlugin {
             .add_systems(
                 OnEnter(GameState::SplashScreen),
                 shooting_target::spawn_shooting_target,
+            )
+            .add_systems(
+                Update,
+                (shooting_target::reset_shooting_target).run_if(in_state(GameState::InGame)),
             );
     }
 }

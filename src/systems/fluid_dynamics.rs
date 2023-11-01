@@ -7,13 +7,13 @@ use bevy_rapier3d::prelude::*;
 
 // https://stackoverflow.com/questions/72961896/how-do-i-modify-a-mesh-after-it-has-been-created-in-bevy-rust
 pub fn make_waves(
-    mut oceans: Query<(&OceanTopology, &Handle<Mesh>)>,
+    mut ocean_query: Query<(&OceanTopology, &Handle<Mesh>)>,
     mut assets: ResMut<Assets<Mesh>>,
     wave_machine: Res<WaveMachine>,
     time: Res<Time>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
-    for (ocean_topology, handle) in &mut oceans {
+    for (ocean_topology, handle) in &mut ocean_query {
         let mesh = assets.get_mut(handle).unwrap();
         let mut next_positions: Vec<[f32; 3]> = Vec::new();
         let mut next_colors: Vec<[f32; 4]> = Vec::new();
@@ -37,7 +37,7 @@ pub fn make_waves(
 }
 
 pub fn buoyancy(
-    mut pontoons: Query<(
+    mut pontoon_query: Query<(
         &Transform,
         &Pontoon,
         &Velocity,
@@ -48,7 +48,7 @@ pub fn buoyancy(
     wave_machine: Res<WaveMachine>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
-    for (transform, pontoon, velocity, mut external_force, mut damping) in &mut pontoons {
+    for (transform, pontoon, velocity, mut external_force, mut damping) in &mut pontoon_query {
         let water_height = wave_machine.surface_height(transform.translation, elapsed_time);
 
         let displaced_liquid_volume =

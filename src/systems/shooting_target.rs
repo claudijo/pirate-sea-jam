@@ -1,6 +1,7 @@
 use crate::components::pontoon::Pontoon;
 use crate::components::ship::ShipFlag;
 use crate::components::shooting_target::ShootingTarget;
+use crate::events::game::RestartGameEvent;
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::ShootingTargetDespawnEntities;
 use bevy::prelude::*;
@@ -52,9 +53,7 @@ pub fn spawn_shooting_target(
                     transform: Transform::from_xyz(0.0829, 3.2132, 0.0581),
                     ..default()
                 },
-                ShipFlag {
-                    rig: Some(parent_entity),
-                },
+                ShipFlag { rig: parent_entity },
             ));
         });
 
@@ -93,4 +92,30 @@ pub fn spawn_shooting_target(
         // Need to add pontoon to registry for later despawn
         shooting_target_despawn.entities.push(child_pontoon);
     }
+}
+
+pub fn reset_shooting_target(
+    mut commands: Commands,
+    model_assets: Res<ModelAssets>,
+    mut shooting_target_despawn: ResMut<ShootingTargetDespawnEntities>,
+    shooting_targets: Query<Entity, With<ShootingTarget>>,
+    mut restart_game_event_reader: EventReader<RestartGameEvent>,
+) {
+    if restart_game_event_reader.is_empty() {
+        return;
+    }
+
+    restart_game_event_reader.clear();
+
+    for parent in &shooting_targets {
+        for entity in &shooting_target_despawn.entities {
+            commands.entity(*entity).despawn();
+        }
+
+        shooting_target_despawn.entities.clear();
+        commands.entity(parent).despawn_recursive();
+    }
+
+    // Spawn new shooting target
+    spawn_shooting_target(commands, model_assets, shooting_target_despawn);
 }

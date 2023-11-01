@@ -1,30 +1,67 @@
-use crate::components::cannon::{
-    Cannon, CannonBall, CannonBarrelTilt, CannonCarriage, CannonGunPowder,
-};
+use crate::components::cannon::{Aim, Cannon, CannonBall, Tilt};
 use crate::components::ship::Ship;
+use crate::components::shooting_target::ShootingTarget;
+use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::resources::assets::ModelAssets;
 use crate::resources::wave_machine::WaveMachine;
+use crate::utils::targeting;
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::ColliderMassProperties::Density;
-use bevy_rapier3d::prelude::Velocity;
+use bevy_rapier3d::geometry::ColliderMassProperties::Density;
 use bevy_rapier3d::prelude::*;
 use rand::Rng;
+pub fn handle_cannon_aim_event(
+    shooting_target_query: Query<&Transform, With<ShootingTarget>>,
+    ship_query: Query<&Transform, With<Ship>>,
+    mut cannon_query: Query<(&mut Aim, &GlobalTransform, &Cannon)>,
+    mut event_reader: EventReader<AimCannonEvent>,
+) {
+    for event in event_reader.iter() {
+        if let Ok(ship_transform) = ship_query.get(**event) {
+            let target_translations = shooting_target_query
+                .iter()
+                .map(|transform| transform.translation)
+                .collect();
 
-pub fn fire_cannons(
+            if let Some(closest_target) =
+                targeting::find_closest_target(&ship_transform.translation, &target_translations)
+            {
+                for (mut aim, global_transform, cannon) in &mut cannon_query {
+                    if cannon.rig != **event {
+                        continue;
+                    }
+
+                    let target_direction = *closest_target - global_transform.translation();
+                    if global_transform.left().dot(target_direction) > 0. {
+                        aim.is_targeting = true;
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Will fire aiming cannons
+pub fn handle_cannon_fire_event(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
-    mut cannons: Query<(&GlobalTransform, &Cannon, &mut CannonGunPowder)>,
-    mut ships: Query<(&Velocity, &mut ExternalImpulse), With<Ship>>,
+    mut cannon_query: Query<(&GlobalTransform, &mut Aim, &Cannon), Without<Ship>>,
+    mut event_reader: EventReader<FireCannonEvent>,
+    mut ship_query: Query<(&Velocity, &mut ExternalImpulse), With<Ship>>,
 ) {
-    for (global_transform, cannon, mut gun_powder) in &mut cannons {
-        if gun_powder.is_lit {
-            gun_powder.is_lit = false;
-            let mut rng = rand::thread_rng();
+    for event in event_reader.iter() {
+        let mut rng = rand::thread_rng();
 
-            if let Some(ship_entity) = cannon.rig {
-                if let Ok((ship_velocity, mut external_impulse)) = ships.get_mut(ship_entity) {
+        for (global_transform, mut aim, cannon) in &mut cannon_query {
+            if **event != cannon.rig {
+                continue;
+            }
+
+            if aim.is_targeting {
+                aim.is_targeting = false;
+
+                if let Ok((ship_velocity, mut external_impulse)) = ship_query.get_mut(cannon.rig) {
                     // Make ship recoil
-                    let recoil_scale = if cannon.tilt_factor > 0. { -10. } else { 10. };
+                    let recoil_scale = cannon.power * 10.;
                     external_impulse.torque_impulse += global_transform.forward() * recoil_scale;
 
                     // Spawn cannon ball
@@ -56,39 +93,74 @@ pub fn fire_cannons(
     }
 }
 
-pub fn rewind_cannon_tilt(
-    mut cannons: Query<(
-        &mut Transform,
-        &mut CannonBarrelTilt,
-        &CannonCarriage,
-        &Cannon,
-    )>,
+pub fn tilt_cannon(
+    mut cannon_query: Query<(&Aim, &mut Tilt, &mut Transform, &Cannon)>,
+    mut event_writer: EventWriter<FireCannonEvent>,
     time: Res<Time>,
 ) {
-    for (mut transform, mut barrel_tilt, carriage, cannon) in &mut cannons {
-        if !carriage.is_aiming && barrel_tilt.angle != 0. {
-            let angle = barrel_tilt.angle + time.delta_seconds() * cannon.tilt_factor * -2.;
+    for (aim, mut tilt, mut transform, cannon) in &mut cannon_query {
+        let (_, _, z_axis_rotation) = transform.rotation.to_euler(EulerRot::default());
 
-            if cannon.tilt_factor > 0. {
-                barrel_tilt.angle = angle.max(0.);
-            } else {
-                barrel_tilt.angle = angle.min(0.);
+        // Accelerate incline
+        if aim.is_targeting
+            && tilt.velocity >= 0.
+            && z_axis_rotation > -cannon.max_tilt.to_radians()
+        {
+            tilt.velocity += tilt.acceleration.to_radians() * time.delta_seconds();
+            transform.rotation *= Quat::from_rotation_z(-tilt.velocity);
+        }
+
+        // Invert tilt velocity at peak angle
+        if aim.is_targeting
+            && tilt.velocity >= 0.
+            && z_axis_rotation <= -cannon.max_tilt.to_radians()
+        {
+            tilt.velocity *= -1.;
+        }
+
+        // Decelerate decline while aiming
+        if aim.is_targeting && tilt.velocity < 0. {
+            tilt.velocity =
+                (tilt.velocity + tilt.acceleration.to_radians() * time.delta_seconds()).min(-0.02);
+            transform.rotation *= Quat::from_rotation_z(-tilt.velocity);
+        }
+
+        // Stop tilting down and possible force fire cannon
+        if tilt.velocity < 0. && z_axis_rotation > 0. {
+            tilt.velocity = 0.;
+            tilt.stabilize_tilt_timer.reset();
+
+            if aim.is_targeting {
+                event_writer.send(FireCannonEvent(cannon.rig));
             }
+        }
 
-            transform.rotation =
-                Quat::from_rotation_z(cannon.default_tilt + barrel_tilt.angle.to_radians());
+        // Invert tilt velocity after firing shot
+        if !aim.is_targeting && tilt.velocity >= 0. {
+            tilt.velocity *= -1.;
+        }
+
+        if !aim.is_targeting && tilt.velocity < 0. {
+            tilt.stabilize_tilt_timer.tick(time.delta());
+        }
+
+        // Decelerate decline after firing shot after small timeout
+        if !aim.is_targeting && tilt.velocity < 0. && tilt.stabilize_tilt_timer.finished() {
+            tilt.velocity =
+                (tilt.velocity + tilt.acceleration.to_radians() * time.delta_seconds()).min(-0.02);
+            transform.rotation *= Quat::from_rotation_z(-tilt.velocity);
         }
     }
 }
 
 pub fn despawn_cannon_ball(
     mut commands: Commands,
-    cannon_balls: Query<(Entity, &GlobalTransform), With<CannonBall>>,
+    cannon_ball_query: Query<(Entity, &GlobalTransform), With<CannonBall>>,
     wave_machine: Res<WaveMachine>,
     time: Res<Time>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
-    for (entity, global_transform) in &cannon_balls {
+    for (entity, global_transform) in &cannon_ball_query {
         let translation = global_transform.translation();
         let water_height = wave_machine.surface_height(translation, elapsed_time);
         if translation.y + 2. < water_height {

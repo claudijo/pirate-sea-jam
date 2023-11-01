@@ -5,4 +5,5 @@ pub mod ocean;
 pub mod pontoon;
 pub mod ship;
 pub mod shooting_target;
+pub mod virtual_gamepad;
 pub mod wind;

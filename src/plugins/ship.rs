@@ -18,6 +18,8 @@ impl Plugin for ShipPlugin {
                         movement::rotate_helm,
                         movement::flutter_sails,
                         movement::flutter_pennant,
+                        movement::straighten_up_ship,
+                        ship::reset_ship,
                     )
                         .run_if(in_state(GameState::InGame)),
                     movement::flutter_pennant.run_if(in_state(GameState::SplashScreen)),

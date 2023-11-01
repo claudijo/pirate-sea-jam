@@ -4,10 +4,13 @@
 // Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
+use crate::events::game::RestartGameEvent;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
 mod components;
+mod events;
 mod game_state;
 mod plugins;
 mod resources;
@@ -16,6 +19,7 @@ mod utils;
 
 fn main() {
     let mut app = App::new();
+
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "Pirate Sea Jam".into(),
@@ -25,7 +29,9 @@ fn main() {
         }),
         ..default()
     }));
+
     app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
+
     app.add_plugins((
         plugins::assets::AssetsPlugin,
         plugins::camera::CameraPlugin,
@@ -35,12 +41,19 @@ fn main() {
         plugins::ship::ShipPlugin,
         plugins::shooting_target::ShootingTargetPlugin,
         plugins::pontoon::PontoonPlugin,
-        plugins::keyboard_controller::KeyboadControllerPlugin,
+        plugins::keyboard::KeyboardPlugin,
         plugins::wind::WindPlugin,
         plugins::text::TextOverlayPlugin,
         plugins::artillery::ArsenalPlugin,
-    ))
-    .add_state::<game_state::GameState>();
+        plugins::virtual_gamepad::VirtualGamepadPlugin,
+        plugins::button::ButtonsReleasedPlugin,
+    ));
+
+    app.add_state::<game_state::GameState>();
+
+    app.add_event::<RestartGameEvent>();
+    app.add_event::<FireCannonEvent>();
+    app.add_event::<AimCannonEvent>();
 
     #[cfg(debug_assertions)]
     app.add_plugins(RapierDebugRenderPlugin::default());

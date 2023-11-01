@@ -1,13 +1,22 @@
-use crate::components::button::StartButton;
+use crate::components::button::{ResetGameButton, StartGameButton};
 use crate::components::layout::StartMenuLayout;
+use crate::events::game::RestartGameEvent;
 use crate::game_state::GameState;
 use crate::resources::assets::FontAssets;
+use crate::resources::player::InputDevice;
+use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
 
-const NORMAL_BUTTON: Color = Color::rgb(0.96, 0.49, 0.18);
-const HOVERED_BUTTON: Color = Color::rgb(0.94, 0.42, 0.18);
+const START_BUTTON_NORMAL: Color = Color::rgb(0.9, 0.45, 0.21);
+const START_BUTTON_HOVER: Color = Color::rgb(0.87, 0.36, 0.18);
+const RESTART_BUTTON_NORMAL: Color = Color::rgb(0.31, 0.69, 0.32);
+const RESTART_BUTTON_HOVER: Color = Color::rgb(0., 0.61, 0.45);
 
-pub fn setup_start_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
+// Start game button mainly used for determining input device as well as focusing canvas element when
+// loaded in browser
+pub fn spawn_main_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
+    commands.insert_resource(InputDevice::default());
+
     commands
         .spawn((
             StartMenuLayout,
@@ -22,15 +31,15 @@ pub fn setup_start_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
                 ..default()
             },
         ))
-        .with_children(|parent| {
-            parent
+        .with_children(|child_builder| {
+            child_builder
                 .spawn((
-                    StartButton,
+                    StartGameButton,
                     ButtonBundle {
                         style: Style {
-                            width: Val::Px(360.0),
-                            height: Val::Px(65.0),
-                            border: UiRect::all(Val::Px(5.0)),
+                            width: Val::Px(320.0),
+                            height: Val::Px(64.0),
+                            border: UiRect::all(Val::Px(8.0)),
                             // horizontally center child text
                             justify_content: JustifyContent::Center,
                             // vertically center child text
@@ -38,7 +47,7 @@ pub fn setup_start_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
                             ..default()
                         },
                         border_color: BorderColor(Color::WHITE),
-                        background_color: NORMAL_BUTTON.into(),
+                        background_color: START_BUTTON_NORMAL.into(),
                         ..default()
                     },
                 ))
@@ -55,32 +64,97 @@ pub fn setup_start_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
         });
 }
 
-pub fn tear_down_start_menu(
+pub fn despawn_main_menu(
     mut commands: Commands,
-    entities: Query<Entity, With<StartMenuLayout>>,
+    start_menu_query: Query<Entity, With<StartMenuLayout>>,
 ) {
-    for entity in &entities {
+    for entity in &start_menu_query {
         commands.entity(entity).despawn_recursive();
     }
 }
 
-pub fn update_start_menu(
-    mut interactions: Query<
+pub fn handle_main_menu_interactions(
+    mut button_query: Query<
         (&Interaction, &mut BackgroundColor),
-        (Changed<Interaction>, With<StartButton>),
+        (Changed<Interaction>, With<StartGameButton>),
     >,
     mut next_state: ResMut<NextState<GameState>>,
+    mut touch_events: EventReader<TouchInput>,
+    mut device: ResMut<InputDevice>,
 ) {
-    for (interaction, mut background_color) in &mut interactions {
+    for (interaction, mut background_color) in &mut button_query {
         match *interaction {
             Interaction::Pressed => {
+                for event in touch_events.iter() {
+                    if event.phase == TouchPhase::Started {
+                        *device = InputDevice::Touch;
+                    }
+                }
+
                 next_state.set(GameState::InGame);
             }
             Interaction::Hovered => {
-                *background_color = HOVERED_BUTTON.into();
+                *background_color = START_BUTTON_HOVER.into();
             }
             Interaction::None => {
-                *background_color = NORMAL_BUTTON.into();
+                *background_color = START_BUTTON_NORMAL.into();
+            }
+        }
+    }
+}
+
+pub fn spawn_restart_game_button(mut commands: Commands, font_assets: Res<FontAssets>) {
+    commands
+        .spawn((
+            ResetGameButton,
+            ButtonBundle {
+                style: Style {
+                    width: Val::Px(80.0),
+                    height: Val::Px(32.0),
+                    border: UiRect::all(Val::Px(4.0)),
+                    top: Val::Px(16.),
+                    right: Val::Px(16.),
+                    position_type: PositionType::Absolute,
+                    // horizontally center child text
+                    justify_content: JustifyContent::Center,
+                    // vertically center child text
+                    align_items: AlignItems::Center,
+                    ..default()
+                },
+                border_color: BorderColor(Color::WHITE),
+                background_color: RESTART_BUTTON_NORMAL.into(),
+                ..default()
+            },
+        ))
+        .with_children(|parent| {
+            parent.spawn(TextBundle::from_section(
+                "Restart",
+                TextStyle {
+                    font: font_assets.font_handles["the-bomb-regular.otf"].clone(),
+                    font_size: 20.0,
+                    color: Color::WHITE,
+                },
+            ));
+        });
+}
+
+pub fn handle_restart_game_button_interactions(
+    mut button_query: Query<
+        (Entity, &Interaction, &mut BackgroundColor),
+        (Changed<Interaction>, With<ResetGameButton>),
+    >,
+    mut restart_game_event_writer: EventWriter<RestartGameEvent>,
+) {
+    for (entity, interaction, mut background_color) in &mut button_query {
+        match *interaction {
+            Interaction::Pressed => {
+                restart_game_event_writer.send(RestartGameEvent(entity));
+            }
+            Interaction::Hovered => {
+                *background_color = RESTART_BUTTON_HOVER.into();
+            }
+            Interaction::None => {
+                *background_color = RESTART_BUTTON_NORMAL.into();
             }
         }
     }
