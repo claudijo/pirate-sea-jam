@@ -1,7 +1,7 @@
 use crate::components::button::{CircleGamepadButton, CrossGamepadButton, ReleasableTouchButton};
 use crate::components::ship::{PlayerId, Ship, ShipBooster, ShipRudder};
 use crate::components::virtual_gamepad::{
-    DebugText, JoystickTracker, TouchController, TouchMarker, TouchTrailMarker,
+    JoystickTracker, TouchController, TouchMarker, TouchTrailMarker,
 };
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::events::button::ButtonReleasedEvent;
@@ -134,7 +134,7 @@ pub fn handle_cross_button_release(
     button_query: Query<Entity, With<CrossGamepadButton>>,
 ) {
     for event in event_reader.iter() {
-        if let Ok(_) = button_query.get(**event) {
+        if button_query.get(**event).is_ok() {
             for (entity, ship) in &ship_query {
                 if ship.player_id == PlayerId::PlayerOne {
                     event_writer.send(FireCannonEvent(entity));

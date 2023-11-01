@@ -12,9 +12,6 @@ pub struct GamepadInteractionArea {
 }
 
 #[derive(Component)]
-pub struct DebugText;
-
-#[derive(Component)]
 pub struct TouchController {
     pub start_position: Vec2,
     // For convenient access to current touch position

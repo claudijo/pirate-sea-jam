@@ -1,4 +1,4 @@
-use crate::components::cannon::{Aim, Cannon, CannonGunPowder, Tilt};
+use crate::components::cannon::{Aim, Cannon, Tilt};
 use crate::components::pontoon::Pontoon;
 use crate::components::ship::{Ship, ShipBooster, ShipFlag, ShipHelm, ShipRudder, ShipSail};
 use crate::events::game::RestartGameEvent;
@@ -85,16 +85,15 @@ pub fn spawn_ship(
                     for (cannon_transform, cannon_y_rotation) in cannons {
                         child_builder.spawn((
                             Aim { ..default() },
-                            CannonGunPowder { ..default() },
-                            Tilt { ..default() },
-                            Velocity { ..default() },
-                            RigidBody::Dynamic,
-                            GravityScale(0.),
+                            Tilt {
+                                acceleration: 20.,
+                                velocity: 0.,
+                                stabilize_tilt_timer: Timer::from_seconds(0.4, TimerMode::Once),
+                            },
                             Cannon {
                                 rig: parent_entity,
                                 power: 1.,
-                                max_tilt: 45.,
-                                tilt_torque: 10.,
+                                max_tilt: 40.,
                             },
                             SceneBundle {
                                 scene: model_assets.scene_handles["medium_canon.glb"].clone(),

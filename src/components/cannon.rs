@@ -4,24 +4,19 @@ use bevy::prelude::*;
 pub struct Cannon {
     pub power: f32,
     pub max_tilt: f32,
-
-    pub tilt_torque: f32,
     pub rig: Entity, // Entity of parent (ship)
 }
 
 #[derive(Component, Default)]
-pub struct CannonGunPowder {
-    pub is_lit: bool,
+pub struct Tilt {
+    pub velocity: f32,
+    pub acceleration: f32,
+    pub stabilize_tilt_timer: Timer,
 }
 
 #[derive(Component, Default)]
 pub struct Aim {
     pub is_targeting: bool,
-}
-
-#[derive(Component, Default)]
-pub struct Tilt {
-    pub angle: f32,
 }
 
 #[derive(Component, Default)]

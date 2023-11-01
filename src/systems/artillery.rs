@@ -1,4 +1,4 @@
-use crate::components::cannon::{Aim, Cannon, CannonBall};
+use crate::components::cannon::{Aim, Cannon, CannonBall, Tilt};
 use crate::components::ship::Ship;
 use crate::components::shooting_target::ShootingTarget;
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
@@ -12,7 +12,7 @@ use rand::Rng;
 pub fn handle_cannon_aim_event(
     shooting_target_query: Query<&Transform, With<ShootingTarget>>,
     ship_query: Query<&Transform, With<Ship>>,
-    mut cannon_query: Query<(Entity, &mut Aim, &mut Velocity, &GlobalTransform, &Cannon)>,
+    mut cannon_query: Query<(&mut Aim, &GlobalTransform, &Cannon)>,
     mut event_reader: EventReader<AimCannonEvent>,
 ) {
     for event in event_reader.iter() {
@@ -25,7 +25,7 @@ pub fn handle_cannon_aim_event(
             if let Some(closest_target) =
                 targeting::find_closest_target(&ship_transform.translation, &target_translations)
             {
-                for (entity, mut aim, mut velocity, global_transform, cannon) in &mut cannon_query {
+                for (mut aim, global_transform, cannon) in &mut cannon_query {
                     if cannon.rig != **event {
                         continue;
                     }
@@ -44,17 +44,14 @@ pub fn handle_cannon_aim_event(
 pub fn handle_cannon_fire_event(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
-    mut cannon_query: Query<
-        (Entity, &GlobalTransform, &mut Velocity, &mut Aim, &Cannon),
-        Without<Ship>,
-    >,
+    mut cannon_query: Query<(&GlobalTransform, &mut Aim, &Cannon), Without<Ship>>,
     mut event_reader: EventReader<FireCannonEvent>,
     mut ship_query: Query<(&Velocity, &mut ExternalImpulse), With<Ship>>,
 ) {
     for event in event_reader.iter() {
         let mut rng = rand::thread_rng();
 
-        for (entity, global_transform, mut velocity, mut aim, cannon) in &mut cannon_query {
+        for (global_transform, mut aim, cannon) in &mut cannon_query {
             if **event != cannon.rig {
                 continue;
             }
@@ -97,48 +94,61 @@ pub fn handle_cannon_fire_event(
 }
 
 pub fn tilt_cannon(
-    mut cannon_query: Query<(&Aim, &Transform, &mut Velocity, &Cannon)>,
+    mut cannon_query: Query<(&Aim, &mut Tilt, &mut Transform, &Cannon)>,
     mut event_writer: EventWriter<FireCannonEvent>,
     time: Res<Time>,
 ) {
-    for (aim, transform, mut velocity, cannon) in &mut cannon_query {
-        let (_, _, tilt) = transform.rotation.to_euler(EulerRot::default());
+    for (aim, mut tilt, mut transform, cannon) in &mut cannon_query {
+        let (_, _, z_axis_rotation) = transform.rotation.to_euler(EulerRot::default());
 
-        if aim.is_targeting {
-            if velocity.angvel.z == 0. {
-                // Start tilting up
-                velocity.angvel.z = cannon.tilt_torque * time.delta_seconds();
-            } else if velocity.angvel.z > 0. {
-                if tilt < -cannon.max_tilt.to_radians() {
-                    // Start tilting down
-                    velocity.angvel.z = -cannon.tilt_torque * time.delta_seconds();
-                } else {
-                    // Accelerate tilting up
-                    velocity.angvel.z += cannon.tilt_torque * time.delta_seconds();
-                }
-            } else {
-                if tilt > 0_f32.to_radians() {
-                    // Stop tilting down and force fire cannon
-                    velocity.angvel.z = 0.;
-                    event_writer.send(FireCannonEvent(cannon.rig));
-                } else {
-                    // Accelerate tilting down
-                    velocity.angvel.z += -cannon.tilt_torque * time.delta_seconds();
-                }
+        // Accelerate incline
+        if aim.is_targeting
+            && tilt.velocity >= 0.
+            && z_axis_rotation > -cannon.max_tilt.to_radians()
+        {
+            tilt.velocity += tilt.acceleration.to_radians() * time.delta_seconds();
+            transform.rotation *= Quat::from_rotation_z(-tilt.velocity);
+        }
+
+        // Invert tilt velocity at peak angle
+        if aim.is_targeting
+            && tilt.velocity >= 0.
+            && z_axis_rotation <= -cannon.max_tilt.to_radians()
+        {
+            tilt.velocity *= -1.;
+        }
+
+        // Decelerate decline while aiming
+        if aim.is_targeting && tilt.velocity < 0. {
+            tilt.velocity =
+                (tilt.velocity + tilt.acceleration.to_radians() * time.delta_seconds()).min(-0.02);
+            transform.rotation *= Quat::from_rotation_z(-tilt.velocity);
+        }
+
+        // Stop tilting down and possible force fire cannon
+        if tilt.velocity < 0. && z_axis_rotation > 0. {
+            tilt.velocity = 0.;
+            tilt.stabilize_tilt_timer.reset();
+
+            if aim.is_targeting {
+                event_writer.send(FireCannonEvent(cannon.rig));
             }
-        } else if velocity.angvel.z != 0. {
-            if velocity.angvel.z > 0. {
-                // Start tilting down after firing shot
-                velocity.angvel.z = -cannon.tilt_torque * time.delta_seconds();
-            } else {
-                if tilt > 0_f32.to_radians() {
-                    // Stop tilting down after firing shot
-                    velocity.angvel.z = 0.;
-                } else {
-                    // Accelerate tilting down after firing shot
-                    velocity.angvel.z += -cannon.tilt_torque * time.delta_seconds();
-                }
-            }
+        }
+
+        // Invert tilt velocity after firing shot
+        if !aim.is_targeting && tilt.velocity >= 0. {
+            tilt.velocity *= -1.;
+        }
+
+        if !aim.is_targeting && tilt.velocity < 0. {
+            tilt.stabilize_tilt_timer.tick(time.delta());
+        }
+
+        // Decelerate decline after firing shot after small timeout
+        if !aim.is_targeting && tilt.velocity < 0. && tilt.stabilize_tilt_timer.finished() {
+            tilt.velocity =
+                (tilt.velocity + tilt.acceleration.to_radians() * time.delta_seconds()).min(-0.02);
+            transform.rotation *= Quat::from_rotation_z(-tilt.velocity);
         }
     }
 }

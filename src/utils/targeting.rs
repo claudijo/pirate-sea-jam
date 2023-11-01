@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
-pub fn find_closest_target<'a, 'b>(
-    source_translation: &'a Vec3,
-    target_translations: &'b Vec<Vec3>,
-) -> Option<&'b Vec3> {
+pub fn find_closest_target<'a>(
+    source_translation: &Vec3,
+    target_translations: &'a Vec<Vec3>,
+) -> Option<&'a Vec3> {
     let mut closest_target: Option<&Vec3> = None;
     let mut closest_distance = f32::MAX;
 

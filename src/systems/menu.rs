@@ -64,7 +64,10 @@ pub fn spawn_main_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
         });
 }
 
-pub fn despawn_main_menu(mut commands: Commands, start_menu_query: Query<Entity, With<StartMenuLayout>>) {
+pub fn despawn_main_menu(
+    mut commands: Commands,
+    start_menu_query: Query<Entity, With<StartMenuLayout>>,
+) {
     for entity in &start_menu_query {
         commands.entity(entity).despawn_recursive();
     }
