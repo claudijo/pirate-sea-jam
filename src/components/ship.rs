@@ -19,7 +19,7 @@ impl Default for Ship {
         Self {
             player_id: PlayerId::PlayerOne,
             speed: 3.,
-            maneuverability: 0.8,
+            maneuverability: 1.4,
             booster_power: 160.,
             stability: 6.,
         }
