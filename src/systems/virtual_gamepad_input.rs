@@ -6,10 +6,11 @@ use crate::components::virtual_gamepad::{
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::events::button::ButtonReleasedEvent;
 use crate::resources::virtual_gamepad::TouchTrailEntities;
-use crate::systems::movement::TURN_RATE_LIMIT;
+use crate::systems::movement::{RATE_OF_ROTATION, TURN_RATE_LIMIT};
 use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
 use std::cmp::Ordering;
+use bevy::math::Vec3Swizzles;
 
 const TOUCH_MARKER_SIZE: f32 = 48.;
 const TOUCH_ANCHOR_SIZE: f32 = 24.;
@@ -391,12 +392,14 @@ pub fn arrange_touch_trail(
 pub fn handle_joystick_control(
     joystick_tracker_query: Query<&JoystickTracker>,
     touch_controller_query: Query<(&TouchMarker, &TouchController)>,
+    ship_query: Query<(&Transform, &Ship)>,
     mut rudder_query: Query<&mut ShipRudder>,
+    time: Res<Time>,
 ) {
     for tracker in &joystick_tracker_query {
-        let mut is_turning = false;
-
         for mut rudder in &mut rudder_query {
+            let mut is_turning = false;
+
             if let Some(touch_id) = tracker.touch_id {
                 for (touch_marker_label, touch_marker_controller) in &touch_controller_query {
                     if touch_marker_label.touch_id != touch_id {
@@ -405,11 +408,22 @@ pub fn handle_joystick_control(
 
                     is_turning = true;
 
-                    let horizontal_distance = touch_marker_controller.touch_position.x
-                        - touch_marker_controller.start_position.x;
+                    for (transform, ship) in &ship_query {
+                        if ship.player_id != PlayerId::PlayerOne {
+                            continue;
+                        }
 
-                    rudder.turn_rate =
-                        (horizontal_distance / 100.).clamp(-TURN_RATE_LIMIT, TURN_RATE_LIMIT);
+                        let controller_direction = touch_marker_controller.touch_position - touch_marker_controller.start_position;
+                        let ship_forward = transform.forward();
+                        let controller_angle = controller_direction.angle_between(ship_forward.xz());
+                        if controller_angle < 0. {
+                            let new_angle = rudder.turn_rate - time.delta_seconds() * RATE_OF_ROTATION;
+                            rudder.turn_rate = new_angle.max(-TURN_RATE_LIMIT);
+                        } else {
+                            let new_angle = rudder.turn_rate + time.delta_seconds() * RATE_OF_ROTATION;
+                            rudder.turn_rate = new_angle.min(TURN_RATE_LIMIT);
+                        }
+                    }
                 }
             }
 
