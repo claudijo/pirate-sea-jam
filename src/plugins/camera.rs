@@ -15,8 +15,7 @@ impl Plugin for CameraPlugin {
         app.add_systems(
             Update,
             (
-                camera::follow_ship,
-                camera::orbit,
+                camera::orbit_and_follow,
                 camera::release_pointer_on_escape,
             ).run_if(in_state(GameState::InGame))
         );
