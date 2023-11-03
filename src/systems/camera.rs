@@ -5,9 +5,6 @@ use bevy::window::{Cursor, CursorGrabMode, WindowResolution};
 use crate::components::ship::{PlayerShip, Ship};
 use crate::events::camera::CameraControllerEvent;
 
-// Sync with camera yz spawn translation
-const ORBIT_RADIUS: f32 = (20_f32.powf(2.) + 40_f32.powf(2.)).sqrt();
-
 pub fn spawn_camera(mut commands: Commands) {
     commands.spawn((Camera3dBundle {
         transform: Transform::from_xyz(0.0, 20.0, 40.0).looking_at(Vec3::ZERO, Vec3::Y),
@@ -50,11 +47,14 @@ pub fn orbit_and_follow(
                     }
                 }
 
+                // Sync with camera yz spawn translation
+                const orbit_radius: f32 = (20_f32.powf(2.) + 40_f32.powf(2.)).sqrt();
+
                 // emulating parent/child to make the yaw/y-axis rotation behave like a turntable
                 // parent = x and y rotation
                 // child = z-offset
                 let rot_matrix = Mat3::from_quat(camera_transform.rotation);
-                camera_transform.translation = ship_transform.translation + rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, ORBIT_RADIUS));
+                camera_transform.translation = ship_transform.translation + rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, orbit_radius));
             }
     }
 }
