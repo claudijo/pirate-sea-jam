@@ -1,5 +1,5 @@
 use crate::components::button::{CircleGamepadButton, CrossGamepadButton, ReleasableTouchButton};
-use crate::components::ship::{PlayerId, Ship, ShipBooster, ShipRudder};
+use crate::components::ship::{PlayerShip, Ship, ShipBooster, ShipRudder};
 use crate::components::virtual_gamepad::{
     JoystickTracker, TouchController, TouchMarker, TouchTrailMarker,
 };
@@ -54,8 +54,8 @@ pub fn handle_cross_button_interactions(
         (&Interaction, &mut BackgroundColor, &mut BorderColor),
         (Changed<Interaction>, With<CrossGamepadButton>),
     >,
-    ship_query: Query<(Entity, &Ship)>,
-    mut event_writer: EventWriter<AimCannonEvent>,
+    ship_query: Query<(Entity, &Ship), With<PlayerShip>>,
+    mut aim_cannon_event_writer: EventWriter<AimCannonEvent>,
 ) {
     for (interaction, mut background_color, mut border_color) in &mut interaction_query {
         match *interaction {
@@ -64,9 +64,7 @@ pub fn handle_cross_button_interactions(
                 border_color.0 = BUTTON_BORDER_PRESSED;
 
                 for (entity, ship) in &ship_query {
-                    if ship.player_id == PlayerId::PlayerOne {
-                        event_writer.send(AimCannonEvent(entity));
-                    }
+                    aim_cannon_event_writer.send(AimCannonEvent(entity));
                 }
             }
             Interaction::None => {
@@ -104,7 +102,7 @@ pub fn handle_circle_button_interaction(
         (&Interaction, &mut BackgroundColor, &mut BorderColor),
         (Changed<Interaction>, With<CircleGamepadButton>),
     >,
-    mut ship_query: Query<(&mut ShipBooster, &Ship)>,
+    mut ship_query: Query<(&mut ShipBooster, &Ship), With<PlayerShip>>,
 ) {
     for (interaction, mut background_color, mut border_color) in &mut interaction_query {
         match *interaction {
@@ -113,9 +111,7 @@ pub fn handle_circle_button_interaction(
                 border_color.0 = BUTTON_BORDER_PRESSED;
 
                 for (mut booster, ship) in &mut ship_query {
-                    if ship.player_id == PlayerId::PlayerOne {
-                        booster.active = true;
-                    }
+                    booster.active = true;
                 }
             }
 
@@ -129,17 +125,15 @@ pub fn handle_circle_button_interaction(
 }
 
 pub fn handle_cross_button_release(
-    ship_query: Query<(Entity, &Ship)>,
-    mut event_reader: EventReader<ButtonReleasedEvent>,
-    mut event_writer: EventWriter<FireCannonEvent>,
+    ship_query: Query<(Entity, &Ship), With<PlayerShip>>,
+    mut button_release_event_reader: EventReader<ButtonReleasedEvent>,
+    mut fire_cannon_event_writer: EventWriter<FireCannonEvent>,
     button_query: Query<Entity, With<CrossGamepadButton>>,
 ) {
-    for event in event_reader.iter() {
+    for event in button_release_event_reader.iter() {
         if button_query.get(**event).is_ok() {
             for (entity, ship) in &ship_query {
-                if ship.player_id == PlayerId::PlayerOne {
-                    event_writer.send(FireCannonEvent(entity));
-                }
+                fire_cannon_event_writer.send(FireCannonEvent(entity));
             }
         }
     }
@@ -392,7 +386,7 @@ pub fn arrange_touch_trail(
 pub fn handle_joystick_control(
     joystick_tracker_query: Query<&JoystickTracker>,
     touch_controller_query: Query<(&TouchMarker, &TouchController)>,
-    ship_query: Query<(&Transform, &Ship)>,
+    ship_query: Query<&Transform, With<PlayerShip>>,
     mut rudder_query: Query<&mut ShipRudder>,
     time: Res<Time>,
 ) {
@@ -408,11 +402,7 @@ pub fn handle_joystick_control(
 
                     is_turning = true;
 
-                    for (transform, ship) in &ship_query {
-                        if ship.player_id != PlayerId::PlayerOne {
-                            continue;
-                        }
-
+                    for transform in &ship_query {
                         let controller_direction = touch_marker_controller.touch_position - touch_marker_controller.start_position;
                         let ship_forward = transform.forward();
                         let controller_angle = controller_direction.angle_between(ship_forward.xz());

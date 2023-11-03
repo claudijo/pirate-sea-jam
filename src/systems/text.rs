@@ -22,9 +22,9 @@ pub fn display_control_keys(mut commands: Commands) {
         ))
         .with_children(|child_builder| {
             child_builder.spawn(TextBundle::from_section(
-                "[A] turn port | [D] turn starboard | [Space] aim and fire | [Left shift] boost | [R] restart",
+                "[A] turn port | [D] turn starboard | [Mouse] orbit camera | [Space / Left mouse button] aim and fire | [Left shift] boost | [R] restart",
                 TextStyle {
-                    font_size: 22.0,
+                    font_size: 18.0,
                     color: Color::WHITE,
                     ..default()
                 },

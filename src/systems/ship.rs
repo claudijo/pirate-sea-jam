@@ -1,6 +1,6 @@
 use crate::components::cannon::{Aim, Cannon, Tilt};
 use crate::components::pontoon::Pontoon;
-use crate::components::ship::{Ship, ShipBooster, ShipFlag, ShipHelm, ShipRudder, ShipSail};
+use crate::components::ship::{PlayerShip, Ship, ShipBooster, ShipFlag, ShipHelm, ShipRudder, ShipSail};
 use crate::events::game::RestartGameEvent;
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::ShipDespawnEntities;
@@ -26,6 +26,7 @@ pub fn spawn_ship(
                 angular_damping: 20.,
                 linear_damping: 4.,
             },
+            PlayerShip,
             Ship { ..default() },
             ShipBooster { ..default() },
             ShipRudder { ..default() },

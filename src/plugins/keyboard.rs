@@ -10,8 +10,8 @@ impl Plugin for KeyboardPlugin {
         app.add_systems(
             Update,
             (
-                keyboard_input::turn_ship,
-                keyboard_input::boost_ship,
+                keyboard_input::handle_turning_keys_pressed,
+                keyboard_input::handle_turbo_booster_key_pressed,
                 keyboard_input::handle_restart_game_key_pressed,
                 keyboard_input::handle_fire_key_pressed,
                 keyboard_input::handle_fire_key_released,

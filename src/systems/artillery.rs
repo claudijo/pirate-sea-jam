@@ -13,9 +13,9 @@ pub fn handle_cannon_aim_event(
     shooting_target_query: Query<&Transform, With<ShootingTarget>>,
     ship_query: Query<&Transform, With<Ship>>,
     mut cannon_query: Query<(&mut Aim, &GlobalTransform, &Cannon)>,
-    mut event_reader: EventReader<AimCannonEvent>,
+    mut aim_cannon_event_reader: EventReader<AimCannonEvent>,
 ) {
-    for event in event_reader.iter() {
+    for event in aim_cannon_event_reader.iter() {
         if let Ok(ship_transform) = ship_query.get(**event) {
             let target_translations = shooting_target_query
                 .iter()
@@ -45,10 +45,10 @@ pub fn handle_cannon_fire_event(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
     mut cannon_query: Query<(&GlobalTransform, &mut Aim, &Cannon), Without<Ship>>,
-    mut event_reader: EventReader<FireCannonEvent>,
+    mut fire_cannon_event_reader: EventReader<FireCannonEvent>,
     mut ship_query: Query<(&Velocity, &mut ExternalImpulse), With<Ship>>,
 ) {
-    for event in event_reader.iter() {
+    for event in fire_cannon_event_reader.iter() {
         let mut rng = rand::thread_rng();
 
         for (global_transform, mut aim, cannon) in &mut cannon_query {
@@ -95,7 +95,7 @@ pub fn handle_cannon_fire_event(
 
 pub fn tilt_cannon(
     mut cannon_query: Query<(&Aim, &mut Tilt, &mut Transform, &Cannon)>,
-    mut event_writer: EventWriter<FireCannonEvent>,
+    mut fire_cannon_event_writer: EventWriter<FireCannonEvent>,
     time: Res<Time>,
 ) {
     for (aim, mut tilt, mut transform, cannon) in &mut cannon_query {
@@ -131,7 +131,7 @@ pub fn tilt_cannon(
             tilt.stabilize_tilt_timer.reset();
 
             if aim.is_targeting {
-                event_writer.send(FireCannonEvent(cannon.rig));
+                fire_cannon_event_writer.send(FireCannonEvent(cannon.rig));
             }
         }
 
