@@ -24,7 +24,10 @@ pub fn handle_turning_keys_pressed(
     }
 }
 
-pub fn handle_turbo_booster_key_pressed(keys: Res<Input<KeyCode>>, mut ship_query: Query<(&mut ShipBooster, &Ship), With<PlayerShip>>) {
+pub fn handle_turbo_booster_key_pressed(
+    keys: Res<Input<KeyCode>>,
+    mut ship_query: Query<(&mut ShipBooster, &Ship), With<PlayerShip>>,
+) {
     if keys.just_pressed(KeyCode::ShiftLeft) {
         for (mut booster, ship) in &mut ship_query {
             booster.active = true;

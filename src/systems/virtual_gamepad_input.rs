@@ -8,9 +8,9 @@ use crate::events::button::ButtonReleasedEvent;
 use crate::resources::virtual_gamepad::TouchTrailEntities;
 use crate::systems::movement::{RATE_OF_ROTATION, TURN_RATE_LIMIT};
 use bevy::input::touch::TouchPhase;
+use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use std::cmp::Ordering;
-use bevy::math::Vec3Swizzles;
 
 const TOUCH_MARKER_SIZE: f32 = 48.;
 const TOUCH_ANCHOR_SIZE: f32 = 24.;
@@ -403,14 +403,18 @@ pub fn handle_joystick_control(
                     is_turning = true;
 
                     for transform in &ship_query {
-                        let controller_direction = touch_marker_controller.touch_position - touch_marker_controller.start_position;
+                        let controller_direction = touch_marker_controller.touch_position
+                            - touch_marker_controller.start_position;
                         let ship_forward = transform.forward();
-                        let controller_angle = controller_direction.angle_between(ship_forward.xz());
+                        let controller_angle =
+                            controller_direction.angle_between(ship_forward.xz());
                         if controller_angle < 0. {
-                            let new_angle = rudder.turn_rate - time.delta_seconds() * RATE_OF_ROTATION;
+                            let new_angle =
+                                rudder.turn_rate - time.delta_seconds() * RATE_OF_ROTATION;
                             rudder.turn_rate = new_angle.max(-TURN_RATE_LIMIT);
                         } else {
-                            let new_angle = rudder.turn_rate + time.delta_seconds() * RATE_OF_ROTATION;
+                            let new_angle =
+                                rudder.turn_rate + time.delta_seconds() * RATE_OF_ROTATION;
                             rudder.turn_rate = new_angle.min(TURN_RATE_LIMIT);
                         }
                     }

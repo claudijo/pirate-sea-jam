@@ -8,7 +8,6 @@ use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::events::game::RestartGameEvent;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use crate::events::camera::CameraControllerEvent;
 
 mod components;
 mod events;
@@ -51,12 +50,13 @@ fn main() {
         plugins::mouse::MousePlugin,
     ));
 
+    app.add_plugins((plugins::orbiting_camera::OrbitingCameraPlugin));
+
     app.add_state::<game_state::GameState>();
 
     app.add_event::<RestartGameEvent>();
     app.add_event::<FireCannonEvent>();
     app.add_event::<AimCannonEvent>();
-    app.add_event::<CameraControllerEvent>();
 
     #[cfg(debug_assertions)]
     app.add_plugins(RapierDebugRenderPlugin::default());

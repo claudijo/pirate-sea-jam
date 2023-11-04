@@ -1,6 +1,6 @@
+use crate::game_state::GameState;
 use crate::systems::camera;
 use bevy::prelude::*;
-use crate::game_state::GameState;
 
 pub struct CameraPlugin;
 
@@ -11,13 +11,9 @@ impl Plugin for CameraPlugin {
         app.add_systems(OnEnter(GameState::InGame), camera::grab_pointer);
         app.add_systems(OnExit(GameState::InGame), camera::release_pointer);
 
-
         app.add_systems(
             Update,
-            (
-                camera::orbit_and_follow,
-                camera::release_pointer_on_escape,
-            ).run_if(in_state(GameState::InGame))
+            camera::release_pointer_on_escape.run_if(in_state(GameState::InGame)),
         );
     }
 }

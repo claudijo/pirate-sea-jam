@@ -1,6 +1,8 @@
 use crate::components::cannon::{Aim, Cannon, Tilt};
 use crate::components::pontoon::Pontoon;
-use crate::components::ship::{PlayerShip, Ship, ShipBooster, ShipFlag, ShipHelm, ShipRudder, ShipSail};
+use crate::components::ship::{
+    PlayerShip, Ship, ShipBooster, ShipFlag, ShipHelm, ShipRudder, ShipSail,
+};
 use crate::events::game::RestartGameEvent;
 use crate::resources::assets::ModelAssets;
 use crate::resources::despawn::ShipDespawnEntities;

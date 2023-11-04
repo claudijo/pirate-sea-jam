@@ -1,14 +1,12 @@
+use crate::plugins::orbiting_camera::OrbitEvent;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
-use crate::events::camera::CameraControllerEvent;
 
 pub fn orbit_camera(
     mut motion_event_reader: EventReader<MouseMotion>,
-    mut camera_controller_event_writer: EventWriter<CameraControllerEvent>,
+    mut orbit_event_writer: EventWriter<OrbitEvent>,
 ) {
     for event in &mut motion_event_reader {
-        camera_controller_event_writer.send(CameraControllerEvent {
-            movement_delta: event.delta,
-        });
+        orbit_event_writer.send(OrbitEvent { delta: event.delta });
     }
 }
