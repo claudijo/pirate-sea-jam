@@ -19,14 +19,14 @@ pub struct OrbitEvent {
 fn orbit(
     window_query: Query<&Window>,
     mut orbit_event_reader: EventReader<OrbitEvent>,
-    mut orbit_camera_query: Query<(&mut Transform, &OrbitingCamera)>,
+    mut orbiting_camera_query: Query<(&mut Transform, &OrbitingCamera)>,
 ) {
     let mut orbit_move = Vec2::ZERO;
     for orbit_event in &mut orbit_event_reader {
         orbit_move += orbit_event.delta;
     }
 
-    for (mut transform, orbit_camera) in &mut orbit_camera_query {
+    for (mut transform, orbiting_camera) in &mut orbiting_camera_query {
         if orbit_move.length_squared() > 0.0 {
             let window = window_query.single();
             let window_width = window.resolution.width();
@@ -44,12 +44,12 @@ fn orbit(
         // parent = x and y rotation
         // child = z-offset
         let rot_matrix = Mat3::from_quat(transform.rotation);
-        transform.translation = orbit_camera.central_position
-            + rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, orbit_camera.radius));
+        transform.translation = orbiting_camera.central_position
+            + rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, orbiting_camera.radius));
     }
 }
 
-fn follow(
+fn center(
     mut orbit_camera_query: Query<&mut OrbitingCamera>,
     ship_query: Query<&Transform, With<PlayerShip>>,
 ) {
@@ -66,6 +66,6 @@ impl Plugin for OrbitingCameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<OrbitEvent>();
 
-        app.add_systems(Update, (orbit, follow).run_if(in_state(GameState::InGame)));
+        app.add_systems(Update, (orbit, center).run_if(in_state(GameState::InGame)));
     }
 }
