@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use bevy::window::{Cursor, CursorGrabMode};
 
 pub fn spawn_camera(mut commands: Commands) {
-    let pitch= 30_f32.to_radians();
+    let pitch = 30_f32.to_radians();
     let radius = 30. + 15. * pitch;
     let translation = Vec3::new(0.0, pitch.sin() * radius, pitch.cos() * radius);
     let central_position = Vec3::ZERO;
@@ -16,7 +16,8 @@ pub fn spawn_camera(mut commands: Commands) {
             ..default()
         },
         Camera3dBundle {
-            transform: Transform::from_translation(translation).looking_at(central_position, Vec3::Y),
+            transform: Transform::from_translation(translation)
+                .looking_at(central_position, Vec3::Y),
             ..default()
         },
     ));

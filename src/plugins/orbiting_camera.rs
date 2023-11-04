@@ -3,8 +3,8 @@
 use crate::components::ship::PlayerShip;
 use crate::game_state::GameState;
 use bevy::prelude::*;
-use std::f32::consts::PI;
 use bevy_rapier3d::parry::math::DEFAULT_EPSILON;
+use std::f32::consts::PI;
 
 #[derive(Component)]
 pub struct OrbitingCamera {
@@ -12,6 +12,8 @@ pub struct OrbitingCamera {
     pub radius: f32,
     pub pitch: f32,
     pub yaw: f32,
+    pub min_pitch: f32,
+    pub max_pitch: f32,
 }
 
 impl Default for OrbitingCamera {
@@ -21,6 +23,8 @@ impl Default for OrbitingCamera {
             radius: 10.,
             pitch: 30_f32.to_radians(),
             yaw: 0.,
+            min_pitch: 20_f32.to_radians(),
+            max_pitch: PI / 2.,
         }
     }
 }
@@ -49,10 +53,10 @@ fn orbit(
             let delta_x = orbit_move.x / window_width * PI * 2.0;
             let delta_y = orbit_move.y / window_height * PI;
 
-            orbiting_camera.pitch += delta_y;
+            orbiting_camera.pitch = (orbiting_camera.pitch + delta_y)
+                .clamp(orbiting_camera.min_pitch, orbiting_camera.max_pitch);
             orbiting_camera.yaw += delta_x;
 
-            orbiting_camera.pitch = orbiting_camera.pitch.clamp(20_f32.to_radians(), PI / 2.);
             orbiting_camera.radius = 30. + 15. * orbiting_camera.pitch;
 
             let yaw = Quat::from_rotation_y(-orbiting_camera.yaw);
