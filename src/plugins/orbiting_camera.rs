@@ -3,7 +3,6 @@
 use crate::components::ship::PlayerShip;
 use crate::game_state::GameState;
 use bevy::prelude::*;
-use bevy_rapier3d::parry::math::DEFAULT_EPSILON;
 use std::f32::consts::PI;
 
 #[derive(Component)]
