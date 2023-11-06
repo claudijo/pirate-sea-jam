@@ -27,13 +27,13 @@ impl Default for OrbitingCamera {
 }
 
 #[derive(Event)]
-pub struct OrbitEvent {
+pub struct OrbitMotion {
     pub delta: Vec2,
 }
 
 fn orbit(
     window_query: Query<&Window>,
-    mut orbit_event_reader: EventReader<OrbitEvent>,
+    mut orbit_event_reader: EventReader<OrbitMotion>,
     mut orbiting_camera_query: Query<(&mut Transform, &mut OrbitingCamera), Without<PlayerShip>>,
     player_ship_query: Query<&Transform, With<PlayerShip>>,
 ) {
@@ -78,7 +78,7 @@ pub struct OrbitingCameraPlugin;
 
 impl Plugin for OrbitingCameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<OrbitEvent>();
+        app.add_event::<OrbitMotion>();
 
         app.add_systems(Update, orbit.run_if(in_state(GameState::InGame)));
     }

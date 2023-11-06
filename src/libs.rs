@@ -1,2 +1,2 @@
-pub mod virtual_joystick;
+pub mod plugins;
 
