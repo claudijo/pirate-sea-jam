@@ -16,6 +16,7 @@ mod plugins;
 mod resources;
 mod systems;
 mod utils;
+mod libs;
 
 fn main() {
     let mut app = App::new();
@@ -52,7 +53,7 @@ fn main() {
 
     app.add_plugins((
         plugins::orbiting_camera::OrbitingCameraPlugin,
-        plugins::virtual_joystick::VirtualJoystickPlugin,
+        libs::virtual_joystick::VirtualJoystickPlugin,
     ));
 
     app.add_state::<game_state::GameState>();

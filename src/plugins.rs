@@ -14,5 +14,4 @@ pub mod ship;
 pub mod shooting_target;
 pub mod text;
 pub mod virtual_gamepad;
-pub mod virtual_joystick;
 pub mod wind;
