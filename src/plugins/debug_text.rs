@@ -3,10 +3,7 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct DebugText;
 
-pub fn spawn_debug_text(
-    mut commands: Commands,
-
-) {
+pub fn spawn_debug_text(mut commands: Commands) {
     commands.spawn((
         TextBundle::from_section(
             "...",
@@ -15,12 +12,12 @@ pub fn spawn_debug_text(
                 ..default()
             },
         )
-            .with_style(Style {
-                position_type: PositionType::Absolute,
-                bottom: Val::Px(5.0),
-                left: Val::Px(5.0),
-                ..default()
-            }),
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            bottom: Val::Px(5.0),
+            left: Val::Px(5.0),
+            ..default()
+        }),
         DebugText,
     ));
 }
