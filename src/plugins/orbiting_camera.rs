@@ -7,7 +7,6 @@ use std::f32::consts::PI;
 
 #[derive(Component)]
 pub struct OrbitingCamera {
-    pub central_position: Vec3,
     pub radius: f32,
     pub pitch: f32,
     pub yaw: f32,
@@ -18,7 +17,6 @@ pub struct OrbitingCamera {
 impl Default for OrbitingCamera {
     fn default() -> Self {
         OrbitingCamera {
-            central_position: Vec3::ZERO,
             radius: 10.,
             pitch: 30_f32.to_radians(),
             yaw: 0.,
@@ -36,14 +34,15 @@ pub struct OrbitEvent {
 fn orbit(
     window_query: Query<&Window>,
     mut orbit_event_reader: EventReader<OrbitEvent>,
-    mut orbiting_camera_query: Query<(&mut Transform, &mut OrbitingCamera)>,
+    mut orbiting_camera_query: Query<(&mut Transform, &mut OrbitingCamera), Without<PlayerShip>>,
+    player_ship_query: Query<&Transform, With<PlayerShip>>,
 ) {
     let mut orbit_move = Vec2::ZERO;
     for orbit_event in &mut orbit_event_reader {
         orbit_move += orbit_event.delta;
     }
 
-    for (mut transform, mut orbiting_camera) in &mut orbiting_camera_query {
+    for (mut camera_transform, mut orbiting_camera) in &mut orbiting_camera_query {
         if orbit_move.length_squared() > 0.0 {
             let window = window_query.single();
             let window_width = window.resolution.width();
@@ -61,25 +60,16 @@ fn orbit(
             let yaw = Quat::from_rotation_y(-orbiting_camera.yaw);
             let pitch = Quat::from_rotation_x(-orbiting_camera.pitch);
 
-            transform.rotation = yaw * pitch;
+            camera_transform.rotation = yaw * pitch;
         }
 
-        // emulating parent/child to make the yaw/y-axis rotation behave like a turntable
-        // parent = x and y rotation
-        // child = z-offset
-        let rot_matrix = Mat3::from_quat(transform.rotation);
-        transform.translation = orbiting_camera.central_position
-            + rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, orbiting_camera.radius));
-    }
-}
-
-fn center(
-    mut orbit_camera_query: Query<&mut OrbitingCamera>,
-    ship_query: Query<&Transform, With<PlayerShip>>,
-) {
-    if let Ok(transform) = ship_query.get_single() {
-        if let Ok(mut orbit_camera) = orbit_camera_query.get_single_mut() {
-            orbit_camera.central_position = transform.translation;
+        for target_transform in &player_ship_query {
+            // emulating parent/child to make the yaw/y-axis rotation behave like a turntable
+            // parent = x and y rotation
+            // child = z-offset
+            let rot_matrix = Mat3::from_quat(camera_transform.rotation);
+            camera_transform.translation = target_transform.translation
+                + rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, orbiting_camera.radius));
         }
     }
 }
@@ -90,6 +80,6 @@ impl Plugin for OrbitingCameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<OrbitEvent>();
 
-        app.add_systems(Update, (orbit, center).run_if(in_state(GameState::InGame)));
+        app.add_systems(Update, orbit.run_if(in_state(GameState::InGame)));
     }
 }

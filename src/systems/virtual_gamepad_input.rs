@@ -321,7 +321,7 @@ pub fn release_virtual_joystick(
         if let Some(touch_id) = tracker.touch_id {
             for event in touch_events.iter() {
                 if event.phase == TouchPhase::Ended || event.phase == TouchPhase::Canceled {
-                    if touch_id != event.id {
+                    if touch_id == event.id {
                         continue;
                     }
 

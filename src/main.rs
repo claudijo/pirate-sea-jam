@@ -45,12 +45,15 @@ fn main() {
         plugins::wind::WindPlugin,
         plugins::text::TextOverlayPlugin,
         plugins::artillery::ArsenalPlugin,
-        plugins::virtual_gamepad::VirtualGamepadPlugin,
+        // plugins::virtual_gamepad::VirtualGamepadPlugin,
         plugins::button::ButtonsReleasedPlugin,
         plugins::mouse::MousePlugin,
     ));
 
-    app.add_plugins((plugins::orbiting_camera::OrbitingCameraPlugin));
+    app.add_plugins((
+        plugins::orbiting_camera::OrbitingCameraPlugin,
+        plugins::virtual_joystick::VirtualJoystickPlugin,
+    ));
 
     app.add_state::<game_state::GameState>();
 
