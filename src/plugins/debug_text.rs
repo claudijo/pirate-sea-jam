@@ -3,6 +3,7 @@ use bevy::prelude::*;
 #[derive(Component)]
 pub struct DebugText;
 
+#[allow(dead_code)]
 pub fn spawn_debug_text(mut commands: Commands) {
     commands.spawn((
         TextBundle::from_section(

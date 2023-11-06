@@ -12,11 +12,11 @@ use bevy_rapier3d::prelude::*;
 mod components;
 mod events;
 mod game_state;
+mod libs;
 mod plugins;
 mod resources;
 mod systems;
 mod utils;
-mod libs;
 
 fn main() {
     let mut app = App::new();

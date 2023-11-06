@@ -1,19 +1,19 @@
-use bevy::input::mouse::MouseMotion;
 use crate::game_state::GameState;
-use crate::resources::player::InputDevice;
-use bevy::prelude::*;
 use crate::plugins::orbiting_camera::OrbitMotion;
-
+use crate::resources::player::InputDevice;
+use bevy::input::mouse::MouseMotion;
+use bevy::prelude::*;
 
 fn orbit_camera(
     mut mouse_motion_event_reader: EventReader<MouseMotion>,
     mut orbit_motion_event_writer: EventWriter<OrbitMotion>,
 ) {
     for mouse_motion_event in &mut mouse_motion_event_reader {
-        orbit_motion_event_writer.send(OrbitMotion { delta: mouse_motion_event.delta });
+        orbit_motion_event_writer.send(OrbitMotion {
+            delta: mouse_motion_event.delta,
+        });
     }
 }
-
 
 pub struct MouseInputPlugin;
 

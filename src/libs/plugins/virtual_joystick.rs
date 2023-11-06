@@ -8,13 +8,6 @@ const TOUCH_MARKER_SIZE: f32 = 48.;
 const ANCHOR_MARKER_SIZE: f32 = 24.;
 const TRAIL_MARKER_SIZE: f32 = 16.;
 const TRAIL_MARKERS_MIN_SPACING: f32 = 16.;
-const BUTTON_SIZE: f32 = 48.;
-const BUTTON_BORDER_NORMAL: Color = Color::rgba(1., 1., 1., 0.6);
-const BUTTON_BORDER_PRESSED: Color = Color::rgb(1., 1., 1.);
-const CROSS_BUTTON_NORMAL: Color = Color::rgba(0.49, 0.70, 0.91, 0.6);
-const CROSS_BUTTON_PRESSED: Color = Color::rgb(0.49, 0.70, 0.91);
-const CIRCLE_BUTTON_NORMAL: Color = Color::rgba(1., 0.4, 0.4, 0.6);
-const CIRCLE_BUTTON_PRESSED: Color = Color::rgb(1., 0.4, 0.4);
 
 #[derive(Event)]
 pub struct VirtualJoystickMotion {
@@ -22,6 +15,11 @@ pub struct VirtualJoystickMotion {
 
     // The identifier of the joystick
     pub id: u8,
+}
+
+#[derive(Resource, Default)]
+pub struct VirtualJoystickPosition {
+    pub by_joystick_id: HashMap<u8, Vec2>,
 }
 
 #[derive(Component, Debug)]
@@ -61,20 +59,12 @@ struct TouchMarker {
 struct KnobMarker;
 
 #[derive(Resource, Default)]
-pub struct TrailMarkerEntities {
+struct TrailMarkerEntities {
     pub by_touch_id: HashMap<u64, Vec<Entity>>,
 }
 
-pub fn trail_marker_spacing(anchor_knob_distance: f32) -> f32 {
+fn trail_marker_spacing(anchor_knob_distance: f32) -> f32 {
     TRAIL_MARKERS_MIN_SPACING + anchor_knob_distance * 0.1
-}
-
-// Might end up with some unwanted touch markers in the UI if not clearing all touch events on
-// entering the in game stage
-fn clear_touch_events(mut touch_event_reader: EventReader<TouchInput>) {
-    if !touch_event_reader.is_empty() {
-        touch_event_reader.clear();
-    }
 }
 
 fn spawn_knob_marker(commands: &mut Commands, position: Vec2, touch_id: u64) {
@@ -174,8 +164,7 @@ fn position_trail_markers(
                     .touch_start_position
                     .distance(joystick.touch_position);
                 let dot_spacing = trail_marker_spacing(touch_drag_distance);
-                let drag_inverse_vector =
-                    joystick.touch_start_position - joystick.touch_position;
+                let drag_inverse_vector = joystick.touch_start_position - joystick.touch_position;
 
                 let angle = drag_inverse_vector.y.atan2(drag_inverse_vector.x);
                 let angle_sin = angle.sin();
@@ -186,8 +175,7 @@ fn position_trail_markers(
                         let magnitude = (i + 1) as f32 * dot_spacing;
                         let trail_dot_offset =
                             Vec2::new(magnitude * angle_cos, magnitude * angle_sin);
-                        let trail_dot_position =
-                            joystick.touch_position + trail_dot_offset;
+                        let trail_dot_position = joystick.touch_position + trail_dot_offset;
 
                         trail_dot_style.left =
                             Val::Px(trail_dot_position.x - TRAIL_MARKER_SIZE / 2.);
@@ -201,7 +189,7 @@ fn position_trail_markers(
 }
 
 fn generate_trail_markers(
-    joystick_query: Query<(&Joystick)>,
+    joystick_query: Query<&Joystick>,
     mut touch_input_event_reader: EventReader<TouchInput>,
     mut commands: Commands,
     mut trail_marker_entities: ResMut<TrailMarkerEntities>,
@@ -211,7 +199,7 @@ fn generate_trail_markers(
             continue;
         }
 
-        for mut joystick in &joystick_query {
+        for joystick in &joystick_query {
             if joystick.is_hidden {
                 continue;
             }
@@ -260,6 +248,7 @@ fn handle_touch_start(
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<Button>)>,
     mut touch_input_event_reader: EventReader<TouchInput>,
     mut trail_marker_entities: ResMut<TrailMarkerEntities>,
+    mut virtual_joystick_position: ResMut<VirtualJoystickPosition>,
 ) {
     // Prevent handling touch starts on UI buttons
     for interaction in &interaction_query {
@@ -281,12 +270,24 @@ fn handle_touch_start(
 
                 joystick.touch_id = Some(touch_input_event.id);
                 joystick.touch_start_position = touch_input_event.position;
-                joystick.touch_position =  touch_input_event.position;
-                joystick.last_touch_position =  touch_input_event.position;
+                joystick.touch_position = touch_input_event.position;
+                joystick.last_touch_position = touch_input_event.position;
+
+                virtual_joystick_position
+                    .by_joystick_id
+                    .insert(joystick.id, Vec2::ZERO);
 
                 if !joystick.is_hidden {
-                    spawn_anchor_marker(&mut commands, touch_input_event.position, touch_input_event.id);
-                    spawn_knob_marker(&mut commands, touch_input_event.position, touch_input_event.id);
+                    spawn_anchor_marker(
+                        &mut commands,
+                        touch_input_event.position,
+                        touch_input_event.id,
+                    );
+                    spawn_knob_marker(
+                        &mut commands,
+                        touch_input_event.position,
+                        touch_input_event.id,
+                    );
 
                     trail_marker_entities
                         .by_touch_id
@@ -300,7 +301,8 @@ fn handle_touch_start(
 fn handle_touch_drag(
     mut touch_input_event_reader: EventReader<TouchInput>,
     mut joystick_query: Query<&mut Joystick>,
-    mut virtual_joystick_motion_event_writer: EventWriter<VirtualJoystickMotion>
+    mut virtual_joystick_motion_event_writer: EventWriter<VirtualJoystickMotion>,
+    mut virtual_joystick_position: ResMut<VirtualJoystickPosition>,
 ) {
     for touch_input_event in touch_input_event_reader.iter() {
         if touch_input_event.phase != TouchPhase::Moved {
@@ -315,6 +317,11 @@ fn handle_touch_drag(
 
                 joystick.last_touch_position = joystick.touch_position;
                 joystick.touch_position = touch_input_event.position;
+
+                virtual_joystick_position.by_joystick_id.insert(
+                    joystick.id,
+                    joystick.touch_position - joystick.touch_start_position,
+                );
 
                 virtual_joystick_motion_event_writer.send(VirtualJoystickMotion {
                     delta: joystick.touch_position - joystick.last_touch_position,
@@ -331,19 +338,24 @@ fn handle_touch_end(
     mut touch_input_event_reader: EventReader<TouchInput>,
     touch_marker_entities: Query<(Entity, &TouchMarker)>,
     mut trail_marker_entities: ResMut<TrailMarkerEntities>,
+    mut virtual_joystick_position: ResMut<VirtualJoystickPosition>,
 ) {
     for mut joystick in &mut joystick_query {
         if let Some(touch_id) = joystick.touch_id {
             for touch_input_event in touch_input_event_reader.iter() {
-                if touch_input_event.phase == TouchPhase::Ended || touch_input_event.phase == TouchPhase::Canceled {
-                    if touch_id == touch_input_event.id {
-                        trail_marker_entities.by_touch_id.remove(&touch_id);
-                        joystick.touch_id = None;
+                if (touch_input_event.phase == TouchPhase::Ended
+                    || touch_input_event.phase == TouchPhase::Canceled)
+                    && touch_id == touch_input_event.id
+                {
+                    trail_marker_entities.by_touch_id.remove(&touch_id);
+                    virtual_joystick_position
+                        .by_joystick_id
+                        .remove(&joystick.id);
+                    joystick.touch_id = None;
 
-                        for (entity, marker) in &touch_marker_entities {
-                            if marker.touch_id == touch_input_event.id {
-                                commands.entity(entity).despawn();
-                            }
+                    for (entity, marker) in &touch_marker_entities {
+                        if marker.touch_id == touch_input_event.id {
+                            commands.entity(entity).despawn();
                         }
                     }
                 }
@@ -357,13 +369,9 @@ pub struct VirtualJoystickPlugin;
 impl Plugin for VirtualJoystickPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(TrailMarkerEntities::default());
-        app.add_event::<VirtualJoystickMotion>();
+        app.insert_resource(VirtualJoystickPosition::default());
 
-        // app.add_systems(
-        //     OnEnter(GameState::InGame),
-        //     (spawn_left_stick, spawn_right_stick, clear_touch_events)
-        //         .run_if(resource_exists_and_equals(InputDevice::Touch)),
-        // );
+        app.add_event::<VirtualJoystickMotion>();
 
         app.add_systems(
             Update,
@@ -374,7 +382,7 @@ impl Plugin for VirtualJoystickPlugin {
                 generate_trail_markers,
                 position_trail_markers,
                 position_knob_marker,
-            )
+            ),
         );
     }
 }

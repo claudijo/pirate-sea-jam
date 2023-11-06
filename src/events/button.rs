@@ -1,4 +1,4 @@
 use bevy::prelude::*;
 
 #[derive(Deref, Event)]
-pub struct ButtonReleasedEvent(pub Entity);
+pub struct ButtonReleased(pub Entity);
