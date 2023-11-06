@@ -24,6 +24,6 @@ pub fn spawn_debug_text(mut commands: Commands) {
 }
 
 // Cheat sheet:
-// mut debug_text: Query<&mut Text, With<DebugText>>,
-// debug_text.single_mut().sections[0].value = output;
+// mut debug_text_query: Query<&mut Text, With<DebugText>>,
+// debug_text_query.single_mut().sections[0].value = "Some debug...";
 // app.add_systems(Startup, (crate::plugins::debug_text::spawn_debug_text));
