@@ -8,6 +8,7 @@ Demo and devlog available at [https://claudijo.itch.io/pirate-sea-jam](https://c
 
 ## Changelog and Feature List
 The following brief changelog includes main concepts and features
+* Orbiting camera (v0.7)
 * Mobile browser friendly (v0.6)
 * Firing cannons (v0.5)
 * Player control (v0.4)
