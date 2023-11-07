@@ -149,7 +149,7 @@ pub fn register_start_aim_cannon_animations(
         keyframe_timestamps: keyframe_timestamps.clone(),
         keyframes: Keyframes::Rotation(vec![
             Quat::from_rotation_y(PI) * Quat::from_rotation_z(0.),
-            Quat::from_rotation_y(PI) * Quat::from_rotation_z( -30_f32.to_radians()),
+            Quat::from_rotation_y(PI) * Quat::from_rotation_z(-30_f32.to_radians()),
             Quat::from_rotation_y(PI) * Quat::from_rotation_z(0.),
         ]),
     };
