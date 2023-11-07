@@ -34,12 +34,12 @@ pub fn register_stop_aim_cannon_animations(
 
     let reset_tilt_port_cannon_animation_curve = VariableCurve {
         keyframe_timestamps: keyframe_timestamps.clone(),
-        keyframes: Keyframes::Rotation(vec![Quat::from_axis_angle(Vec3::Z, PI)]),
+        keyframes: Keyframes::Rotation(vec![Quat::from_rotation_y(PI)]),
     };
 
     let reset_tilt_starboard_cannon_animation_curve = VariableCurve {
         keyframe_timestamps: keyframe_timestamps.clone(),
-        keyframes: Keyframes::Rotation(vec![Quat::from_axis_angle(Vec3::Z, 0.)]),
+        keyframes: Keyframes::Rotation(vec![Quat::from_rotation_y(0.)]),
     };
 
     let stretch_and_squash_cannon_animation_curve = VariableCurve {
@@ -148,18 +148,18 @@ pub fn register_start_aim_cannon_animations(
     let tilt_port_cannon_animation_curve = VariableCurve {
         keyframe_timestamps: keyframe_timestamps.clone(),
         keyframes: Keyframes::Rotation(vec![
-            Quat::from_axis_angle(Vec3::Z, PI),
-            Quat::from_axis_angle(Vec3::Z, PI + 30_f32.to_radians()),
-            Quat::from_axis_angle(Vec3::Z, PI),
+            Quat::from_rotation_y(PI) * Quat::from_rotation_z(0.),
+            Quat::from_rotation_y(PI) * Quat::from_rotation_z( -30_f32.to_radians()),
+            Quat::from_rotation_y(PI) * Quat::from_rotation_z(0.),
         ]),
     };
 
     let tilt_starboard_cannon_animation_curve = VariableCurve {
         keyframe_timestamps: keyframe_timestamps.clone(),
         keyframes: Keyframes::Rotation(vec![
-            Quat::from_axis_angle(Vec3::Z, 0.),
-            Quat::from_axis_angle(Vec3::Z, -30_f32.to_radians()),
-            Quat::from_axis_angle(Vec3::Z, 0.),
+            Quat::from_rotation_z(0.),
+            Quat::from_rotation_z(-30_f32.to_radians()),
+            Quat::from_rotation_z(0.),
         ]),
     };
 

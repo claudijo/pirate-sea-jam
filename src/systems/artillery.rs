@@ -1,5 +1,5 @@
 use crate::components::cannon::{Aim, Cannon, CannonBall};
-use crate::components::ship::Ship;
+use crate::components::ship::{PlayerShip, Ship};
 use crate::components::shooting_target::ShootingTarget;
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::resources::assets::ModelAssets;
@@ -78,7 +78,7 @@ pub fn handle_cannon_fire_event(
         Without<Ship>,
     >,
     mut fire_cannon_event_reader: EventReader<FireCannonEvent>,
-    mut ship_query: Query<(&Velocity, &mut ExternalImpulse), With<Ship>>,
+    mut ship_query: Query<(&Velocity, &mut ExternalImpulse), With<PlayerShip>>,
     animation_clips: Res<EndAimCannonAnimationClips>,
 ) {
     for event in fire_cannon_event_reader.iter() {
@@ -99,8 +99,8 @@ pub fn handle_cannon_fire_event(
                     );
                 }
 
-                // Make ship recoil
                 if let Ok((ship_velocity, mut external_impulse)) = ship_query.get_mut(cannon.rig) {
+                    // Make ship recoil
                     let recoil_scale = cannon.power * 10.;
                     external_impulse.torque_impulse += global_transform.forward() * recoil_scale;
 
@@ -132,66 +132,6 @@ pub fn handle_cannon_fire_event(
         }
     }
 }
-
-// pub fn tilt_cannon(
-//     mut cannon_query: Query<(&Aim, &mut Tilt, &mut Transform, &Cannon)>,
-//     mut fire_cannon_event_writer: EventWriter<FireCannonEvent>,
-//     time: Res<Time>,
-// ) {
-//     for (aim, mut tilt, mut transform, cannon) in &mut cannon_query {
-//         let (_, _, z_axis_rotation) = transform.rotation.to_euler(EulerRot::default());
-//
-//         // Accelerate incline
-//         if aim.is_targeting
-//             && tilt.velocity >= 0.
-//             && z_axis_rotation > -cannon.max_tilt.to_radians()
-//         {
-//             tilt.velocity += tilt.acceleration.to_radians() * time.delta_seconds();
-//             transform.rotation *= Quat::from_rotation_z(-tilt.velocity);
-//         }
-//
-//         // Invert tilt velocity at peak angle
-//         if aim.is_targeting
-//             && tilt.velocity >= 0.
-//             && z_axis_rotation <= -cannon.max_tilt.to_radians()
-//         {
-//             tilt.velocity *= -1.;
-//         }
-//
-//         // Decelerate decline while aiming
-//         if aim.is_targeting && tilt.velocity < 0. {
-//             tilt.velocity =
-//                 (tilt.velocity + tilt.acceleration.to_radians() * time.delta_seconds()).min(-0.02);
-//             transform.rotation *= Quat::from_rotation_z(-tilt.velocity);
-//         }
-//
-//         // Stop tilting down and possible force fire cannon
-//         if tilt.velocity < 0. && z_axis_rotation > 0. {
-//             tilt.velocity = 0.;
-//             tilt.stabilize_tilt_timer.reset();
-//
-//             if aim.is_targeting {
-//                 fire_cannon_event_writer.send(FireCannonEvent(cannon.rig));
-//             }
-//         }
-//
-//         // Invert tilt velocity after firing shot
-//         if !aim.is_targeting && tilt.velocity >= 0. {
-//             tilt.velocity *= -1.;
-//         }
-//
-//         if !aim.is_targeting && tilt.velocity < 0. {
-//             tilt.stabilize_tilt_timer.tick(time.delta());
-//         }
-//
-//         // Decelerate decline after firing shot after small timeout
-//         if !aim.is_targeting && tilt.velocity < 0. && tilt.stabilize_tilt_timer.finished() {
-//             tilt.velocity =
-//                 (tilt.velocity + tilt.acceleration.to_radians() * time.delta_seconds()).min(-0.02);
-//             transform.rotation *= Quat::from_rotation_z(-tilt.velocity);
-//         }
-//     }
-// }
 
 pub fn despawn_cannon_ball(
     mut commands: Commands,
