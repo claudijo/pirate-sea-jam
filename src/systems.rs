@@ -11,5 +11,4 @@ pub mod ocean;
 pub mod ship;
 pub mod shooting_target;
 pub mod text;
-pub mod virtual_gamepad_input;
 pub mod wind;

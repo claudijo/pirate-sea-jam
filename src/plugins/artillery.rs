@@ -13,7 +13,7 @@ impl Plugin for ArsenalPlugin {
                 artillery::despawn_cannon_ball,
                 artillery::handle_cannon_aim_event,
                 artillery::handle_cannon_fire_event,
-                artillery::tilt_cannon,
+                // artillery::tilt_cannon,
             )
                 .run_if(in_state(GameState::InGame)),
         );

@@ -1,13 +1,10 @@
 use bevy::prelude::*;
 
-#[derive(PartialEq, Eq)]
-pub enum PlayerId {
-    PlayerOne,
-}
+#[derive(Component)]
+pub struct PlayerShip;
 
 #[derive(Component)]
 pub struct Ship {
-    pub player_id: PlayerId,
     pub speed: f32,
     pub booster_power: f32,
     pub maneuverability: f32,
@@ -17,7 +14,6 @@ pub struct Ship {
 impl Default for Ship {
     fn default() -> Self {
         Self {
-            player_id: PlayerId::PlayerOne,
             speed: 3.,
             maneuverability: 1.4,
             booster_power: 160.,

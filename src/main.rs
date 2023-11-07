@@ -12,6 +12,7 @@ use bevy_rapier3d::prelude::*;
 mod components;
 mod events;
 mod game_state;
+mod libs;
 mod plugins;
 mod resources;
 mod systems;
@@ -47,6 +48,13 @@ fn main() {
         plugins::artillery::ArsenalPlugin,
         plugins::virtual_gamepad::VirtualGamepadPlugin,
         plugins::button::ButtonsReleasedPlugin,
+        plugins::mouse_input::MouseInputPlugin,
+    ));
+
+    app.add_plugins((
+        plugins::virtual_gamepad_input::VirtualGamepadInputPlugin,
+        plugins::orbiting_camera::OrbitingCameraPlugin,
+        libs::plugins::virtual_joystick::VirtualJoystickPlugin,
     ));
 
     app.add_state::<game_state::GameState>();
