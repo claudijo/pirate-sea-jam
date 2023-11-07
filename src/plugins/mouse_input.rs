@@ -1,10 +1,10 @@
+use crate::components::ship::PlayerShip;
+use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::game_state::GameState;
 use crate::plugins::orbiting_camera::OrbitMotion;
 use crate::resources::player::InputDevice;
 use bevy::input::mouse::MouseMotion;
 use bevy::prelude::*;
-use crate::components::ship::PlayerShip;
-use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 
 fn orbit_camera(
     mut mouse_motion_event_reader: EventReader<MouseMotion>,
