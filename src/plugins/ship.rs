@@ -8,7 +8,14 @@ pub struct ShipPlugin;
 impl Plugin for ShipPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ShipDespawnEntities::default())
-            .add_systems(OnEnter(GameState::InGame), ship::spawn_ship)
+            .add_systems(
+                OnEnter(GameState::InGame),
+                (
+                    ship::spawn_ship,
+                    ship::register_start_aim_cannon_animations,
+                    ship::register_stop_aim_cannon_animations,
+                ),
+            )
             .add_systems(
                 Update,
                 (
