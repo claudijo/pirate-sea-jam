@@ -7,7 +7,7 @@ pub struct DebugText;
 pub fn spawn_debug_text(mut commands: Commands) {
     commands.spawn((
         TextBundle::from_section(
-            "...",
+            "",
             TextStyle {
                 font_size: 16.0,
                 ..default()
@@ -24,6 +24,6 @@ pub fn spawn_debug_text(mut commands: Commands) {
 }
 
 // Cheat sheet:
-// mut debug_text_query: Query<&mut Text, With<DebugText>>,
-// debug_text_query.single_mut().sections[0].value = "Some debug...";
+// mut debug_text_query: Query<&mut Text, With<crate::plugins::debug_text::DebugText>>,
+// debug_text_query.single_mut().sections[0].value += &*format!("... \n");
 // app.add_systems(Startup, (crate::plugins::debug_text::spawn_debug_text));
