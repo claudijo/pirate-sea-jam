@@ -1,7 +1,7 @@
 use crate::components::button::ReleasableTouchButton;
 use crate::events::button::ButtonReleased;
 use crate::game_state::GameState;
-use crate::libs::plugins::virtual_joystick::Joystick;
+use crate::libs::plugins::virtual_joystick::{Joystick};
 use crate::resources::player::InputDevice;
 use bevy::prelude::*;
 use bevy::ui::RelativeCursorPosition;
@@ -9,7 +9,7 @@ use bevy::ui::RelativeCursorPosition;
 pub const PLAYER_SHIP_STEERING_JOYSTICK: u8 = 0;
 pub const CAMERA_JOYSTICK: u8 = 1;
 
-const GAMEPAD_BUTTON_SIZE: f32 = 48.;
+const GAMEPAD_BUTTON_SIZE: f32 = 56.;
 
 #[derive(Component)]
 pub struct VirtualGamepadButton {
@@ -44,7 +44,6 @@ const EAST_BUTTON_PRESSED: Color = Color::rgb(1., 0.4, 0.4);
 fn spawn_left_stick(mut commands: Commands) {
     commands.spawn((
         Joystick::with_id(PLAYER_SHIP_STEERING_JOYSTICK),
-        RelativeCursorPosition::default(),
         NodeBundle {
             style: Style {
                 width: Val::Percent(50.),
@@ -62,7 +61,6 @@ fn spawn_left_stick(mut commands: Commands) {
 fn spawn_right_stick(mut commands: Commands) {
     commands.spawn((
         Joystick::with_id(CAMERA_JOYSTICK).hide(),
-        RelativeCursorPosition::default(),
         NodeBundle {
             style: Style {
                 width: Val::Percent(50.),
@@ -91,7 +89,7 @@ fn spawn_south_button(mut commands: Commands) {
                 height: Val::Px(GAMEPAD_BUTTON_SIZE),
                 border: UiRect::all(Val::Px(6.0)),
                 bottom: Val::Px(32.),
-                right: Val::Px(96.),
+                right: Val::Px(128.),
                 position_type: PositionType::Absolute,
                 ..default()
             },
@@ -115,7 +113,7 @@ fn spawn_east_button(mut commands: Commands) {
                 width: Val::Px(GAMEPAD_BUTTON_SIZE),
                 height: Val::Px(GAMEPAD_BUTTON_SIZE),
                 border: UiRect::all(Val::Px(6.0)),
-                bottom: Val::Px(96.),
+                bottom: Val::Px(128.),
                 right: Val::Px(32.),
                 position_type: PositionType::Absolute,
                 ..default()

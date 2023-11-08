@@ -1,10 +1,9 @@
 use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
-use bevy::ui::RelativeCursorPosition;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-const TOUCH_MARKER_SIZE: f32 = 48.;
+const TOUCH_MARKER_SIZE: f32 = 56.;
 const ANCHOR_MARKER_SIZE: f32 = 24.;
 const TRAIL_MARKER_SIZE: f32 = 16.;
 const TRAIL_MARKERS_MIN_SPACING: f32 = 16.;
@@ -244,7 +243,7 @@ fn generate_trail_markers(
 
 fn handle_touch_start(
     mut commands: Commands,
-    mut joystick_query: Query<(&RelativeCursorPosition, &mut Joystick)>,
+    mut joystick_query: Query<(&Node, &GlobalTransform, &mut Joystick)>,
     interaction_query: Query<&Interaction, (Changed<Interaction>, With<Button>)>,
     mut touch_input_event_reader: EventReader<TouchInput>,
     mut trail_marker_entities: ResMut<TrailMarkerEntities>,
@@ -257,42 +256,47 @@ fn handle_touch_start(
         }
     }
 
-    for (relative_cursor_position, mut joystick) in &mut joystick_query {
-        if !relative_cursor_position.mouse_over() {
+    for touch_input_event in touch_input_event_reader.iter() {
+        if touch_input_event.phase != TouchPhase::Started {
             continue;
         }
 
-        for touch_input_event in touch_input_event_reader.iter() {
-            if touch_input_event.phase == TouchPhase::Started {
-                if joystick.touch_id.is_some() {
-                    continue;
-                }
+        for (node, global_transform, mut joystick) in &mut joystick_query {
+            let rect = node.logical_rect(global_transform);
+            let is_inside = rect.contains(touch_input_event.position);
 
-                joystick.touch_id = Some(touch_input_event.id);
-                joystick.touch_start_position = touch_input_event.position;
-                joystick.touch_position = touch_input_event.position;
-                joystick.last_touch_position = touch_input_event.position;
+            if !is_inside {
+                continue;
+            }
 
-                virtual_joystick_position
-                    .by_joystick_id
-                    .insert(joystick.id, Vec2::ZERO);
+            if joystick.touch_id.is_some() {
+                continue;
+            }
 
-                if !joystick.is_hidden {
-                    spawn_anchor_marker(
-                        &mut commands,
-                        touch_input_event.position,
-                        touch_input_event.id,
-                    );
-                    spawn_knob_marker(
-                        &mut commands,
-                        touch_input_event.position,
-                        touch_input_event.id,
-                    );
+            joystick.touch_id = Some(touch_input_event.id);
+            joystick.touch_start_position = touch_input_event.position;
+            joystick.touch_position = touch_input_event.position;
+            joystick.last_touch_position = touch_input_event.position;
 
-                    trail_marker_entities
-                        .by_touch_id
-                        .insert(touch_input_event.id, Vec::new());
-                }
+            virtual_joystick_position
+                .by_joystick_id
+                .insert(joystick.id, Vec2::ZERO);
+
+            if !joystick.is_hidden {
+                spawn_anchor_marker(
+                    &mut commands,
+                    touch_input_event.position,
+                    touch_input_event.id,
+                );
+                spawn_knob_marker(
+                    &mut commands,
+                    touch_input_event.position,
+                    touch_input_event.id,
+                );
+
+                trail_marker_entities
+                    .by_touch_id
+                    .insert(touch_input_event.id, Vec::new());
             }
         }
     }
@@ -336,27 +340,30 @@ fn handle_touch_end(
     mut commands: Commands,
     mut joystick_query: Query<&mut Joystick>,
     mut touch_input_event_reader: EventReader<TouchInput>,
-    touch_marker_entities: Query<(Entity, &TouchMarker)>,
     mut trail_marker_entities: ResMut<TrailMarkerEntities>,
     mut virtual_joystick_position: ResMut<VirtualJoystickPosition>,
+    touch_marker_entities: Query<(Entity, &TouchMarker)>,
 ) {
-    for mut joystick in &mut joystick_query {
-        if let Some(touch_id) = joystick.touch_id {
-            for touch_input_event in touch_input_event_reader.iter() {
-                if (touch_input_event.phase == TouchPhase::Ended
-                    || touch_input_event.phase == TouchPhase::Canceled)
-                    && touch_id == touch_input_event.id
-                {
-                    trail_marker_entities.by_touch_id.remove(&touch_id);
-                    virtual_joystick_position
-                        .by_joystick_id
-                        .remove(&joystick.id);
-                    joystick.touch_id = None;
+    for touch_input_event in touch_input_event_reader.iter() {
+        if !(touch_input_event.phase == TouchPhase::Ended || touch_input_event.phase == TouchPhase::Canceled) {
+            continue;
+        }
 
-                    for (entity, marker) in &touch_marker_entities {
-                        if marker.touch_id == touch_input_event.id {
-                            commands.entity(entity).despawn();
-                        }
+        for mut joystick in &mut joystick_query {
+            if let Some(touch_id) = joystick.touch_id {
+                if touch_id != touch_input_event.id {
+                    continue;
+                }
+
+                trail_marker_entities.by_touch_id.remove(&touch_id);
+                virtual_joystick_position
+                    .by_joystick_id
+                    .remove(&joystick.id);
+                joystick.touch_id = None;
+
+                for (entity, marker) in &touch_marker_entities {
+                    if marker.touch_id == touch_input_event.id {
+                        commands.entity(entity).despawn();
                     }
                 }
             }
