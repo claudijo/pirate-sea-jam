@@ -1,0 +1,9 @@
+{
+  "name": "Pirate Sea Jam",
+  "short_name": "Pirate Sea Jam",
+  "start_url": ".",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#ccc",
+  "description": "Jam-sized pirate game prototype in the making. Written in Rust and Bevy. Made with ❤"
+}

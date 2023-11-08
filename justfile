@@ -6,4 +6,4 @@ build-wasm:
     cp -r assets wasm/
 
 run: build-wasm
-    sfz ./wasm
+    sfz -b 0.0.0.0 ./wasm
