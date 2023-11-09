@@ -47,7 +47,6 @@ fn main() {
         plugins::text::TextOverlayPlugin,
         plugins::artillery::ArsenalPlugin,
         plugins::virtual_gamepad::VirtualGamepadPlugin,
-        plugins::button::ButtonsReleasedPlugin,
         plugins::mouse_input::MouseInputPlugin,
     ));
 

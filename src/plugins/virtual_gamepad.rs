@@ -1,12 +1,10 @@
-use bevy::input::touch::TouchPhase;
 use crate::components::button::ReleasableTouchButton;
-use crate::events::button::ButtonReleased;
 use crate::game_state::GameState;
-use crate::libs::plugins::virtual_joystick::{Joystick};
-use crate::resources::player::InputDevice;
-use bevy::prelude::*;
-use bevy::ui::RelativeCursorPosition;
 use crate::libs::plugins::touch_button::{TouchButtonBundle, TouchInteraction};
+use crate::libs::plugins::virtual_joystick::Joystick;
+use crate::resources::player::InputDevice;
+use bevy::input::touch::TouchPhase;
+use bevy::prelude::*;
 
 pub const PLAYER_SHIP_STEERING_JOYSTICK: u8 = 0;
 pub const CAMERA_JOYSTICK: u8 = 1;
@@ -131,9 +129,8 @@ fn handle_touch_button_interaction(
                     };
                     border_color.0 = BUTTON_BORDER_PRESSED;
 
-                    gamepad_button_pressed_event_writer.send(GamepadButtonPressed {
-                        id: *button_id,
-                    })
+                    gamepad_button_pressed_event_writer
+                        .send(GamepadButtonPressed { id: *button_id })
                 }
 
                 TouchPhase::Moved => {}
@@ -146,15 +143,13 @@ fn handle_touch_button_interaction(
                     };
                     border_color.0 = BUTTON_BORDER_NORMAL;
 
-                    gamepad_button_released_event_writer.send(GamepadButtonReleased {
-                        id: *button_id,
-                    })
+                    gamepad_button_released_event_writer
+                        .send(GamepadButtonReleased { id: *button_id })
                 }
             }
         }
     }
 }
-
 
 pub struct VirtualGamepadPlugin;
 
@@ -176,9 +171,7 @@ impl Plugin for VirtualGamepadPlugin {
 
         app.add_systems(
             Update,
-            (
-                handle_touch_button_interaction,
-            )
+            (handle_touch_button_interaction,)
                 .run_if(resource_exists_and_equals(InputDevice::Touch))
                 .run_if(in_state(GameState::InGame)),
         );

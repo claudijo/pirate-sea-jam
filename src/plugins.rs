@@ -1,6 +1,5 @@
 pub mod artillery;
 pub mod assets;
-pub mod button;
 pub mod camera;
 pub mod debug_text;
 pub mod keyboard;

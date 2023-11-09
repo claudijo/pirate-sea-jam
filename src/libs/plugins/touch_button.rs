@@ -1,6 +1,6 @@
-use bevy::input::touch::{ForceTouch, Touch};
-use bevy::prelude::*;
+use bevy::input::touch::ForceTouch;
 use bevy::input::touch::TouchPhase;
+use bevy::prelude::*;
 use bevy::ui::FocusPolicy;
 
 #[derive(Component, Default, Deref, DerefMut)]
@@ -42,7 +42,6 @@ pub struct TouchButtonBundle {
     pub z_index: ZIndex,
 }
 
-
 impl Default for TouchButtonBundle {
     fn default() -> Self {
         Self {
@@ -64,7 +63,7 @@ impl Default for TouchButtonBundle {
 pub fn handle_touch_event(
     mut touch_input_event_reader: EventReader<TouchInput>,
     mut touch_interaction_event_writer: EventWriter<TouchInteraction>,
-    mut touch_button_query: Query<(Entity, &Node, &GlobalTransform, &mut TouchId)>
+    mut touch_button_query: Query<(Entity, &Node, &GlobalTransform, &mut TouchId)>,
 ) {
     for touch_input_event in touch_input_event_reader.iter() {
         for (entity, node, global_transform, mut touch_id) in &mut touch_button_query {
@@ -101,7 +100,8 @@ pub fn handle_touch_event(
             }
 
             if fire_event {
-                touch_interaction_event_writer.send(TouchInteraction::new(&touch_input_event, entity));
+                touch_interaction_event_writer
+                    .send(TouchInteraction::new(touch_input_event, entity));
             }
         }
     }
