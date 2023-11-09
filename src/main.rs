@@ -55,6 +55,7 @@ fn main() {
         plugins::virtual_gamepad_input::VirtualGamepadInputPlugin,
         plugins::orbiting_camera::OrbitingCameraPlugin,
         libs::plugins::virtual_joystick::VirtualJoystickPlugin,
+        libs::plugins::touch_button::TouchButtonPlugin,
     ));
 
     app.add_state::<game_state::GameState>();

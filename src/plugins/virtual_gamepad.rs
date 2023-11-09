@@ -1,3 +1,4 @@
+use bevy::input::touch::TouchPhase;
 use crate::components::button::ReleasableTouchButton;
 use crate::events::button::ButtonReleased;
 use crate::game_state::GameState;
@@ -5,20 +6,14 @@ use crate::libs::plugins::virtual_joystick::{Joystick};
 use crate::resources::player::InputDevice;
 use bevy::prelude::*;
 use bevy::ui::RelativeCursorPosition;
+use crate::libs::plugins::touch_button::{TouchButtonBundle, TouchInteraction};
 
 pub const PLAYER_SHIP_STEERING_JOYSTICK: u8 = 0;
 pub const CAMERA_JOYSTICK: u8 = 1;
 
 const GAMEPAD_BUTTON_SIZE: f32 = 56.;
 
-#[derive(Component)]
-pub struct VirtualGamepadButton {
-    background_color_normal: Color,
-    background_color_pressed: Color,
-    id: ButtonId,
-}
-
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Component, Clone, Copy, PartialEq)]
 pub enum ButtonId {
     East,
     South,
@@ -77,13 +72,8 @@ fn spawn_right_stick(mut commands: Commands) {
 
 fn spawn_south_button(mut commands: Commands) {
     commands.spawn((
-        VirtualGamepadButton {
-            background_color_normal: SOUTH_BUTTON_NORMAL,
-            background_color_pressed: SOUTH_BUTTON_PRESSED,
-            id: ButtonId::South,
-        },
-        ReleasableTouchButton::default(),
-        ButtonBundle {
+        ButtonId::South,
+        TouchButtonBundle {
             style: Style {
                 width: Val::Px(GAMEPAD_BUTTON_SIZE),
                 height: Val::Px(GAMEPAD_BUTTON_SIZE),
@@ -102,13 +92,9 @@ fn spawn_south_button(mut commands: Commands) {
 
 fn spawn_east_button(mut commands: Commands) {
     commands.spawn((
-        VirtualGamepadButton {
-            background_color_normal: EAST_BUTTON_NORMAL,
-            background_color_pressed: EAST_BUTTON_PRESSED,
-            id: ButtonId::East,
-        },
+        ButtonId::East,
         ReleasableTouchButton::default(),
-        ButtonBundle {
+        TouchButtonBundle {
             style: Style {
                 width: Val::Px(GAMEPAD_BUTTON_SIZE),
                 height: Val::Px(GAMEPAD_BUTTON_SIZE),
@@ -125,54 +111,50 @@ fn spawn_east_button(mut commands: Commands) {
     ));
 }
 
-fn handle_gamepad_button_interaction(
-    mut interaction_query: Query<
-        (
-            &Interaction,
-            &mut BackgroundColor,
-            &mut BorderColor,
-            &VirtualGamepadButton,
-        ),
-        Changed<Interaction>,
-    >,
+fn handle_touch_button_interaction(
+    mut touch_interaction_event_reader: EventReader<TouchInteraction>,
+    mut button_query: Query<(Entity, &ButtonId, &mut BackgroundColor, &mut BorderColor)>,
     mut gamepad_button_pressed_event_writer: EventWriter<GamepadButtonPressed>,
-) {
-    for (interaction, mut background_color, mut border_color, virtual_gamepad_button) in
-        &mut interaction_query
-    {
-        match *interaction {
-            Interaction::Pressed => {
-                *background_color = virtual_gamepad_button.background_color_pressed.into();
-                border_color.0 = BUTTON_BORDER_PRESSED;
-
-                gamepad_button_pressed_event_writer.send(GamepadButtonPressed {
-                    id: virtual_gamepad_button.id,
-                })
-            }
-
-            Interaction::None => {
-                *background_color = virtual_gamepad_button.background_color_normal.into();
-                border_color.0 = BUTTON_BORDER_NORMAL;
-            }
-
-            Interaction::Hovered => {}
-        }
-    }
-}
-
-pub fn handle_gamepad_button_release(
-    mut button_release_event_reader: EventReader<ButtonReleased>,
     mut gamepad_button_released_event_writer: EventWriter<GamepadButtonReleased>,
-    virtual_gamepad_button_query: Query<&VirtualGamepadButton>,
 ) {
-    for button_released in button_release_event_reader.iter() {
-        if let Ok(virtual_gamepad_button) = virtual_gamepad_button_query.get(**button_released) {
-            gamepad_button_released_event_writer.send(GamepadButtonReleased {
-                id: virtual_gamepad_button.id,
-            })
+    for touch_interaction in touch_interaction_event_reader.iter() {
+        for (entity, button_id, mut background_color, mut border_color) in &mut button_query {
+            if entity != touch_interaction.source {
+                continue;
+            }
+
+            match touch_interaction.phase {
+                TouchPhase::Started => {
+                    *background_color = match button_id {
+                        ButtonId::East => EAST_BUTTON_PRESSED.into(),
+                        ButtonId::South => SOUTH_BUTTON_PRESSED.into(),
+                    };
+                    border_color.0 = BUTTON_BORDER_PRESSED;
+
+                    gamepad_button_pressed_event_writer.send(GamepadButtonPressed {
+                        id: *button_id,
+                    })
+                }
+
+                TouchPhase::Moved => {}
+
+                // Ended or Canceled
+                _ => {
+                    *background_color = match button_id {
+                        ButtonId::East => EAST_BUTTON_NORMAL.into(),
+                        ButtonId::South => SOUTH_BUTTON_NORMAL.into(),
+                    };
+                    border_color.0 = BUTTON_BORDER_NORMAL;
+
+                    gamepad_button_released_event_writer.send(GamepadButtonReleased {
+                        id: *button_id,
+                    })
+                }
+            }
         }
     }
 }
+
 
 pub struct VirtualGamepadPlugin;
 
@@ -195,8 +177,7 @@ impl Plugin for VirtualGamepadPlugin {
         app.add_systems(
             Update,
             (
-                handle_gamepad_button_interaction,
-                handle_gamepad_button_release,
+                handle_touch_button_interaction,
             )
                 .run_if(resource_exists_and_equals(InputDevice::Touch))
                 .run_if(in_state(GameState::InGame)),

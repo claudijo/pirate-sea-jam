@@ -2,11 +2,45 @@ use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
 use std::cmp::Ordering;
 use std::collections::HashMap;
+use bevy::ui::FocusPolicy;
 
 const TOUCH_MARKER_SIZE: f32 = 56.;
 const ANCHOR_MARKER_SIZE: f32 = 24.;
 const TRAIL_MARKER_SIZE: f32 = 16.;
 const TRAIL_MARKERS_MIN_SPACING: f32 = 16.;
+
+
+#[derive(Bundle)]
+pub struct VirtualJoystickBundle {
+    pub focus_policy: FocusPolicy,
+    pub node: Node,
+    pub style: Style,
+    pub background_color: BackgroundColor,
+    pub border_color: BorderColor,
+    pub transform: Transform,
+    pub global_transform: GlobalTransform,
+    pub visibility: Visibility,
+    pub computed_visibility: ComputedVisibility,
+    pub z_index: ZIndex,
+}
+
+
+impl Default for VirtualJoystickBundle {
+    fn default() -> Self {
+        Self {
+            focus_policy: FocusPolicy::Block,
+            node: Default::default(),
+            style: Default::default(),
+            background_color: Default::default(),
+            border_color: BorderColor(Color::NONE),
+            transform: Default::default(),
+            global_transform: Default::default(),
+            visibility: Default::default(),
+            computed_visibility: Default::default(),
+            z_index: Default::default(),
+        }
+    }
+}
 
 #[derive(Event)]
 pub struct VirtualJoystickMotion {
