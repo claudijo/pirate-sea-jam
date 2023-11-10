@@ -2,7 +2,7 @@ use crate::components::ship::{PlayerShip, ShipBooster, ShipRudder};
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::game_state::GameState;
 use crate::libs::plugins::virtual_joystick::{VirtualJoystickMotion, VirtualJoystickPosition};
-use crate::plugins::orbiting_camera::OrbitMotion;
+use crate::plugins::orbiting_camera::{OrbitMotion, OrbitingCamera};
 use crate::plugins::virtual_gamepad::{
     ButtonId, GamepadButtonPressed, GamepadButtonReleased, CAMERA_JOYSTICK,
     PLAYER_SHIP_STEERING_JOYSTICK,
@@ -29,6 +29,7 @@ fn handle_player_ship_joystick_position(
     mut rudder_query: Query<&mut ShipRudder>,
     ship_query: Query<&Transform, With<PlayerShip>>,
     virtual_joystick_position: ResMut<VirtualJoystickPosition>,
+    orbiting_camera_query: Query<&OrbitingCamera>,
     time: Res<Time>,
 ) {
     for mut rudder in &mut rudder_query {
@@ -38,15 +39,20 @@ fn handle_player_ship_joystick_position(
         {
             rudder.is_turning = true;
 
-            for transform in &ship_query {
-                let ship_forward = transform.forward();
-                let controller_angle = controller_direction.angle_between(ship_forward.xz());
-                if controller_angle < 0. {
-                    let new_angle = rudder.turn_rate - time.delta_seconds() * RATE_OF_ROTATION;
-                    rudder.turn_rate = new_angle.max(-TURN_RATE_LIMIT);
-                } else {
-                    let new_angle = rudder.turn_rate + time.delta_seconds() * RATE_OF_ROTATION;
-                    rudder.turn_rate = new_angle.min(TURN_RATE_LIMIT);
+            for camera in &orbiting_camera_query {
+                let controller_direction =
+                    Vec2::new(camera.yaw.cos(), camera.yaw.sin()).rotate(*controller_direction);
+
+                for ship_transform in &ship_query {
+                    let ship_forward = ship_transform.forward();
+                    let controller_angle = controller_direction.angle_between(ship_forward.xz());
+                    if controller_angle < 0. {
+                        let new_angle = rudder.turn_rate - time.delta_seconds() * RATE_OF_ROTATION;
+                        rudder.turn_rate = new_angle.max(-TURN_RATE_LIMIT);
+                    } else {
+                        let new_angle = rudder.turn_rate + time.delta_seconds() * RATE_OF_ROTATION;
+                        rudder.turn_rate = new_angle.min(TURN_RATE_LIMIT);
+                    }
                 }
             }
         } else {
