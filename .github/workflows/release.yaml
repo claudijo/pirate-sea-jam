@@ -8,7 +8,6 @@ on:
 env:
   # update with the name of the main binary
   binary: pirate-sea-jam
-  unoptimized_binary: unoptimized-binary
   add_binaries_to_github_release: true
   itch_target: claudijo/pirate-sea-jam
 
@@ -45,7 +44,7 @@ jobs:
 
       - name: Optimize
         run: |
-          wasm-opt -O -ol 100 -s 100 -o ${{ env.binary }}.wasm ${{ env.binary }}.wasm
+          wasm-opt -O -ol 100 -s 100 -o wasm/${{ env.binary }}.wasm wasm/${{ env.binary }}.wasm
 
       - name: Package as a zip
         working-directory: ./wasm
