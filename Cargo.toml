@@ -8,3 +8,8 @@ license = "MIT OR Apache-2.0"
 bevy = "0.11"
 bevy_rapier3d = "0.22.0"
 rand = "0.8.5"
+
+# Optimize for WASM builds for size (see https://bevy-cheatbook.github.io/platforms/wasm/size-opt.html)
+[profile.release]
+opt-level = 's'
+lto = "thin"

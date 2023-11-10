@@ -8,6 +8,7 @@ on:
 env:
   # update with the name of the main binary
   binary: pirate-sea-jam
+  unoptimized_binary: unoptimized-binary
   add_binaries_to_github_release: true
   itch_target: claudijo/pirate-sea-jam
 
@@ -35,8 +36,16 @@ jobs:
 
       - name: Prepare package
         run: |
-          wasm-bindgen --no-typescript --out-name bevy_game --out-dir wasm --target web target/wasm32-unknown-unknown/release/${{ env.binary }}.wasm
+          wasm-bindgen --no-typescript --out-name bevy_game --out-dir wasm --target web target/wasm32-unknown-unknown/release/${{ env.unoptimized_binary }}.wasm
           cp -r assets wasm/
+
+      - name: Install optimization toolchain
+        run: |
+          sudo apt install binaryen
+
+      - name: Optimize
+        run: |
+          wasm-opt -O -ol 100 -s 100 -o ${{ env.binary }}.wasm ${{ env.unoptimized_binary }}.wasm
 
       - name: Package as a zip
         working-directory: ./wasm
