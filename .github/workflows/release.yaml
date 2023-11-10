@@ -36,7 +36,7 @@ jobs:
 
       - name: Prepare package
         run: |
-          wasm-bindgen --no-typescript --out-name bevy_game --out-dir wasm --target web target/wasm32-unknown-unknown/release/${{ env.unoptimized_binary }}.wasm
+          wasm-bindgen --no-typescript --out-name bevy_game --out-dir wasm --target web target/wasm32-unknown-unknown/release/${{ env.binary }}.wasm
           cp -r assets wasm/
 
       - name: Install optimization toolchain
@@ -45,7 +45,7 @@ jobs:
 
       - name: Optimize
         run: |
-          wasm-opt -O -ol 100 -s 100 -o ${{ env.binary }}.wasm ${{ env.unoptimized_binary }}.wasm
+          wasm-opt -O -ol 100 -s 100 -o ${{ env.binary }}.wasm ${{ env.binary }}.wasm
 
       - name: Package as a zip
         working-directory: ./wasm
