@@ -44,7 +44,10 @@ jobs:
 
       - name: Optimize
         run: |
-          wasm-opt -O -ol 100 -s 100 -o ./wasm/${{ env.binary }}.wasm ./wasm/${{ env.binary }}.wasm
+          ls -l ./wasm
+          mv ./wasm/bevy_game_bg.wasm ./wasm/bevy_game_bg_unoptimized.wasm
+          wasm-opt -O -ol 100 -s 100 -o ./wasm/bevy_game_bg.wasm ./wasm/bevy_game_bg_unoptimized.wasm
+          rm ./wasm/bevy_game_bg_unoptimized.wasm
 
       - name: Package as a zip
         working-directory: ./wasm
