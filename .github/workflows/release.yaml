@@ -43,8 +43,9 @@ jobs:
           sudo apt install binaryen
 
       - name: Optimize
+        working-directory: ./wasm
         run: |
-          wasm-opt -O -ol 100 -s 100 -o wasm/${{ env.binary }}.wasm wasm/${{ env.binary }}.wasm
+          wasm-opt -O -ol 100 -s 100 -o ${{ env.binary }}.wasm ${{ env.binary }}.wasm
 
       - name: Package as a zip
         working-directory: ./wasm
