@@ -2,7 +2,7 @@ use crate::components::button::{ResetGameButton, StartGameButton};
 use crate::components::layout::StartMenuLayout;
 use crate::events::game::RestartGameEvent;
 use crate::game_state::GameState;
-use crate::resources::assets::FontAssets;
+use crate::plugins::assets::FontAssets;
 use crate::resources::player::InputDevice;
 use bevy::input::touch::TouchPhase;
 use bevy::prelude::*;
@@ -85,7 +85,7 @@ pub fn handle_main_menu_interactions(
     for (interaction, mut background_color) in &mut button_query {
         match *interaction {
             Interaction::Pressed => {
-                for event in touch_events.iter() {
+                for event in touch_events.read() {
                     if event.phase == TouchPhase::Started {
                         *device = InputDevice::Touch;
                     }

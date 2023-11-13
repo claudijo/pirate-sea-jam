@@ -16,7 +16,7 @@ fn handle_camera_joystick_movement(
     mut virtual_joystick_motion_event_reader: EventReader<VirtualJoystickMotion>,
     mut orbit_motion_event_writer: EventWriter<OrbitMotion>,
 ) {
-    for virtual_joystick_motion in &mut virtual_joystick_motion_event_reader {
+    for virtual_joystick_motion in virtual_joystick_motion_event_reader.read() {
         if virtual_joystick_motion.id == CAMERA_JOYSTICK {
             orbit_motion_event_writer.send(OrbitMotion {
                 delta: virtual_joystick_motion.delta,
@@ -66,7 +66,7 @@ fn handle_gamepad_button_pressed(
     mut gamepad_button_pressed_event_reader: EventReader<GamepadButtonPressed>,
     mut aim_cannon_event_writer: EventWriter<AimCannonEvent>,
 ) {
-    for gamepad_pressed in gamepad_button_pressed_event_reader.iter() {
+    for gamepad_pressed in gamepad_button_pressed_event_reader.read() {
         match gamepad_pressed.id {
             ButtonId::South => {
                 for (entity, _) in &ship_query {
@@ -88,7 +88,7 @@ fn handle_gamepad_button_released(
     mut gamepad_button_released_event_reader: EventReader<GamepadButtonReleased>,
     mut fire_cannon_event_writer: EventWriter<FireCannonEvent>,
 ) {
-    for gamepad_released in gamepad_button_released_event_reader.iter() {
+    for gamepad_released in gamepad_button_released_event_reader.read() {
         if gamepad_released.id == ButtonId::South {
             for entity in &ship_query {
                 fire_cannon_event_writer.send(FireCannonEvent(entity));

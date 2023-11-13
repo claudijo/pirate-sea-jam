@@ -4,7 +4,7 @@ use crate::components::ship::{
     PlayerShip, Ship, ShipBooster, ShipFlag, ShipHelm, ShipRudder, ShipSail,
 };
 use crate::events::game::RestartGameEvent;
-use crate::resources::assets::ModelAssets;
+use crate::plugins::assets::ModelAssets;
 use crate::resources::despawn::ShipDespawnEntities;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;

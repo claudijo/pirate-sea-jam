@@ -19,7 +19,8 @@ pub struct VirtualJoystickBundle {
     pub transform: Transform,
     pub global_transform: GlobalTransform,
     pub visibility: Visibility,
-    pub computed_visibility: ComputedVisibility,
+    pub inherited_visibility: InheritedVisibility,
+    pub view_visibility: ViewVisibility,
     pub z_index: ZIndex,
 }
 
@@ -34,7 +35,8 @@ impl Default for VirtualJoystickBundle {
             transform: Default::default(),
             global_transform: Default::default(),
             visibility: Default::default(),
-            computed_visibility: Default::default(),
+            inherited_visibility: Default::default(),
+            view_visibility: Default::default(),
             z_index: Default::default(),
         }
     }
@@ -124,7 +126,7 @@ fn position_knob_marker(
     mut touch_input_event_reader: EventReader<TouchInput>,
     mut knob_marker_query: Query<(&mut Style, &TouchMarker), With<KnobMarker>>,
 ) {
-    for touch_input_event in touch_input_event_reader.iter() {
+    for touch_input_event in touch_input_event_reader.read() {
         if touch_input_event.phase != TouchPhase::Moved {
             continue;
         }
@@ -225,7 +227,7 @@ fn generate_trail_markers(
     mut commands: Commands,
     mut trail_marker_entities: ResMut<TrailMarkerEntities>,
 ) {
-    for touch_input_event in touch_input_event_reader.iter() {
+    for touch_input_event in touch_input_event_reader.read() {
         if touch_input_event.phase != TouchPhase::Moved {
             continue;
         }
@@ -288,7 +290,7 @@ fn handle_touch_start(
         }
     }
 
-    for touch_input_event in touch_input_event_reader.iter() {
+    for touch_input_event in touch_input_event_reader.read() {
         if touch_input_event.phase != TouchPhase::Started {
             continue;
         }
@@ -340,7 +342,7 @@ fn handle_touch_drag(
     mut virtual_joystick_motion_event_writer: EventWriter<VirtualJoystickMotion>,
     mut virtual_joystick_position: ResMut<VirtualJoystickPosition>,
 ) {
-    for touch_input_event in touch_input_event_reader.iter() {
+    for touch_input_event in touch_input_event_reader.read() {
         if touch_input_event.phase != TouchPhase::Moved {
             continue;
         }
@@ -376,7 +378,7 @@ fn handle_touch_end(
     mut virtual_joystick_position: ResMut<VirtualJoystickPosition>,
     touch_marker_entities: Query<(Entity, &TouchMarker)>,
 ) {
-    for touch_input_event in touch_input_event_reader.iter() {
+    for touch_input_event in touch_input_event_reader.read() {
         if !(touch_input_event.phase == TouchPhase::Ended
             || touch_input_event.phase == TouchPhase::Canceled)
         {
