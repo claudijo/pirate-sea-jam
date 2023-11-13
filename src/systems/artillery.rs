@@ -2,10 +2,11 @@ use crate::components::cannon::{Aim, Cannon, CannonBall};
 use crate::components::ship::{PlayerShip, Ship};
 use crate::components::shooting_target::ShootingTarget;
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
-use crate::resources::assets::ModelAssets;
+use crate::plugins::assets::ModelAssets;
 use crate::resources::wave_machine::WaveMachine;
 use crate::systems::ship::{EndAimCannonAnimationClips, StartAimCannonAnimationClips};
 use crate::utils::targeting;
+use bevy::animation::RepeatAnimation;
 use bevy::prelude::*;
 use bevy_rapier3d::geometry::ColliderMassProperties::Density;
 use bevy_rapier3d::prelude::*;
@@ -25,7 +26,7 @@ pub fn handle_cannon_aim_event(
     mut aim_cannon_event_reader: EventReader<AimCannonEvent>,
     animation_clips: Res<StartAimCannonAnimationClips>,
 ) {
-    for event in aim_cannon_event_reader.iter() {
+    for event in aim_cannon_event_reader.read() {
         if let Ok(ship_transform) = ship_query.get(**event) {
             let target_translations = shooting_target_query
                 .iter()
@@ -81,7 +82,7 @@ pub fn handle_cannon_fire_event(
     mut ship_query: Query<(&Velocity, &mut ExternalImpulse), With<PlayerShip>>,
     animation_clips: Res<EndAimCannonAnimationClips>,
 ) {
-    for event in fire_cannon_event_reader.iter() {
+    for event in fire_cannon_event_reader.read() {
         let mut rng = rand::thread_rng();
 
         for (global_transform, mut aim, mut animation_player, name, cannon) in &mut cannon_query {
@@ -93,10 +94,12 @@ pub fn handle_cannon_fire_event(
                 aim.is_targeting = false;
 
                 if let Some(animation_clip_handle) = animation_clips.handles.get(name.as_str()) {
-                    animation_player.stop_repeating().play_with_transition(
-                        animation_clip_handle.clone_weak(),
-                        Duration::from_secs(1.2 as u64),
-                    );
+                    animation_player
+                        .set_repeat(RepeatAnimation::Never)
+                        .play_with_transition(
+                            animation_clip_handle.clone_weak(),
+                            Duration::from_secs(1.2 as u64),
+                        );
                 }
 
                 if let Ok((ship_velocity, mut external_impulse)) = ship_query.get_mut(cannon.rig) {

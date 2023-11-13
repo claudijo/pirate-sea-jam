@@ -38,7 +38,8 @@ pub struct TouchButtonBundle {
     pub transform: Transform,
     pub global_transform: GlobalTransform,
     pub visibility: Visibility,
-    pub computed_visibility: ComputedVisibility,
+    pub inherited_visibility: InheritedVisibility,
+    pub view_visibility: ViewVisibility,
     pub z_index: ZIndex,
 }
 
@@ -54,7 +55,8 @@ impl Default for TouchButtonBundle {
             transform: Default::default(),
             global_transform: Default::default(),
             visibility: Default::default(),
-            computed_visibility: Default::default(),
+            inherited_visibility: Default::default(),
+            view_visibility: Default::default(),
             z_index: Default::default(),
         }
     }
@@ -65,7 +67,7 @@ pub fn handle_touch_event(
     mut touch_interaction_event_writer: EventWriter<TouchInteraction>,
     mut touch_button_query: Query<(Entity, &Node, &GlobalTransform, &mut TouchId)>,
 ) {
-    for touch_input_event in touch_input_event_reader.iter() {
+    for touch_input_event in touch_input_event_reader.read() {
         for (entity, node, global_transform, mut touch_id) in &mut touch_button_query {
             let mut fire_event = false;
 

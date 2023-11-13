@@ -10,7 +10,7 @@ fn orbit_camera(
     mut mouse_motion_event_reader: EventReader<MouseMotion>,
     mut orbit_motion_event_writer: EventWriter<OrbitMotion>,
 ) {
-    for mouse_motion_event in &mut mouse_motion_event_reader {
+    for mouse_motion_event in mouse_motion_event_reader.read() {
         orbit_motion_event_writer.send(OrbitMotion {
             delta: mouse_motion_event.delta,
         });

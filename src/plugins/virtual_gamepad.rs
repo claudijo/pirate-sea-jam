@@ -115,7 +115,7 @@ fn handle_touch_button_interaction(
     mut gamepad_button_pressed_event_writer: EventWriter<GamepadButtonPressed>,
     mut gamepad_button_released_event_writer: EventWriter<GamepadButtonReleased>,
 ) {
-    for touch_interaction in touch_interaction_event_reader.iter() {
+    for touch_interaction in touch_interaction_event_reader.read() {
         for (entity, button_id, mut background_color, mut border_color) in &mut button_query {
             if entity != touch_interaction.source {
                 continue;

@@ -2,7 +2,7 @@ use crate::components::pontoon::Pontoon;
 use crate::components::ship::ShipFlag;
 use crate::components::shooting_target::ShootingTarget;
 use crate::events::game::RestartGameEvent;
-use crate::resources::assets::ModelAssets;
+use crate::plugins::assets::ModelAssets;
 use crate::resources::despawn::ShootingTargetDespawnEntities;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;

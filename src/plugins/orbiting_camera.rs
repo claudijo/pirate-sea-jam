@@ -38,7 +38,7 @@ fn orbit(
     player_ship_query: Query<&Transform, With<PlayerShip>>,
 ) {
     let mut orbit_move = Vec2::ZERO;
-    for orbit_event in &mut orbit_event_reader {
+    for orbit_event in orbit_event_reader.read() {
         orbit_move += orbit_event.delta;
     }
 
