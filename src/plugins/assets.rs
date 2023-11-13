@@ -1,9 +1,7 @@
 use crate::game_state::GameState;
-use bevy::asset::AssetEvent::LoadedWithDependencies;
-use bevy::asset::{LoadState, LoadedFolder, LoadedUntypedAsset, RecursiveDependencyLoadState};
+use bevy::asset::LoadState;
 use bevy::prelude::*;
 use std::collections::HashMap;
-use bevy::asset::LoadState::Loaded;
 
 const MODEL_FILE_NAMES: [&str; 8] = [
     "medium_flag.glb",
@@ -18,11 +16,11 @@ const MODEL_FILE_NAMES: [&str; 8] = [
 
 const FONT_FILE_NAMES: [&str; 1] = ["the-bomb-regular.otf"];
 
-#[derive(Resource, Default)]
-pub struct LoadedFolderHandles {
-    model_folder: Handle<LoadedFolder>,
-    font_folder: Handle<LoadedFolder>,
-}
+// #[derive(Resource, Default)]
+// struct LoadedFolderHandles {
+//     model_folder: Handle<LoadedFolder>,
+//     font_folder: Handle<LoadedFolder>,
+// }
 
 #[derive(Resource)]
 pub struct ModelAssets {
@@ -90,7 +88,6 @@ fn check_assets_ready(
             all_loaded = false;
             break;
         }
-
     }
 
     for asset in font_assets.font_handles.values() {
@@ -179,7 +176,7 @@ pub struct AssetsPlugin;
 
 impl Plugin for AssetsPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<LoadedFolderHandles>();
+        // app.init_resource::<LoadedFolderHandles>();
 
         app.add_systems(OnEnter(GameState::LoadingAssets), setup);
 
