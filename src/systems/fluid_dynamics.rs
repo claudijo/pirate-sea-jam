@@ -1,10 +1,10 @@
 use crate::components::pontoon::Pontoon;
-use crate::plugins::ocean::{OceanTopology, TileTier};
+use crate::plugins::ocean::{OceanTopology, Tier};
 use crate::resources::wave_machine::WaveMachine;
+use crate::utils::tiles::{fade_out, smoothen_edges};
 use crate::utils::{liquid, liquid::SPHERE_DRAG_COEFFICIENT, sphere};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use crate::utils::tiles::smoothen_edges;
 
 // https://stackoverflow.com/questions/72961896/how-do-i-modify-a-mesh-after-it-has-been-created-in-bevy-rust
 pub fn make_waves(
@@ -32,10 +32,13 @@ pub fn make_waves(
             next_colors.push([color_multiplier, color_multiplier, color_multiplier, 1.])
         }
 
-        let next_positions = match ocean_topology.tile_order {
-            TileTier::Primary => {  smoothen_edges(next_positions, ocean_topology.subdivisions) }
-            TileTier::Secondary => { next_positions }
-            TileTier::Tertiary => { next_positions }
+        let near = (ocean_topology.size.powf(2.) + ocean_topology.size.powf(2.)).sqrt() * 0.5;
+        let far = ocean_topology.size * 1.5;
+
+        let next_positions = match ocean_topology.tile_tier {
+            Tier::Primary => smoothen_edges(next_positions, ocean_topology.subdivisions),
+            Tier::Secondary => fade_out(next_positions, near, far),
+            Tier::Tertiary => ocean_topology.mesh_positions.clone(),
         };
 
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, next_positions);

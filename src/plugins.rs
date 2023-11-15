@@ -1,6 +1,7 @@
 pub mod artillery;
 pub mod assets;
 pub mod camera;
+pub mod debug_fps;
 pub mod debug_text;
 pub mod keyboard;
 pub mod light;
@@ -15,4 +16,3 @@ pub mod text;
 pub mod virtual_gamepad;
 pub mod virtual_gamepad_input;
 pub mod wind;
-pub mod debug_fps;

@@ -13,12 +13,12 @@ pub fn spawn_debug_fps(mut commands: Commands) {
                 ..default()
             },
         )
-            .with_style(Style {
-                position_type: PositionType::Absolute,
-                top: Val::Px(2.),
-                left: Val::Px(2.),
-                ..default()
-            }),
+        .with_style(Style {
+            position_type: PositionType::Absolute,
+            top: Val::Px(2.),
+            left: Val::Px(2.),
+            ..default()
+        }),
         DebugFps,
     ));
 }
@@ -35,7 +35,6 @@ pub fn update_fps(
         }
     }
 }
-
 
 pub struct DebugFpsPlugin;
 
