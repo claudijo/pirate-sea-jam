@@ -1,9 +1,10 @@
-use crate::components::ocean::OceanTopology;
 use crate::components::pontoon::Pontoon;
+use crate::plugins::ocean::{OceanTopology, TileTier};
 use crate::resources::wave_machine::WaveMachine;
 use crate::utils::{liquid, liquid::SPHERE_DRAG_COEFFICIENT, sphere};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
+use crate::utils::tiles::smoothen_edges;
 
 // https://stackoverflow.com/questions/72961896/how-do-i-modify-a-mesh-after-it-has-been-created-in-bevy-rust
 pub fn make_waves(
@@ -13,12 +14,13 @@ pub fn make_waves(
     time: Res<Time>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
+
     for (ocean_topology, handle) in &mut ocean_query {
         let mesh = assets.get_mut(handle).unwrap();
         let mut next_positions: Vec<[f32; 3]> = Vec::new();
         let mut next_colors: Vec<[f32; 4]> = Vec::new();
 
-        for position in &ocean_topology.positions {
+        for position in &ocean_topology.mesh_positions {
             let next_position =
                 wave_machine.next_position(Vec3::from_array(*position), elapsed_time);
 
@@ -29,6 +31,12 @@ pub fn make_waves(
             let color_multiplier = ((next_position[1] + 4.) / 8.).clamp(0., 1.);
             next_colors.push([color_multiplier, color_multiplier, color_multiplier, 1.])
         }
+
+        let next_positions = match ocean_topology.tile_order {
+            TileTier::Primary => {  smoothen_edges(next_positions, ocean_topology.subdivisions) }
+            TileTier::Secondary => { next_positions }
+            TileTier::Tertiary => { next_positions }
+        };
 
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, next_positions);
         mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, next_colors);
