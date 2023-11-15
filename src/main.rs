@@ -55,6 +55,7 @@ fn main() {
         plugins::orbiting_camera::OrbitingCameraPlugin,
         libs::plugins::virtual_joystick::VirtualJoystickPlugin,
         libs::plugins::touch_button::TouchButtonPlugin,
+        plugins::debug_fps::DebugFpsPlugin,
     ));
 
     app.add_state::<game_state::GameState>();
