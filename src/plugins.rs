@@ -12,6 +12,7 @@ pub mod orbiting_camera;
 pub mod pontoon;
 pub mod ship;
 pub mod shooting_target;
+pub mod sky;
 pub mod text;
 pub mod virtual_gamepad;
 pub mod virtual_gamepad_input;

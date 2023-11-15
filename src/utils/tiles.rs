@@ -4,19 +4,24 @@ fn get_midpoint(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
     [(a[0] + b[0]) / 2., (a[1] + b[1]) / 2., (a[2] + b[2]) / 2.]
 }
 
-pub fn fade_out(mut positions: Vec<[f32; 3]>, near: f32, far: f32) -> Vec<[f32; 3]> {
+pub fn level_out(mut next_positions: Vec<[f32; 3]>, canonical_positions: &Vec<[f32; 3]>, near: f32, far: f32) -> Vec<[f32; 3]> {
     let span = far - near;
 
-    for mut pos in &mut positions {
-        let [x,_,z] = pos;
+    for index in 0..next_positions.len() {
+        let [x, _, z] = canonical_positions[index];
         let distance = (x.powf(2.) + z.powf(2.)).sqrt();
         let clamped = distance.clamp(near, far);
-
         let scale = 1. - (clamped - near) / span;
-        pos[1] *= scale;
+
+        next_positions[index][1] *= scale;
+
+        if scale == 0. {
+            next_positions[index][0] = canonical_positions[index][0];
+            next_positions[index][2] = canonical_positions[index][2];
+        }
     }
 
-    positions
+    next_positions
 }
 
 pub fn smoothen_edges(mut positions: Vec<[f32; 3]>, subdivisions_count: u32) -> Vec<[f32; 3]> {

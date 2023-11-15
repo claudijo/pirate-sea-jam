@@ -56,6 +56,7 @@ fn main() {
         libs::plugins::virtual_joystick::VirtualJoystickPlugin,
         libs::plugins::touch_button::TouchButtonPlugin,
         plugins::debug_fps::DebugFpsPlugin,
+        plugins::sky::SkyPlugin,
     ));
 
     app.add_state::<game_state::GameState>();

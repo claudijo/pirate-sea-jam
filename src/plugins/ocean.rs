@@ -9,11 +9,10 @@ pub enum Tier {
     Tertiary,
 }
 
-const OCEAN_SIZE: f32 = 240.;
+pub const OCEAN_TILE_SIZE: f32 = 100.;
 
-const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 31; // Needs to be odd
+const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 19; // Needs to be odd
 const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS * 2 + 1;
-
 
 #[derive(Component)]
 pub struct OceanTopology {
@@ -79,7 +78,7 @@ fn spawn_ocean(
 ) {
     // Center tile
     spawn_ocean_tile(
-        OCEAN_SIZE,
+        OCEAN_TILE_SIZE,
         OCEAN_PRIMARY_TILE_SUBDIVISIONS,
         Vec3::ZERO,
         Tier::Primary,
@@ -100,9 +99,9 @@ fn spawn_ocean(
     ] {
         // Secondary tiles
         spawn_ocean_tile(
-            OCEAN_SIZE,
+            OCEAN_TILE_SIZE,
             OCEAN_SECONDARY_TILE_SUBDIVISIONS,
-            translation_base * OCEAN_SIZE,
+            translation_base * OCEAN_TILE_SIZE,
             Tier::Secondary,
             &mut commands,
             &mut meshes,
@@ -111,9 +110,9 @@ fn spawn_ocean(
 
         // Tertiary tiles
         spawn_ocean_tile(
-            OCEAN_SIZE * 3.,
+            OCEAN_TILE_SIZE * 3.,
             0,
-            translation_base * OCEAN_SIZE * 3.,
+            translation_base * OCEAN_TILE_SIZE * 3.,
             Tier::Tertiary,
             &mut commands,
             &mut meshes,

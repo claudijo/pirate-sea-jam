@@ -1,7 +1,7 @@
 use crate::components::pontoon::Pontoon;
 use crate::plugins::ocean::{OceanTopology, Tier};
 use crate::resources::wave_machine::WaveMachine;
-use crate::utils::tiles::{fade_out, smoothen_edges};
+use crate::utils::tiles::{level_out, smoothen_edges};
 use crate::utils::{liquid, liquid::SPHERE_DRAG_COEFFICIENT, sphere};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
@@ -37,7 +37,7 @@ pub fn make_waves(
 
         let next_positions = match ocean_topology.tile_tier {
             Tier::Primary => smoothen_edges(next_positions, ocean_topology.subdivisions),
-            Tier::Secondary => fade_out(next_positions, near, far),
+            Tier::Secondary => level_out(next_positions, &ocean_topology.mesh_positions, near, far),
             Tier::Tertiary => ocean_topology.mesh_positions.clone(),
         };
 
