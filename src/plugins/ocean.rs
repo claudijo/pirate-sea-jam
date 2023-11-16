@@ -1,7 +1,7 @@
-use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use crate::game_state::GameState;
 use crate::resources::wave_machine::WaveMachine;
 use crate::systems::fluid_dynamics;
+use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use bevy::prelude::*;
 use bevy::render::view::VisibilitySystems;
 
@@ -72,16 +72,10 @@ fn spawn_ocean_tile(
             tile_tier,
             was_culled: false,
         },
-
-        // This marker makes it possible to check if entity is culled (not seen by any Camera,
-        // _Light_, etc..., which means we can avoid running unnecessary wave height calculation
-        NotShadowCaster,
     ));
 }
 
-fn check_ocean_tile_visibility(
-    mut ocean_tile_query: Query<(&mut OceanTile, &ViewVisibility)>,
-) {
+fn check_ocean_tile_visibility(mut ocean_tile_query: Query<(&mut OceanTile, &ViewVisibility)>) {
     for (mut ocean_topology, view_visibility) in &mut ocean_tile_query {
         ocean_topology.was_culled = !view_visibility.get();
     }
@@ -147,9 +141,9 @@ impl Plugin for OceanPlugin {
         })
         .add_systems(OnEnter(GameState::SplashScreen), spawn_ocean);
 
-        app.add_systems(PostUpdate,
-                        check_ocean_tile_visibility
-                            .after(VisibilitySystems::CheckVisibility)
+        app.add_systems(
+            PostUpdate,
+            check_ocean_tile_visibility.after(VisibilitySystems::CheckVisibility),
         );
 
         app.add_systems(

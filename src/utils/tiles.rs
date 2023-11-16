@@ -4,7 +4,12 @@ fn get_midpoint(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
     [(a[0] + b[0]) / 2., (a[1] + b[1]) / 2., (a[2] + b[2]) / 2.]
 }
 
-pub fn level_out(mut next_positions: Vec<[f32; 3]>, canonical_positions: &Vec<[f32; 3]>, near: f32, far: f32) -> Vec<[f32; 3]> {
+pub fn level_out(
+    mut next_positions: Vec<[f32; 3]>,
+    canonical_positions: &Vec<[f32; 3]>,
+    near: f32,
+    far: f32,
+) -> Vec<[f32; 3]> {
     let span = far - near;
 
     for index in 0..next_positions.len() {
