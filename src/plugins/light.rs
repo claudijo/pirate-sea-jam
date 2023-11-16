@@ -11,8 +11,7 @@ fn spawn_light(mut commands: Commands) {
             ..default()
         },
         transform: Transform::from_xyz(0.0, 0.0, 0.0)
-            .with_rotation(Quat::from_rotation_x(-70_f32.to_radians())),
-        // .looking_at(Vec3::new(-0.15, -0.05, 0.25), Vec3::Y),
+            .with_rotation(Quat::from_rotation_x(-40_f32.to_radians())),
         ..default()
     });
 

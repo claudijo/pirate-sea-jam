@@ -59,8 +59,7 @@ fn spawn_ocean_tile(
             mesh: meshes.add(mesh),
             material: materials.add(StandardMaterial {
                 base_color: Color::rgb(0.15, 0.74, 0.86),
-                metallic: 0.7,
-                perceptual_roughness: 0.3,
+                metallic: 1.,
                 ..default()
             }),
             ..default()
