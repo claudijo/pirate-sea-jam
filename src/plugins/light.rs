@@ -20,7 +20,7 @@ fn spawn_light(mut commands: Commands) {
     commands.insert_resource(AmbientLight {
         color: Color::rgb_u8(210, 220, 240),
         brightness: 0.5,
-    })
+    });
 }
 pub struct LightPlugin;
 

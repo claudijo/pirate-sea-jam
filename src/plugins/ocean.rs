@@ -1,7 +1,9 @@
+use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use crate::game_state::GameState;
 use crate::resources::wave_machine::WaveMachine;
 use crate::systems::fluid_dynamics;
 use bevy::prelude::*;
+use bevy::render::view::VisibilitySystems;
 
 pub enum Tier {
     Primary,
@@ -15,11 +17,12 @@ const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 19; // Needs to be odd
 const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS * 2 + 1;
 
 #[derive(Component)]
-pub struct OceanTopology {
+pub struct OceanTile {
     pub mesh_positions: Vec<[f32; 3]>,
     pub size: f32,
     pub subdivisions: u32,
     pub tile_tier: Tier,
+    pub was_culled: bool,
 }
 
 fn spawn_ocean_tile(
@@ -62,13 +65,26 @@ fn spawn_ocean_tile(
             }),
             ..default()
         },
-        OceanTopology {
+        OceanTile {
             mesh_positions,
             size,
             subdivisions,
             tile_tier,
+            was_culled: false,
         },
+
+        // This marker makes it possible to check if entity is culled (not seen by any Camera,
+        // _Light_, etc..., which means we can avoid running unnecessary wave height calculation
+        NotShadowCaster,
     ));
+}
+
+fn check_ocean_tile_visibility(
+    mut ocean_tile_query: Query<(&mut OceanTile, &ViewVisibility)>,
+) {
+    for (mut ocean_topology, view_visibility) in &mut ocean_tile_query {
+        ocean_topology.was_culled = !view_visibility.get();
+    }
 }
 
 fn spawn_ocean(
@@ -129,8 +145,14 @@ impl Plugin for OceanPlugin {
             time_scale: 0.4,
             sample_count: 4,
         })
-        .add_systems(OnEnter(GameState::SplashScreen), spawn_ocean)
-        .add_systems(
+        .add_systems(OnEnter(GameState::SplashScreen), spawn_ocean);
+
+        app.add_systems(PostUpdate,
+                        check_ocean_tile_visibility
+                            .after(VisibilitySystems::CheckVisibility)
+        );
+
+        app.add_systems(
             Update,
             (
                 fluid_dynamics::make_waves.run_if(in_state(GameState::SplashScreen)),

@@ -1,5 +1,5 @@
 use crate::components::pontoon::Pontoon;
-use crate::plugins::ocean::{OceanTopology, Tier};
+use crate::plugins::ocean::{OceanTile, Tier};
 use crate::resources::wave_machine::WaveMachine;
 use crate::utils::tiles::{level_out, smoothen_edges};
 use crate::utils::{liquid, liquid::SPHERE_DRAG_COEFFICIENT, sphere};
@@ -8,19 +8,23 @@ use bevy_rapier3d::prelude::*;
 
 // https://stackoverflow.com/questions/72961896/how-do-i-modify-a-mesh-after-it-has-been-created-in-bevy-rust
 pub fn make_waves(
-    mut ocean_query: Query<(&OceanTopology, &Handle<Mesh>)>,
+    ocean_tile_query: Query<(&OceanTile, &Handle<Mesh>)>,
     mut assets: ResMut<Assets<Mesh>>,
     wave_machine: Res<WaveMachine>,
     time: Res<Time>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
 
-    for (ocean_topology, handle) in &mut ocean_query {
+    for (ocean_tile, handle) in &ocean_tile_query {
+        if ocean_tile.was_culled {
+            continue;
+        }
+
         let mesh = assets.get_mut(handle).unwrap();
         let mut next_positions: Vec<[f32; 3]> = Vec::new();
         let mut next_colors: Vec<[f32; 4]> = Vec::new();
 
-        for position in &ocean_topology.mesh_positions {
+        for position in &ocean_tile.mesh_positions {
             let next_position =
                 wave_machine.next_position(Vec3::from_array(*position), elapsed_time);
 
@@ -32,13 +36,13 @@ pub fn make_waves(
             next_colors.push([color_multiplier, color_multiplier, color_multiplier, 1.])
         }
 
-        let near = (ocean_topology.size.powf(2.) + ocean_topology.size.powf(2.)).sqrt() * 0.5;
-        let far = ocean_topology.size * 1.5;
+        let near = (ocean_tile.size.powf(2.) + ocean_tile.size.powf(2.)).sqrt() * 0.5;
+        let far = ocean_tile.size * 1.5;
 
-        let next_positions = match ocean_topology.tile_tier {
-            Tier::Primary => smoothen_edges(next_positions, ocean_topology.subdivisions),
-            Tier::Secondary => level_out(next_positions, &ocean_topology.mesh_positions, near, far),
-            Tier::Tertiary => ocean_topology.mesh_positions.clone(),
+        let next_positions = match ocean_tile.tile_tier {
+            Tier::Primary => smoothen_edges(next_positions, ocean_tile.subdivisions),
+            Tier::Secondary => level_out(next_positions, &ocean_tile.mesh_positions, near, far),
+            Tier::Tertiary => ocean_tile.mesh_positions.clone(),
         };
 
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, next_positions);

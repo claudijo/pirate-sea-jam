@@ -22,16 +22,15 @@ pub fn spawn_camera(mut commands: Commands) {
             ..default()
         },
 
-        // Skybox(skybox_handle.clone()),
-        FogSettings {
-            color: Color::hex("a5cddf").unwrap(),
-            directional_light_color: Color::rgba(1.0, 0.95, 0.85, 0.5),
-            directional_light_exponent: 30.0,
-            falloff: FogFalloff::Linear {
-                start: OCEAN_TILE_SIZE * 0.25,
-                end: OCEAN_TILE_SIZE * 2.5,
-            },
-        },
+        // FogSettings {
+        //     color: Color::hex("a5cddf").unwrap(),
+        //     directional_light_color: Color::rgba(1.0, 0.95, 0.85, 0.5),
+        //     directional_light_exponent: 30.0,
+        //     falloff: FogFalloff::Linear {
+        //         start: OCEAN_TILE_SIZE * 0.25,
+        //         end: OCEAN_TILE_SIZE * 2.5,
+        //     },
+        // },
     ));
 }
 

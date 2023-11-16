@@ -228,9 +228,13 @@ pub fn spawn_ship(
     let parent_entity = commands
         // Rigid body
         .spawn((
-            TransformBundle::from(Transform::from_xyz(0., 0., 0.)),
+            // Use general spatial bundle here to get transform + visibility. Latter being crucial
+            // for displaying child scene bundles
+            SpatialBundle {
+                transform: Transform::from_xyz(0., 0., 0.),
+                ..default()
+            },
             RigidBody::Dynamic,
-            VisibilityBundle { ..default() }, // Necessary to display child scene bundle
             ExternalImpulse { ..default() },
             ExternalForce { ..default() },
             Velocity { ..default() },
