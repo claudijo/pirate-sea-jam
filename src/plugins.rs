@@ -7,7 +7,7 @@ pub mod keyboard;
 pub mod light;
 pub mod menu;
 pub mod mouse_input;
-pub mod ocean;
+pub mod ocean_tile;
 pub mod orbiting_camera;
 pub mod pontoon;
 pub mod ship;

@@ -1,3 +1,5 @@
+use bevy::prelude::*;
+
 const VERTICES_PER_QUAD: usize = 6;
 
 fn get_midpoint(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
@@ -7,23 +9,23 @@ fn get_midpoint(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
 pub fn level_out(
     mut next_positions: Vec<[f32; 3]>,
     canonical_positions: &Vec<[f32; 3]>,
+    translation: Vec3,
+    center: Vec3,
     near: f32,
     far: f32,
 ) -> Vec<[f32; 3]> {
     let span = far - near;
 
-    for index in 0..next_positions.len() {
-        let [x, _, z] = canonical_positions[index];
-        let distance = (x.powf(2.) + z.powf(2.)).sqrt();
+    for index in 0..canonical_positions.len() {
+        let canonical_position = Vec3::from_array(canonical_positions[index]);
+        let next_position = Vec3::from_array(next_positions[index]);
+
+        let point = translation - center + canonical_position;
+        let distance = point.length();
         let clamped = distance.clamp(near, far);
         let scale = 1. - (clamped - near) / span;
 
-        next_positions[index][1] *= scale;
-
-        if scale == 0. {
-            next_positions[index][0] = canonical_positions[index][0];
-            next_positions[index][2] = canonical_positions[index][2];
-        }
+        next_positions[index] = canonical_position.lerp(next_position, scale).to_array();
     }
 
     next_positions
