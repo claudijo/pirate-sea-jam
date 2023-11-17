@@ -2,7 +2,6 @@ use crate::components::ship::PlayerShip;
 use crate::game_state::GameState;
 use crate::resources::wave_machine::WaveMachine;
 use crate::systems::fluid_dynamics;
-use bevy::pbr::{NotShadowCaster, NotShadowReceiver};
 use bevy::prelude::*;
 use bevy::render::view::VisibilitySystems;
 

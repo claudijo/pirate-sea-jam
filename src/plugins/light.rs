@@ -1,6 +1,4 @@
-use bevy::pbr::CascadeShadowConfigBuilder;
 use bevy::prelude::*;
-use std::f32::consts::PI;
 
 fn spawn_light(mut commands: Commands) {
     // Sun
