@@ -33,10 +33,10 @@ pub fn make_waves(
 
             next_positions.push((next_position - tile_transform.translation).to_array());
 
-            // This will be multiplied to the mesh base_color, assuming wave heights vary between
-            // -2 and 2
-            let color_multiplier = ((next_position[1] + 4.) / 8.).clamp(0., 1.);
-            next_colors.push([color_multiplier, color_multiplier, color_multiplier, 1.])
+            // // This will be multiplied to the mesh base_color, assuming wave heights vary between
+            // // -2 and 2
+            // let color_multiplier = ((next_position[1] + 4.) / 8.).clamp(0., 1.);
+            // next_colors.push([color_multiplier, color_multiplier, color_multiplier, 1.])
         }
 
         let near = (ocean_tile.size.powf(2.) + ocean_tile.size.powf(2.)).sqrt() * 0.5;
@@ -53,6 +53,13 @@ pub fn make_waves(
             ),
             Tier::Tertiary => ocean_tile.mesh_positions.clone(),
         };
+
+        for position in &next_positions {
+            // This will be multiplied to the mesh base_color, assuming wave heights vary between
+            // -2 and 2
+            let color_multiplier = ((position[1] + 4.) / 8.).clamp(0., 1.);
+            next_colors.push([color_multiplier, color_multiplier, color_multiplier, 1.])
+        }
 
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, next_positions);
         mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, next_colors);
@@ -72,7 +79,6 @@ pub fn buoyancy(
     wave_machine: Res<WaveMachine>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
-    // let elapsed_time = 0.;
 
     for (global_transform, pontoon, velocity, mut external_force, mut damping) in &mut pontoon_query
     {

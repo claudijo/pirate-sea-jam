@@ -12,9 +12,9 @@ pub enum Tier {
     Tertiary,
 }
 
-pub const OCEAN_TILE_SIZE: f32 = 10.;
+pub const OCEAN_TILE_SIZE: f32 = 100.;
 
-const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 5; // Needs to be odd
+const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 19; // Needs to be odd
 const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS * 2 + 1;
 
 #[derive(Component)]
