@@ -9,8 +9,7 @@ fn get_midpoint(a: [f32; 3], b: [f32; 3]) -> [f32; 3] {
 pub fn level_out(
     mut next_positions: Vec<[f32; 3]>,
     canonical_positions: &Vec<[f32; 3]>,
-    translation: Vec3,
-    center: Vec3,
+    offset: Vec3,
     near: f32,
     far: f32,
 ) -> Vec<[f32; 3]> {
@@ -20,8 +19,7 @@ pub fn level_out(
         let canonical_position = Vec3::from_array(canonical_positions[index]);
         let next_position = Vec3::from_array(next_positions[index]);
 
-        let point = translation - center + canonical_position;
-        let distance = point.length();
+        let distance = (offset + canonical_position).length();
         let clamped = distance.clamp(near, far);
         let scale = 1. - (clamped - near) / span;
 

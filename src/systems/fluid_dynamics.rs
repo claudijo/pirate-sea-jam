@@ -47,8 +47,7 @@ pub fn make_waves(
             Tier::Secondary => tiles::level_out(
                 next_positions,
                 &ocean_tile.mesh_positions,
-                tile_transform.translation,
-                tile_transform.translation - ocean_tile.offset,
+                ocean_tile.offset,
                 near,
                 far,
             ),
