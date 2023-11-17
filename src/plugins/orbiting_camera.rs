@@ -20,7 +20,7 @@ impl Default for OrbitingCamera {
             radius: 10.,
             pitch: 30_f32.to_radians(),
             yaw: 0.,
-            min_pitch: 20_f32.to_radians(),
+            min_pitch: 10_f32.to_radians(),
             max_pitch: PI / 2.,
         }
     }

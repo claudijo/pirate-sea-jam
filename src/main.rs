@@ -37,7 +37,7 @@ fn main() {
         plugins::assets::AssetsPlugin,
         plugins::camera::CameraPlugin,
         plugins::menu::StartMenuPlugin,
-        plugins::ocean::OceanPlugin,
+        plugins::ocean_tile::OceanPlugin,
         plugins::light::LightPlugin,
         plugins::ship::ShipPlugin,
         plugins::shooting_target::ShootingTargetPlugin,
@@ -55,6 +55,8 @@ fn main() {
         plugins::orbiting_camera::OrbitingCameraPlugin,
         libs::plugins::virtual_joystick::VirtualJoystickPlugin,
         libs::plugins::touch_button::TouchButtonPlugin,
+        plugins::debug_fps::DebugFpsPlugin,
+        plugins::sky::SkyPlugin,
     ));
 
     app.add_state::<game_state::GameState>();

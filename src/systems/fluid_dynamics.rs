@@ -1,32 +1,62 @@
-use crate::components::ocean::OceanTopology;
 use crate::components::pontoon::Pontoon;
+use crate::plugins::ocean_tile::{OceanTile, Tier};
 use crate::resources::wave_machine::WaveMachine;
+use crate::utils::tiles;
 use crate::utils::{liquid, liquid::SPHERE_DRAG_COEFFICIENT, sphere};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
 // https://stackoverflow.com/questions/72961896/how-do-i-modify-a-mesh-after-it-has-been-created-in-bevy-rust
 pub fn make_waves(
-    mut ocean_query: Query<(&OceanTopology, &Handle<Mesh>)>,
+    ocean_tile_query: Query<(&Transform, &OceanTile, &Handle<Mesh>)>,
     mut assets: ResMut<Assets<Mesh>>,
     wave_machine: Res<WaveMachine>,
     time: Res<Time>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
-    for (ocean_topology, handle) in &mut ocean_query {
+
+    for (tile_transform, ocean_tile, handle) in &ocean_tile_query {
+        if ocean_tile.was_culled {
+            continue;
+        }
+
         let mesh = assets.get_mut(handle).unwrap();
         let mut next_positions: Vec<[f32; 3]> = Vec::new();
         let mut next_colors: Vec<[f32; 4]> = Vec::new();
 
-        for position in &ocean_topology.positions {
-            let next_position =
-                wave_machine.next_position(Vec3::from_array(*position), elapsed_time);
+        for position in &ocean_tile.mesh_positions {
+            let next_position = wave_machine.next_position(
+                Vec3::from_array(*position) + tile_transform.translation,
+                elapsed_time,
+            );
 
-            next_positions.push(next_position.to_array());
+            next_positions.push((next_position - tile_transform.translation).to_array());
 
+            // // This will be multiplied to the mesh base_color, assuming wave heights vary between
+            // // -2 and 2
+            // let color_multiplier = ((next_position[1] + 4.) / 8.).clamp(0., 1.);
+            // next_colors.push([color_multiplier, color_multiplier, color_multiplier, 1.])
+        }
+
+        let near = (ocean_tile.size.powf(2.) + ocean_tile.size.powf(2.)).sqrt() * 0.5;
+        let far = ocean_tile.size * 1.5;
+
+        let next_positions = match ocean_tile.tile_tier {
+            Tier::Primary => tiles::smoothen_edges(next_positions, ocean_tile.subdivisions),
+            Tier::Secondary => tiles::level_out(
+                next_positions,
+                &ocean_tile.mesh_positions,
+                ocean_tile.offset,
+                near,
+                far,
+            ),
+            Tier::Tertiary => ocean_tile.mesh_positions.clone(),
+        };
+
+        for position in &next_positions {
             // This will be multiplied to the mesh base_color, assuming wave heights vary between
             // -2 and 2
-            let color_multiplier = ((next_position[1] + 4.) / 8.).clamp(0., 1.);
+            let color_multiplier = ((position[1] + 4.) / 8.).clamp(0., 1.);
             next_colors.push([color_multiplier, color_multiplier, color_multiplier, 1.])
         }
 
@@ -38,7 +68,7 @@ pub fn make_waves(
 
 pub fn buoyancy(
     mut pontoon_query: Query<(
-        &Transform,
+        &GlobalTransform,
         &Pontoon,
         &Velocity,
         &mut ExternalForce,
@@ -48,16 +78,19 @@ pub fn buoyancy(
     wave_machine: Res<WaveMachine>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
-    for (transform, pontoon, velocity, mut external_force, mut damping) in &mut pontoon_query {
-        let water_height = wave_machine.surface_height(transform.translation, elapsed_time);
+
+    for (global_transform, pontoon, velocity, mut external_force, mut damping) in &mut pontoon_query
+    {
+        let translation = global_transform.translation();
+        let water_height = wave_machine.surface_height(translation, elapsed_time);
 
         let displaced_liquid_volume =
-            sphere::displaced_liquid_volume(pontoon.radius, transform.translation.y, water_height);
+            sphere::displaced_liquid_volume(pontoon.radius, translation.y, water_height);
 
         let buoyant_force =
             liquid::buoyant_force(displaced_liquid_volume) * pontoon.buoyant_force_scale;
 
-        let is_submerged = transform.translation.y - pontoon.radius < water_height;
+        let is_submerged = translation.y - pontoon.radius < water_height;
         let linear_damping = if is_submerged {
             liquid::damping(
                 velocity.linvel.y,
