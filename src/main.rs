@@ -21,6 +21,16 @@ mod utils;
 fn main() {
     let mut app = App::new();
 
+    // Uncomment and run once to produce dummy meta files with command.
+    // cargo run --features bevy/asset_processor
+    // See https://github.com/bevyengine/bevy/issues/10157
+    // app.add_plugins(DefaultPlugins.set(
+    //     AssetPlugin {
+    //         mode: AssetMode::Processed,
+    //         ..default()
+    //     }
+    // ));
+
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "Pirate Sea Jam".into(),
