@@ -9,6 +9,14 @@ bevy = "0.12.0"
 bevy_rapier3d = "0.23.0"
 rand = "0.8.5"
 
+# Enable a small amount of optimization in debug mode
+[profile.dev]
+opt-level = 1
+
+# Enable high optimizations for dependencies (incl. Bevy), but not for our code:
+[profile.dev.package."*"]
+opt-level = 3
+
 # Optimize for WASM builds for size (see https://bevy-cheatbook.github.io/platforms/wasm/size-opt.html)
 [profile.release]
 opt-level = 's'

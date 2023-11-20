@@ -91,3 +91,8 @@ Prerequisites:
 * `$ cargo install just`
 * `$ cargo install wasm-bindgen-cli`
 * `$ cargo install sfz`
+
+#### Enable fast compiles
+For maximally fast iterative compiles (see https://bevyengine.org/learn/book/getting-started/setup/)
+
+`cargo run --features bevy/dynamic_linking`
