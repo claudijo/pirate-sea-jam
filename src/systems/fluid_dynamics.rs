@@ -31,11 +31,6 @@ pub fn make_waves(
             );
 
             next_positions.push((next_position - tile_transform.translation).to_array());
-
-            // // This will be multiplied to the mesh base_color, assuming wave heights vary between
-            // // -2 and 2
-            // let color_multiplier = ((next_position[1] + 4.) / 8.).clamp(0., 1.);
-            // next_colors.push([color_multiplier, color_multiplier, color_multiplier, 1.])
         }
 
         let near = (ocean_tile.size.powf(2.) + ocean_tile.size.powf(2.)).sqrt() * 0.5;

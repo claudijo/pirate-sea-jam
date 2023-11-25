@@ -4,10 +4,13 @@
 // Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+use bevy::pbr::ExtendedMaterial;
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::events::game::RestartGameEvent;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
+use crate::plugins::custom_vertex_attribute_shader::CustomMaterial;
+use crate::plugins::quantized_material_shader::MyExtension;
 
 mod components;
 mod events;
@@ -67,7 +70,11 @@ fn main() {
         libs::plugins::touch_button::TouchButtonPlugin,
         plugins::debug_fps::DebugFpsPlugin,
         plugins::sky::SkyPlugin,
+
+        MaterialPlugin::<ExtendedMaterial<StandardMaterial, MyExtension>>::default(),
+        plugins::quantized_material_shader::QuantizedMaterialShaderPlugin,
     ));
+
 
     app.add_state::<game_state::GameState>();
 

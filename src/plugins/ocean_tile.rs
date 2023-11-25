@@ -145,8 +145,9 @@ impl Plugin for OceanPlugin {
         app.insert_resource(WaveMachine {
             time_scale: 0.4,
             sample_count: 4,
-        })
-        .add_systems(OnEnter(GameState::SplashScreen), spawn_ocean);
+        });
+
+        // app.add_systems(OnEnter(GameState::SplashScreen), spawn_ocean);
 
         app.add_systems(
             PostUpdate,
