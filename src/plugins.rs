@@ -17,5 +17,4 @@ pub mod text;
 pub mod virtual_gamepad;
 pub mod virtual_gamepad_input;
 pub mod wind;
-pub mod custom_vertex_attribute_shader;
-pub mod quantized_material_shader;
+pub mod ocean_material;

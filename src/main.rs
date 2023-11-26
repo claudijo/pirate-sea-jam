@@ -9,8 +9,7 @@ use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::events::game::RestartGameEvent;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use crate::plugins::custom_vertex_attribute_shader::CustomMaterial;
-use crate::plugins::quantized_material_shader::MyExtension;
+use crate::plugins::ocean_material::OceanMaterialExtension;
 
 mod components;
 mod events;
@@ -71,8 +70,8 @@ fn main() {
         plugins::debug_fps::DebugFpsPlugin,
         plugins::sky::SkyPlugin,
 
-        MaterialPlugin::<ExtendedMaterial<StandardMaterial, MyExtension>>::default(),
-        plugins::quantized_material_shader::QuantizedMaterialShaderPlugin,
+        MaterialPlugin::<ExtendedMaterial<StandardMaterial, OceanMaterialExtension>>::default(),
+        plugins::ocean_material::OceanMaterialPlugin,
     ));
 
 
