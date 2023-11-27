@@ -1,35 +1,25 @@
 #import bevy_pbr::{
     mesh_view_bindings::globals,
     pbr_fragment::pbr_input_from_standard_material,
-    pbr_functions::alpha_discard,
-    mesh_functions::{get_model_matrix, mesh_position_local_to_clip, mesh_position_local_to_world, mesh_normal_local_to_world},
-}
-
-#import bevy_render::instance_index::get_instance_index
-
-#ifdef PREPASS_PIPELINE
-#import bevy_pbr::{
-    prepass_io::{VertexOutput, FragmentOutput},
-    pbr_deferred_functions::deferred_output,
-}
-#else
-#import bevy_pbr::{
     forward_io::{VertexOutput, FragmentOutput},
+    mesh_functions::{get_model_matrix, mesh_position_local_to_clip, mesh_position_local_to_world, mesh_normal_local_to_world},
     pbr_functions::{apply_pbr_lighting, main_pass_post_lighting_processing},
 }
-#endif
 
 const pi: f32 = 3.1415926538;
 const gravity: f32 = 9.807;
+
+// Vec4 containing direction x, direction z, steepness, wave_length
+// Sum of all steepness values must not exceed 1.
+const first_wave = vec4<f32>(1., 0., 0.22, 36.);
+const second_wave = vec4<f32>(1., 0.8, 0.2, 32.);
+const third_wave = vec4<f32>(1., 1.2, 0.18, 28.);
+const forth_wave = vec4<f32>(1., 3., 0.16, 24.);
 
 struct Vertex {
     @builtin(instance_index) instance_index: u32,
     @location(0) position: vec3<f32>,
 };
-
-struct OceanMaterial {
-    world_offset: f32,
-}
 
 fn gerstner_wave(
     wave: vec4<f32>,
@@ -64,16 +54,6 @@ fn gerstner_wave(
         d.y * (a * cos(f))
     );
 }
-
-// Vec4 containing direction x, direction z, steepness, wave_length
-// Sum of all steepness values must not exceed 1.
-const first_wave = vec4<f32>(1., 0., 0.22, 36.);
-const second_wave = vec4<f32>(1., 0.8, 0.2, 32.);
-const third_wave = vec4<f32>(1., 1.2, 0.18, 28.);
-const forth_wave = vec4<f32>(1., 3., 0.16, 24.);
-
-@group(1) @binding(100)
-var<uniform> ocean_material: OceanMaterial;
 
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
@@ -118,21 +98,10 @@ fn fragment(
     // generate a PbrInput struct from the StandardMaterial bindings
     var pbr_input = pbr_input_from_standard_material(in, is_front);
 
-#ifdef PREPASS_PIPELINE
-    // in deferred mode we can't modify anything after that, as lighting is run in a separate fullscreen shader.
-    let out = deferred_output(in, pbr_input);
-#else
-
     var out: FragmentOutput;
 
-    // apply lighting
     out.color = apply_pbr_lighting(pbr_input);
-
-    // apply in-shader post processing (fog, alpha-premultiply, and also tonemapping, debanding if the camera is non-hdr)
-    // note this does not include fullscreen postprocessing effects like bloom.
     out.color = main_pass_post_lighting_processing(pbr_input, out.color);
-#endif
-
 
     return out;
 }

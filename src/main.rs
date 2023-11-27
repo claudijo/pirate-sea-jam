@@ -11,6 +11,8 @@ use bevy::pbr::wireframe::{WireframeConfig, WireframePlugin};
 use bevy::pbr::ExtendedMaterial;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
+use crate::plugins::extended_material::MyExtension;
+use crate::plugins::ocean::CustomOceanMaterial;
 
 mod components;
 mod events;
@@ -70,8 +72,14 @@ fn main() {
         libs::plugins::touch_button::TouchButtonPlugin,
         plugins::debug_fps::DebugFpsPlugin,
         plugins::sky::SkyPlugin,
-        MaterialPlugin::<ExtendedMaterial<StandardMaterial, OceanMaterial>>::default(),
-        plugins::ocean_material::OceanMaterialPlugin,
+
+        MaterialPlugin::<ExtendedMaterial<StandardMaterial, MyExtension>, >::default(),
+        plugins::extended_material::ExtendedMaterailPlugin,
+        // MaterialPlugin::<ExtendedMaterial<StandardMaterial, OceanMaterial>>::default(),
+        // plugins::ocean_material::OceanMaterialPlugin,
+
+        // MaterialPlugin::<CustomOceanMaterial>::default(),
+        // plugins::ocean::OceanPlugin,
     ));
 
     app.add_state::<game_state::GameState>();
