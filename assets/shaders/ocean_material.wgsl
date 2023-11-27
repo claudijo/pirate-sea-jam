@@ -19,6 +19,9 @@
 }
 #endif
 
+const pi: f32 = 3.1415926538;
+const gravity: f32 = 9.807;
+
 struct Vertex {
     @builtin(instance_index) instance_index: u32,
     @location(0) position: vec3<f32>,
@@ -28,12 +31,50 @@ struct OceanMaterial {
     world_offset: f32,
 }
 
-const pi: f32 = 3.1415926538;
-const gravity: f32 = 9.807;
+fn gerstner_wave(
+    wave: vec4<f32>,
+    p: vec3<f32>,
+    tangent: ptr<function,vec3<f32>>,
+    binormal: ptr<function,vec3<f32>>,
+) -> vec3<f32> {
+    let steepness = wave.z;
+    let wave_length = wave.w;
+
+   let k: f32 = 2. * pi / wave_length;
+   let c: f32 = sqrt(gravity / k);
+   let d: vec2<f32> = normalize(wave.xy);
+   let f: f32 = k * (dot(d, p.xz) - c * globals.time);
+   let a: f32 = steepness / k;
+
+    *tangent += vec3<f32>(
+        -d.x * d.x * (steepness * sin(f)),
+        d.x * (steepness * cos(f)),
+        -d.x * d.y * (steepness * sin(f))
+    );
+
+    *binormal += vec3<f32>(
+        -d.x * d.y * (steepness * sin(f)),
+        d.y * (steepness * cos(f)),
+        -d.y * d.y * (steepness * sin(f))
+    );
+
+    return vec3<f32>(
+        d.x * (a * cos(f)),
+        a * sin(f),
+        d.y * (a * cos(f))
+    );
+}
 
 const steepness: f32 = 0.5;
 const wave_length: f32 = 10.;
 const direction: vec2<f32> = vec2<f32>(1., 1.);
+
+// Vec4 containing direction x, direction z, steepness, wave_length
+// Sum of all steepness values must not exceed 1.
+const first_wave = vec4<f32>(1., 0., 0.22, 36.);
+const second_wave = vec4<f32>(1., 0.8, 0.2, 32.);
+const third_wave = vec4<f32>(1., 1.2, 0.18, 28.);
+const forth_wave = vec4<f32>(1., 3., 0.16, 24.);
 
 @group(1) @binding(100)
 var<uniform> ocean_material: OceanMaterial;
@@ -41,31 +82,19 @@ var<uniform> ocean_material: OceanMaterial;
 @vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
     var out: VertexOutput;
-    var position = vec4<f32>(vertex.position, 1.);
 
-    let k: f32 = 2. * pi / wave_length;
-    let c: f32 = sqrt(gravity / k);
-    let a: f32 = steepness / k;
-    let d: vec2<f32> = normalize(direction);
-    let f = k * (dot(d, position.xz) - c * globals.time);
+    var grid_point = vertex.position;
+    var tangent = vec3<f32>(1., 0., 0.);
+    var binormal = vec3<f32>(0., 0., 1.);
+    var p = grid_point;
 
-    position.x += d.x * (a * cos(f));
-    position.y = a * sin(f);
-    position.z += d.y * (a * cos(f));
+    p += gerstner_wave(first_wave, grid_point, &tangent, &binormal);
+    p += gerstner_wave(second_wave, grid_point, &tangent, &binormal);
+    p += gerstner_wave(third_wave, grid_point, &tangent, &binormal);
+    p += gerstner_wave(forth_wave, grid_point, &tangent, &binormal);
 
-    let tangent = vec3<f32>(
-        1. - d.x * d.x * (steepness * sin(f)),
-        d.x * (steepness * cos(f)),
-        -d.x * d.y * (steepness * sin(f))
-    );
-
-    let binormal =vec3<f32>(
-        -d.x * d.y * (steepness * sin(f)),
-        d.y * (steepness * cos(f)),
-        1. - d.y * d.y * (steepness * sin(f))
-    );
-
-    let normal = normalize(cross(binormal, tangent));
+    var normal: vec3<f32> = normalize(cross(binormal, tangent));
+    var position = vec4<f32>(p, 1.);
 
     out.position = mesh_position_local_to_clip(
         get_model_matrix(vertex.instance_index),

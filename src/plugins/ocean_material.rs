@@ -1,13 +1,6 @@
-use bevy::pbr::{
-    ExtendedMaterial, MaterialExtension, MaterialExtensionKey, MaterialExtensionPipeline,
-    MaterialPipeline, MaterialPipelineKey, OpaqueRendererMethod,
-};
-use bevy::pbr::wireframe::Wireframe;
+use bevy::pbr::{ExtendedMaterial, MaterialExtension};
 use bevy::prelude::*;
-use bevy::render::mesh::{MeshVertexAttribute, MeshVertexBufferLayout};
-use bevy::render::render_resource::{
-    AsBindGroup, RenderPipelineDescriptor, ShaderRef, SpecializedMeshPipelineError, VertexFormat,
-};
+use bevy::render::render_resource::{AsBindGroup, ShaderRef};
 
 fn setup(
     mut commands: Commands,
@@ -15,26 +8,27 @@ fn setup(
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, OceanMaterial>>>,
     mut standard_materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let mut mesh = Mesh::from(shape::Plane {
-        size: 10.,
-        subdivisions: 99,
+    let mesh = Mesh::from(shape::Plane {
+        size: 100.,
+        subdivisions: 49,
     });
-    mesh.duplicate_vertices();
 
     // plane
-    commands.spawn((MaterialMeshBundle {
-        mesh: meshes.add(mesh),
-        transform: Transform::from_xyz(0., 0., 0.),
-        material: materials.add(ExtendedMaterial {
-            base: StandardMaterial {
-                base_color: Color::rgb(0.15, 0.74, 0.86),
-                metallic: 1.,
-                ..Default::default()
-            },
-            extension: OceanMaterial { world_offset: 10. },
+    commands.spawn(
+        (MaterialMeshBundle {
+            mesh: meshes.add(mesh),
+            transform: Transform::from_xyz(0., 0., 0.),
+            material: materials.add(ExtendedMaterial {
+                base: StandardMaterial {
+                    base_color: Color::rgb(0.15, 0.74, 0.86),
+                    metallic: 1.,
+                    ..Default::default()
+                },
+                extension: OceanMaterial { world_offset: 10. },
+            }),
+            ..default()
         }),
-        ..default()
-    }));
+    );
 
     // Shadow cubes
     commands.spawn(PbrBundle {
