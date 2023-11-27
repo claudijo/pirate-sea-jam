@@ -4,12 +4,13 @@
 // Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-use bevy::pbr::ExtendedMaterial;
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::events::game::RestartGameEvent;
+use crate::plugins::ocean_material::OceanMaterial;
+use bevy::pbr::wireframe::{WireframeConfig, WireframePlugin};
+use bevy::pbr::ExtendedMaterial;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use crate::plugins::ocean_material::OceanMaterialExtension;
 
 mod components;
 mod events;
@@ -69,11 +70,9 @@ fn main() {
         libs::plugins::touch_button::TouchButtonPlugin,
         plugins::debug_fps::DebugFpsPlugin,
         plugins::sky::SkyPlugin,
-
-        MaterialPlugin::<ExtendedMaterial<StandardMaterial, OceanMaterialExtension>>::default(),
+        MaterialPlugin::<ExtendedMaterial<StandardMaterial, OceanMaterial>>::default(),
         plugins::ocean_material::OceanMaterialPlugin,
     ));
-
 
     app.add_state::<game_state::GameState>();
 
