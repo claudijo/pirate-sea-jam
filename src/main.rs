@@ -6,13 +6,10 @@
 
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::events::game::RestartGameEvent;
-use crate::plugins::ocean_material::OceanMaterial;
-use bevy::pbr::wireframe::{WireframeConfig, WireframePlugin};
 use bevy::pbr::ExtendedMaterial;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
-use crate::plugins::extended_material::MyExtension;
-use crate::plugins::ocean::CustomOceanMaterial;
+use crate::plugins::ocean_material::{OceanMaterial};
 
 mod components;
 mod events;
@@ -73,13 +70,8 @@ fn main() {
         plugins::debug_fps::DebugFpsPlugin,
         plugins::sky::SkyPlugin,
 
-        MaterialPlugin::<ExtendedMaterial<StandardMaterial, MyExtension>, >::default(),
-        plugins::extended_material::ExtendedMaterailPlugin,
-        // MaterialPlugin::<ExtendedMaterial<StandardMaterial, OceanMaterial>>::default(),
-        // plugins::ocean_material::OceanMaterialPlugin,
-
-        // MaterialPlugin::<CustomOceanMaterial>::default(),
-        // plugins::ocean::OceanPlugin,
+        MaterialPlugin::<ExtendedMaterial<StandardMaterial, OceanMaterial>, >::default(),
+        plugins::ocean_material::OceanMaterialPlugin,
     ));
 
     app.add_state::<game_state::GameState>();

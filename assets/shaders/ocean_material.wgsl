@@ -2,34 +2,64 @@
     mesh_view_bindings::globals,
     pbr_fragment::pbr_input_from_standard_material,
     pbr_functions::alpha_discard,
+    forward_io::{FragmentOutput, VertexOutput, Vertex},
+    pbr_functions::{apply_pbr_lighting, main_pass_post_lighting_processing},
     mesh_functions::{get_model_matrix, mesh_position_local_to_clip, mesh_position_local_to_world, mesh_normal_local_to_world},
 }
 
-#import bevy_render::instance_index::get_instance_index
+//struct Vertex {
+//    @builtin(instance_index) instance_index: u32,
+//#ifdef VERTEX_POSITIONS
+//    @location(0) position: vec3<f32>,
+//#endif
+//#ifdef VERTEX_NORMALS
+//    @location(1) normal: vec3<f32>,
+//#endif
+//#ifdef VERTEX_UVS
+//    @location(2) uv: vec2<f32>,
+//#endif
+//// (Alternate UVs are at location 3, but they're currently unused here.)
+//#ifdef VERTEX_TANGENTS
+//    @location(4) tangent: vec4<f32>,
+//#endif
+//#ifdef VERTEX_COLORS
+//    @location(5) color: vec4<f32>,
+//#endif
+//#ifdef SKINNED
+//    @location(6) joint_indices: vec4<u32>,
+//    @location(7) joint_weights: vec4<f32>,
+//#endif
+//#ifdef MORPH_TARGETS
+//    @builtin(vertex_index) index: u32,
+//#endif
+//};
 
-#ifdef PREPASS_PIPELINE
-#import bevy_pbr::{
-    prepass_io::{VertexOutput, FragmentOutput},
-    pbr_deferred_functions::deferred_output,
-}
-#else
-#import bevy_pbr::{
-    forward_io::{VertexOutput, FragmentOutput},
-    pbr_functions::{apply_pbr_lighting, main_pass_post_lighting_processing},
-}
-#endif
+//struct VertexOutput {
+//    // This is `clip position` when the struct is used as a vertex stage output
+//    // and `frag coord` when used as a fragment stage input
+//    @builtin(position) position: vec4<f32>,
+//    @location(0) world_position: vec4<f32>,
+//    @location(1) world_normal: vec3<f32>,
+//#ifdef VERTEX_UVS
+//    @location(2) uv: vec2<f32>,
+//#endif
+//#ifdef VERTEX_TANGENTS
+//    @location(3) world_tangent: vec4<f32>,
+//#endif
+//#ifdef VERTEX_COLORS
+//    @location(4) color: vec4<f32>,
+//#endif
+//#ifdef VERTEX_OUTPUT_INSTANCE_INDEX
+//    @location(5) @interpolate(flat) instance_index: u32,
+//#endif
+//}
+
+//struct FragmentOutput {
+//    @location(0) color: vec4<f32>,
+//}
 
 const pi: f32 = 3.1415926538;
 const gravity: f32 = 9.807;
-
-struct Vertex {
-    @builtin(instance_index) instance_index: u32,
-    @location(0) position: vec3<f32>,
-};
-
-struct OceanMaterial {
-    world_offset: f32,
-}
 
 fn gerstner_wave(
     wave: vec4<f32>,
@@ -72,14 +102,18 @@ const second_wave = vec4<f32>(1., 0.8, 0.2, 32.);
 const third_wave = vec4<f32>(1., 1.2, 0.18, 28.);
 const forth_wave = vec4<f32>(1., 3., 0.16, 24.);
 
+struct OceanMaterial {
+    quantize_steps: u32,
+}
+
 @group(1) @binding(100)
 var<uniform> ocean_material: OceanMaterial;
 
 @vertex
-fn vertex(vertex: Vertex) -> VertexOutput {
+fn vertex(in: Vertex) -> VertexOutput {
     var out: VertexOutput;
 
-    var grid_point = vertex.position;
+    var grid_point = in.position;
     var tangent = vec3<f32>(1., 0., 0.);
     var binormal = vec3<f32>(0., 0., 1.);
     var p = grid_point;
@@ -93,18 +127,18 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     var position = vec4<f32>(p, 1.);
 
     out.position = mesh_position_local_to_clip(
-        get_model_matrix(vertex.instance_index),
+        get_model_matrix(in.instance_index),
         position,
     );
 
     out.world_position = mesh_position_local_to_world(
-        get_model_matrix(vertex.instance_index),
+        get_model_matrix(in.instance_index),
         position,
     );
 
     out.world_normal = mesh_normal_local_to_world(
         normal,
-        vertex.instance_index
+        in.instance_index
     );
 
     return out;
@@ -115,15 +149,10 @@ fn fragment(
     in: VertexOutput,
     @builtin(front_facing) is_front: bool,
 ) -> FragmentOutput {
+    var out: FragmentOutput;
+
     // generate a PbrInput struct from the StandardMaterial bindings
     var pbr_input = pbr_input_from_standard_material(in, is_front);
-
-#ifdef PREPASS_PIPELINE
-    // in deferred mode we can't modify anything after that, as lighting is run in a separate fullscreen shader.
-    let out = deferred_output(in, pbr_input);
-#else
-
-    var out: FragmentOutput;
 
     // apply lighting
     out.color = apply_pbr_lighting(pbr_input);
@@ -131,8 +160,6 @@ fn fragment(
     // apply in-shader post processing (fog, alpha-premultiply, and also tonemapping, debanding if the camera is non-hdr)
     // note this does not include fullscreen postprocessing effects like bloom.
     out.color = main_pass_post_lighting_processing(pbr_input, out.color);
-#endif
-
 
     return out;
 }
