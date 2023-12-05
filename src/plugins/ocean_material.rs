@@ -1,13 +1,13 @@
+use bevy::asset::{embedded_asset, load_internal_asset};
+use bevy::pbr::{ExtendedMaterial, MaterialExtension, OpaqueRendererMethod};
 use bevy::{
     prelude::*,
     reflect::TypePath,
-    render::{
-        render_resource::{
-            AsBindGroup, ShaderRef,
-        },
-    },
+    render::render_resource::{AsBindGroup, ShaderRef},
 };
-use bevy::pbr::{ExtendedMaterial, MaterialExtension, OpaqueRendererMethod};
+
+pub const WATER_DYNAMICS_HANDLE: Handle<Shader> =
+    Handle::weak_from_u128(0x64632a74ee9240ea8097a33da35f3ad5);
 
 /// set up a simple 3D scene
 fn setup(
@@ -15,7 +15,10 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, OceanMaterial>>>,
 ) {
-    let mesh = Mesh::from(shape::Plane { size: 120., subdivisions: 59 });
+    let mesh = Mesh::from(shape::Plane {
+        size: 120.,
+        subdivisions: 59,
+    });
 
     commands.spawn(MaterialMeshBundle {
         mesh: meshes.add(mesh),
@@ -48,16 +51,22 @@ impl MaterialExtension for OceanMaterial {
     fn vertex_shader() -> ShaderRef {
         "shaders/ocean_material.wgsl".into()
     }
-
-    // fn prepass_vertex_shader() -> ShaderRef {
-    //     "shaders/ocean_material.wgsl".into()
-    // }
 }
 
 pub struct OceanMaterialPlugin;
 
 impl Plugin for OceanMaterialPlugin {
     fn build(&self, app: &mut App) {
+        load_internal_asset!(
+            app,
+            WATER_DYNAMICS_HANDLE,
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/assets/shaders/water_dynamics.wgsl"
+            ),
+            Shader::from_wgsl
+        );
+
         app.add_systems(Startup, setup);
     }
 }

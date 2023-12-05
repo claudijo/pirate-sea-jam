@@ -7,93 +7,8 @@
     mesh_functions::{get_model_matrix, mesh_position_local_to_clip, mesh_position_local_to_world, mesh_normal_local_to_world},
 }
 
-//struct Vertex {
-//    @builtin(instance_index) instance_index: u32,
-//#ifdef VERTEX_POSITIONS
-//    @location(0) position: vec3<f32>,
-//#endif
-//#ifdef VERTEX_NORMALS
-//    @location(1) normal: vec3<f32>,
-//#endif
-//#ifdef VERTEX_UVS
-//    @location(2) uv: vec2<f32>,
-//#endif
-//// (Alternate UVs are at location 3, but they're currently unused here.)
-//#ifdef VERTEX_TANGENTS
-//    @location(4) tangent: vec4<f32>,
-//#endif
-//#ifdef VERTEX_COLORS
-//    @location(5) color: vec4<f32>,
-//#endif
-//#ifdef SKINNED
-//    @location(6) joint_indices: vec4<u32>,
-//    @location(7) joint_weights: vec4<f32>,
-//#endif
-//#ifdef MORPH_TARGETS
-//    @builtin(vertex_index) index: u32,
-//#endif
-//};
+#import pirate_sea_jam::water_dynamics
 
-//struct VertexOutput {
-//    // This is `clip position` when the struct is used as a vertex stage output
-//    // and `frag coord` when used as a fragment stage input
-//    @builtin(position) position: vec4<f32>,
-//    @location(0) world_position: vec4<f32>,
-//    @location(1) world_normal: vec3<f32>,
-//#ifdef VERTEX_UVS
-//    @location(2) uv: vec2<f32>,
-//#endif
-//#ifdef VERTEX_TANGENTS
-//    @location(3) world_tangent: vec4<f32>,
-//#endif
-//#ifdef VERTEX_COLORS
-//    @location(4) color: vec4<f32>,
-//#endif
-//#ifdef VERTEX_OUTPUT_INSTANCE_INDEX
-//    @location(5) @interpolate(flat) instance_index: u32,
-//#endif
-//}
-
-//struct FragmentOutput {
-//    @location(0) color: vec4<f32>,
-//}
-
-const pi: f32 = 3.1415926538;
-const gravity: f32 = 9.807;
-
-fn gerstner_wave(
-    wave: vec4<f32>,
-    p: vec3<f32>,
-    tangent: ptr<function,vec3<f32>>,
-    binormal: ptr<function,vec3<f32>>,
-) -> vec3<f32> {
-    let steepness = wave.z;
-    let wave_length = wave.w;
-
-   let k: f32 = 2. * pi / wave_length;
-   let c: f32 = sqrt(gravity / k);
-   let d: vec2<f32> = normalize(wave.xy);
-   let f: f32 = k * (dot(d, p.xz) - c * globals.time);
-   let a: f32 = steepness / k;
-
-    *tangent += vec3<f32>(
-        -d.x * d.x * (steepness * sin(f)),
-        d.x * (steepness * cos(f)),
-        -d.x * d.y * (steepness * sin(f))
-    );
-
-    *binormal += vec3<f32>(
-        -d.x * d.y * (steepness * sin(f)),
-        d.y * (steepness * cos(f)),
-        -d.y * d.y * (steepness * sin(f))
-    );
-
-    return vec3<f32>(
-        d.x * (a * cos(f)),
-        a * sin(f),
-        d.y * (a * cos(f))
-    );
-}
 
 // Vec4 containing direction x, direction z, steepness, wave_length
 // Sum of all steepness values must not exceed 1.
@@ -117,11 +32,12 @@ fn vertex(in: Vertex) -> VertexOutput {
     var tangent = vec3<f32>(1., 0., 0.);
     var binormal = vec3<f32>(0., 0., 1.);
     var p = grid_point;
+    let time = globals.time;
 
-    p += gerstner_wave(first_wave, grid_point, &tangent, &binormal);
-    p += gerstner_wave(second_wave, grid_point, &tangent, &binormal);
-    p += gerstner_wave(third_wave, grid_point, &tangent, &binormal);
-    p += gerstner_wave(forth_wave, grid_point, &tangent, &binormal);
+    p += water_dynamics::gerstner_wave(first_wave, grid_point, &tangent, &binormal, time);
+    p += water_dynamics::gerstner_wave(second_wave, grid_point, &tangent, &binormal, time);
+    p += water_dynamics::gerstner_wave(third_wave, grid_point, &tangent, &binormal, time);
+    p += water_dynamics::gerstner_wave(forth_wave, grid_point, &tangent, &binormal, time);
 
     var normal: vec3<f32> = normalize(cross(binormal, tangent));
     var position = vec4<f32>(p, 1.);
