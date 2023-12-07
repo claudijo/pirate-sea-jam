@@ -60,9 +60,6 @@ impl MaterialExtension for OceanMaterial {
     fn prepass_vertex_shader() -> ShaderRef {
         "shaders/ocean_material_prepass.wgsl".into()
     }
-    // fn prepass_fragment_shader() -> ShaderRef {
-    //     "shaders/ocean_material_prepass.wgsl".into()
-    // }
 }
 
 pub struct OceanMaterialPlugin;
