@@ -2,13 +2,16 @@
     mesh_view_bindings::globals,
     pbr_fragment,
     forward_io::{FragmentOutput, VertexOutput, Vertex},
-    pbr_functions,
+    pbr_functions::main_pass_post_lighting_processing,
     mesh_functions,
 }
 
 #import bevy_render::instance_index::get_instance_index
 
-#import pirate_sea_jam::water_dynamics
+#import pirate_sea_jam::{
+    water_dynamics,
+    pbr_functions::apply_pbr_lighting,
+}
 
 // Vec4 containing direction x, direction z, steepness, wave_length
 // Sum of all steepness values must not exceed 1.
@@ -69,17 +72,15 @@ fn fragment(
 ) -> FragmentOutput {
     var out: FragmentOutput;
 
-    out.color = vec4<f32>(0., 0., 1., 0.);
-
     // generate a PbrInput struct from the StandardMaterial bindings
     var pbr_input = pbr_fragment::pbr_input_from_standard_material(in, is_front);
 
     // apply lighting
-    out.color = pbr_functions::apply_pbr_lighting(pbr_input);
+    out.color = apply_pbr_lighting(pbr_input);
 
     // apply in-shader post processing (fog, alpha-premultiply, and also tonemapping, debanding if the camera is non-hdr)
     // note this does not include fullscreen postprocessing effects like bloom.
-    out.color = pbr_functions::main_pass_post_lighting_processing(pbr_input, out.color);
+    out.color = main_pass_post_lighting_processing(pbr_input, out.color);
 
     return out;
 }
