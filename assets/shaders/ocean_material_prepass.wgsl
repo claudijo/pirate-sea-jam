@@ -27,10 +27,10 @@ const third_wave = vec4<f32>(1., 1.2, 0.18, 28.);
 const forth_wave = vec4<f32>(1., 3., 0.16, 24.);
 
 @vertex
-fn vertex(vertex: Vertex) -> VertexOutput {
+fn vertex(in: Vertex) -> VertexOutput {
     var out: VertexOutput;
 
-    var grid_point = vertex.position;
+    var grid_point = in.position;
     var tangent = vec3<f32>(1., 0., 0.);
     var binormal = vec3<f32>(0., 0., 1.);
     var p = grid_point;
@@ -45,7 +45,7 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     var position = vec4<f32>(p, 1.);
 
     out.position = mesh_functions::mesh_position_local_to_clip(
-        mesh_functions::get_model_matrix(vertex.instance_index),
+        mesh_functions::get_model_matrix(in.instance_index),
         position
     );
 
