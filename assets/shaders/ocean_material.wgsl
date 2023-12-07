@@ -1,10 +1,9 @@
 #import bevy_pbr::{
     mesh_view_bindings::globals,
-    pbr_fragment::pbr_input_from_standard_material,
-    pbr_functions::alpha_discard,
+    pbr_fragment,
     forward_io::{FragmentOutput, VertexOutput, Vertex},
-    pbr_functions::{apply_pbr_lighting, main_pass_post_lighting_processing},
-    mesh_functions::{get_model_matrix, mesh_position_local_to_clip, mesh_position_local_to_world, mesh_normal_local_to_world},
+    pbr_functions,
+    mesh_functions,
 }
 
 #import bevy_render::instance_index::get_instance_index
@@ -43,17 +42,19 @@ fn vertex(in: Vertex) -> VertexOutput {
     var normal: vec3<f32> = normalize(cross(binormal, tangent));
     var position = vec4<f32>(p, 1.);
 
-    out.position = mesh_position_local_to_clip(
-        get_model_matrix(in.instance_index),
+    var model = mesh_functions::get_model_matrix(in.instance_index);
+
+    out.position = mesh_functions::mesh_position_local_to_clip(
+        model,
         position,
     );
 
-    out.world_position = mesh_position_local_to_world(
-        get_model_matrix(in.instance_index),
+    out.world_position = mesh_functions::mesh_position_local_to_world(
+        model,
         position,
     );
 
-    out.world_normal = mesh_normal_local_to_world(
+    out.world_normal = mesh_functions::mesh_normal_local_to_world(
         normal,
         get_instance_index(in.instance_index)
     );
@@ -71,14 +72,14 @@ fn fragment(
     out.color = vec4<f32>(0., 0., 1., 0.);
 
     // generate a PbrInput struct from the StandardMaterial bindings
-    var pbr_input = pbr_input_from_standard_material(in, is_front);
+    var pbr_input = pbr_fragment::pbr_input_from_standard_material(in, is_front);
 
     // apply lighting
-    out.color = apply_pbr_lighting(pbr_input);
+    out.color = pbr_functions::apply_pbr_lighting(pbr_input);
 
     // apply in-shader post processing (fog, alpha-premultiply, and also tonemapping, debanding if the camera is non-hdr)
     // note this does not include fullscreen postprocessing effects like bloom.
-    out.color = main_pass_post_lighting_processing(pbr_input, out.color);
+    out.color = pbr_functions::main_pass_post_lighting_processing(pbr_input, out.color);
 
     return out;
 }
