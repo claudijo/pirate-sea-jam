@@ -7,8 +7,9 @@
     mesh_functions::{get_model_matrix, mesh_position_local_to_clip, mesh_position_local_to_world, mesh_normal_local_to_world},
 }
 
-#import pirate_sea_jam::water_dynamics
+#import bevy_render::instance_index::get_instance_index
 
+#import pirate_sea_jam::water_dynamics
 
 // Vec4 containing direction x, direction z, steepness, wave_length
 // Sum of all steepness values must not exceed 1.
@@ -54,7 +55,7 @@ fn vertex(in: Vertex) -> VertexOutput {
 
     out.world_normal = mesh_normal_local_to_world(
         normal,
-        in.instance_index
+        get_instance_index(in.instance_index)
     );
 
     return out;
@@ -66,6 +67,8 @@ fn fragment(
     @builtin(front_facing) is_front: bool,
 ) -> FragmentOutput {
     var out: FragmentOutput;
+
+    out.color = vec4<f32>(0., 0., 1., 0.);
 
     // generate a PbrInput struct from the StandardMaterial bindings
     var pbr_input = pbr_input_from_standard_material(in, is_front);

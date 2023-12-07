@@ -9,16 +9,17 @@ use bevy::{
 pub const WATER_DYNAMICS_HANDLE: Handle<Shader> =
     Handle::weak_from_u128(0x64632a74ee9240ea8097a33da35f3ad5);
 
-/// set up a simple 3D scene
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, OceanMaterial>>>,
 ) {
-    let mesh = Mesh::from(shape::Plane {
+    let mut mesh = Mesh::from(shape::Plane {
         size: 120.,
-        subdivisions: 59,
+        subdivisions: 49,
     });
+
+    mesh.duplicate_vertices();
 
     commands.spawn(MaterialMeshBundle {
         mesh: meshes.add(mesh),
@@ -44,13 +45,24 @@ pub struct OceanMaterial {
 }
 
 impl MaterialExtension for OceanMaterial {
-    fn fragment_shader() -> ShaderRef {
-        "shaders/ocean_material.wgsl".into()
-    }
+    // fn fragment_shader() -> ShaderRef {
+    //     "shaders/ocean_material.wgsl".into()
+    // }
 
     fn vertex_shader() -> ShaderRef {
         "shaders/ocean_material.wgsl".into()
     }
+
+    fn fragment_shader() -> ShaderRef {
+        "shaders/ocean_material.wgsl".into()
+    }
+
+    fn prepass_vertex_shader() -> ShaderRef {
+        "shaders/ocean_material_prepass.wgsl".into()
+    }
+    // fn prepass_fragment_shader() -> ShaderRef {
+    //     "shaders/ocean_material_prepass.wgsl".into()
+    // }
 }
 
 pub struct OceanMaterialPlugin;
