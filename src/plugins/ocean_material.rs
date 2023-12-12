@@ -48,10 +48,6 @@ pub struct OceanMaterial {
 }
 
 impl MaterialExtension for OceanMaterial {
-    // fn fragment_shader() -> ShaderRef {
-    //     "shaders/ocean_material.wgsl".into()
-    // }
-
     fn vertex_shader() -> ShaderRef {
         "shaders/ocean_material.wgsl".into()
     }
