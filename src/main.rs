@@ -23,7 +23,7 @@ mod utils;
 fn main() {
     let mut app = App::new();
 
-    // Uncomment and run once to produce dummy meta files with command.
+    // Uncomment and run once to produce dummy meta files with command, using the following command
     // cargo run --features bevy/asset_processor
     // See https://github.com/bevyengine/bevy/issues/10157
     // app.add_plugins(DefaultPlugins.set(
