@@ -4,6 +4,7 @@
 // Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+use bevy::asset::AssetMetaCheck;
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::events::game::RestartGameEvent;
 use crate::plugins::ocean_material::OceanMaterial;
@@ -23,15 +24,7 @@ mod utils;
 fn main() {
     let mut app = App::new();
 
-    // Uncomment and run once to produce dummy meta files with command, using the following command
-    // cargo run --features bevy/asset_processor
-    // See https://github.com/bevyengine/bevy/issues/10157
-    // app.add_plugins(DefaultPlugins.set(
-    //     AssetPlugin {
-    //         mode: AssetMode::Processed,
-    //         ..default()
-    //     }
-    // ));
+    app.insert_resource(AssetMetaCheck::Never);
 
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
