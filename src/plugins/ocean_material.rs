@@ -9,9 +9,6 @@ use bevy::{
 pub const WATER_DYNAMICS_HANDLE: Handle<Shader> =
     Handle::weak_from_u128(0x64632a74ee9240ea8097a33da35f3ad5);
 
-pub const PBR_FUNCTIONS_HANDLE: Handle<Shader> =
-    Handle::weak_from_u128(0x1c249639ef6f43158eee117f0c483b0e);
-
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -71,16 +68,6 @@ impl Plugin for OceanMaterialPlugin {
             concat!(
                 env!("CARGO_MANIFEST_DIR"),
                 "/assets/shaders/water_dynamics.wgsl"
-            ),
-            Shader::from_wgsl
-        );
-
-        load_internal_asset!(
-            app,
-            PBR_FUNCTIONS_HANDLE,
-            concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/assets/shaders/pbr_functions.wgsl"
             ),
             Shader::from_wgsl
         );
