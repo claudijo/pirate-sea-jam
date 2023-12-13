@@ -32,10 +32,10 @@ fn vertex(in: Vertex) -> VertexOutput {
     var p = grid_point;
     let time = globals.time;
 
-    p += water_dynamics::gerstner_wave(first_wave, grid_point, &tangent, &binormal, time);
-    p += water_dynamics::gerstner_wave(second_wave, grid_point, &tangent, &binormal, time);
-    p += water_dynamics::gerstner_wave(third_wave, grid_point, &tangent, &binormal, time);
-    p += water_dynamics::gerstner_wave(forth_wave, grid_point, &tangent, &binormal, time);
+    p += water_dynamics::gerstner_wave(first_wave, grid_point, time);
+    p += water_dynamics::gerstner_wave(second_wave, grid_point, time);
+    p += water_dynamics::gerstner_wave(third_wave, grid_point, time);
+    p += water_dynamics::gerstner_wave(forth_wave, grid_point, time);
 
     var normal: vec3<f32> = normalize(cross(binormal, tangent));
     var position = vec4<f32>(p, 1.);

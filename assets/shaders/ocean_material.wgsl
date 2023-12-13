@@ -20,14 +20,14 @@ const third_wave = vec4<f32>(1., 1.2, 0.18, 28.);
 const forth_wave = vec4<f32>(1., 3., 0.16, 24.);
 
 struct OceanMaterial {
-    quantize_steps: u32,
+    grid_size: f32,
 }
 
 @group(1) @binding(100)
 var<uniform> ocean_material: OceanMaterial;
 
 @vertex
-fn vertex(in: Vertex) -> VertexOutput {
+fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput {
     var out: VertexOutput;
 
     var grid_point = in.position;
@@ -36,12 +36,67 @@ fn vertex(in: Vertex) -> VertexOutput {
     var p = grid_point;
     let time = globals.time;
 
-    p += water_dynamics::gerstner_wave(first_wave, grid_point, &tangent, &binormal, time);
-    p += water_dynamics::gerstner_wave(second_wave, grid_point, &tangent, &binormal, time);
-    p += water_dynamics::gerstner_wave(third_wave, grid_point, &tangent, &binormal, time);
-    p += water_dynamics::gerstner_wave(forth_wave, grid_point, &tangent, &binormal, time);
+    p += water_dynamics::gerstner_wave(first_wave, grid_point, time);
+    p += water_dynamics::gerstner_wave(second_wave, grid_point, time);
+    p += water_dynamics::gerstner_wave(third_wave, grid_point, time);
+    p += water_dynamics::gerstner_wave(forth_wave, grid_point, time);
 
-    var normal: vec3<f32> = normalize(cross(binormal, tangent));
+    var cw_delta: vec3<f32>;
+    var ccw_delta: vec3<f32>;
+
+    switch vertex_index % 6u {
+        case 0u {
+            cw_delta = vec3<f32>(-1., 0., 0.);
+            ccw_delta = vec3<f32>(0., 0., -1.);
+        }
+        case 1u {   // Multiple selector values can be used
+            cw_delta = vec3<f32>(0., 0., 1.);
+            ccw_delta = vec3<f32>(-1., 0., 1.);
+        }
+        case 2u {
+            cw_delta = vec3<f32>(1., 0., -1.);
+            ccw_delta = vec3<f32>(1., 0., 0.);
+        }
+        case 3u {
+            cw_delta = vec3<f32>(1., 0., 0.);
+            ccw_delta = vec3<f32>(0., 0., 1.);
+        }
+        case 4u {
+            cw_delta = vec3<f32>(0., 0., -1.);
+            ccw_delta = vec3<f32>(1., 0., -1.);
+        }
+        case 5u {
+            cw_delta = vec3<f32>(-1., 0., 1.);
+            ccw_delta = vec3<f32>(-1., 0., 0.);
+        }
+        default {
+            cw_delta = vec3<f32>(0.);
+            ccw_delta = vec3<f32>(0.);
+        }
+    }
+
+    let grid_point_cw = grid_point + cw_delta * ocean_material.grid_size;
+    let grid_point_ccw = grid_point + ccw_delta * ocean_material.grid_size;
+
+    var p_cw = grid_point_cw;
+    var p_ccw = grid_point_ccw;
+
+    p_cw += water_dynamics::gerstner_wave(first_wave, grid_point_cw, time);
+    p_cw += water_dynamics::gerstner_wave(second_wave, grid_point_cw, time);
+    p_cw += water_dynamics::gerstner_wave(third_wave, grid_point_cw, time);
+    p_cw += water_dynamics::gerstner_wave(forth_wave, grid_point_cw, time);
+
+    p_ccw += water_dynamics::gerstner_wave(first_wave, grid_point_ccw, time);
+    p_ccw += water_dynamics::gerstner_wave(second_wave, grid_point_ccw, time);
+    p_ccw += water_dynamics::gerstner_wave(third_wave, grid_point_ccw, time);
+    p_ccw += water_dynamics::gerstner_wave(forth_wave, grid_point_ccw, time);
+
+
+    var normal: vec3<f32> = normalize(cross(
+        p_ccw - p,
+        p_cw - p
+    ));
+
     var position = vec4<f32>(p, 1.);
 
     var model = mesh_functions::get_model_matrix(in.instance_index);

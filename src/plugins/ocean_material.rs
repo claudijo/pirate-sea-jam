@@ -6,6 +6,10 @@ use bevy::{
     render::render_resource::{AsBindGroup, ShaderRef},
 };
 
+pub const OCEAN_TILE_SIZE: f32 = 100.;
+const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 19; // Needs to be odd
+const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS * 2 + 1;
+
 pub const WATER_DYNAMICS_HANDLE: Handle<Shader> =
     Handle::weak_from_u128(0x64632a74ee9240ea8097a33da35f3ad5);
 
@@ -15,8 +19,8 @@ fn setup(
     mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, OceanMaterial>>>,
 ) {
     let mut mesh = Mesh::from(shape::Plane {
-        size: 120.,
-        subdivisions: 49,
+        size: OCEAN_TILE_SIZE,
+        subdivisions: OCEAN_SECONDARY_TILE_SUBDIVISIONS,
     });
 
     mesh.duplicate_vertices();
@@ -30,7 +34,9 @@ fn setup(
                 metallic: 1.,
                 ..Default::default()
             },
-            extension: OceanMaterial { quantize_steps: 3 },
+            extension: OceanMaterial {
+                grid_size: OCEAN_TILE_SIZE / (OCEAN_PRIMARY_TILE_SUBDIVISIONS + 1) as f32
+            },
         }),
         ..default()
     });
@@ -41,7 +47,7 @@ pub struct OceanMaterial {
     // We need to ensure that the bindings of the base material and the extension do not conflict,
     // so we start from binding slot 100, leaving slots 0-99 for the base material.
     #[uniform(100)]
-    quantize_steps: u32,
+    grid_size: f32,
 }
 
 impl MaterialExtension for OceanMaterial {
