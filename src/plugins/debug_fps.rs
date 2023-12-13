@@ -29,7 +29,7 @@ pub fn update_fps(
 ) {
     for mut text in &mut fps_text_query {
         if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
-            if let Some(value) = fps.smoothed() {
+            if let Some(value) = fps.average() {
                 text.sections[0].value = format!("FPS: {value:.2}");
             }
         }

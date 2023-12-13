@@ -3,6 +3,7 @@
 const PI: f32 = 3.1415926538;
 const GRAVITY: f32 = 9.807;
 
+// `wave`: Vec4 containing direction x, direction z, steepness, wave_length
 fn gerstner_wave(
     wave: vec4<f32>,
     p: vec3<f32>,

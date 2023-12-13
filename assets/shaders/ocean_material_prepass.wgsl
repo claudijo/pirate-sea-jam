@@ -3,15 +3,11 @@
 // Possibly merge with corresponding main shader.
 
 #import bevy_pbr::{
-    prepass_bindings,
     mesh_functions,
-    prepass_io::{Vertex, VertexOutput, FragmentOutput},
+    prepass_io::{Vertex, VertexOutput},
     skinning,
     morph,
-    mesh_view_bindings::{view, previous_view_proj},
 }
-
-#import bevy_render::instance_index::get_instance_index
 
 #import pirate_sea_jam::water_dynamics
 

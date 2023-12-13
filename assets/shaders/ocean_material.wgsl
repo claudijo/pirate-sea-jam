@@ -2,15 +2,14 @@
     mesh_view_bindings::globals,
     pbr_fragment,
     forward_io::{FragmentOutput, VertexOutput, Vertex},
-    pbr_functions::main_pass_post_lighting_processing,
+    pbr_functions,
     mesh_functions,
 }
 
-#import bevy_render::instance_index::get_instance_index
+#import bevy_render::instance_index
 
 #import pirate_sea_jam::{
     water_dynamics,
-    pbr_functions::apply_pbr_lighting,
 }
 
 // Vec4 containing direction x, direction z, steepness, wave_length
@@ -59,7 +58,7 @@ fn vertex(in: Vertex) -> VertexOutput {
 
     out.world_normal = mesh_functions::mesh_normal_local_to_world(
         normal,
-        get_instance_index(in.instance_index)
+        instance_index::get_instance_index(in.instance_index)
     );
 
     return out;
@@ -76,11 +75,11 @@ fn fragment(
     var pbr_input = pbr_fragment::pbr_input_from_standard_material(in, is_front);
 
     // apply lighting
-    out.color = apply_pbr_lighting(pbr_input);
+    out.color = pbr_functions::apply_pbr_lighting(pbr_input);
 
     // apply in-shader post processing (fog, alpha-premultiply, and also tonemapping, debanding if the camera is non-hdr)
     // note this does not include fullscreen postprocessing effects like bloom.
-    out.color = main_pass_post_lighting_processing(pbr_input, out.color);
+    out.color = pbr_functions::main_pass_post_lighting_processing(pbr_input, out.color);
 
     return out;
 }
