@@ -1,6 +1,5 @@
 use crate::utils::water_dynamics;
 use bevy::prelude::*;
-use std::f32::consts::PI;
 
 #[derive(Resource)]
 pub struct Wave {

@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::components::ship::PlayerShip;
 use crate::game_state::GameState;
 use crate::resources::wave::Wave;

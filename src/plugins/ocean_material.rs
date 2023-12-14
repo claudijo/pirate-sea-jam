@@ -1,8 +1,7 @@
-use bevy::asset::{embedded_asset, load_internal_asset};
-use bevy::pbr::{ExtendedMaterial, MaterialExtension, OpaqueRendererMethod};
+use bevy::asset::load_internal_asset;
+use bevy::pbr::{ExtendedMaterial, MaterialExtension};
 use bevy::{
     prelude::*,
-    reflect::TypePath,
     render::render_resource::{AsBindGroup, ShaderRef},
 };
 
@@ -13,8 +12,7 @@ const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS *
 pub const WATER_DYNAMICS_HANDLE: Handle<Shader> =
     Handle::weak_from_u128(0x64632a74ee9240ea8097a33da35f3ad5);
 
-pub const UTILS_HANDLE: Handle<Shader> =
-    Handle::weak_from_u128(0x24c6df2a389f4396aa11f2840f30c5da);
+pub const UTILS_HANDLE: Handle<Shader> = Handle::weak_from_u128(0x24c6df2a389f4396aa11f2840f30c5da);
 
 fn setup(
     mut commands: Commands,
@@ -85,10 +83,7 @@ impl Plugin for OceanMaterialPlugin {
         load_internal_asset!(
             app,
             UTILS_HANDLE,
-            concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/assets/shaders/utils.wgsl"
-            ),
+            concat!(env!("CARGO_MANIFEST_DIR"), "/assets/shaders/utils.wgsl"),
             Shader::from_wgsl
         );
 
