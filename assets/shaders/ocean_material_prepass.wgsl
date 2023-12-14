@@ -17,23 +17,26 @@
 
 // Vec4 containing direction x, direction z, steepness, wave_length
 // Sum of all steepness values must not exceed 1.
+// TODO: Pass from main program
 const first_wave = vec4<f32>(1., 0., 0.22, 36.);
 const second_wave = vec4<f32>(1., 0.8, 0.2, 32.);
 const third_wave = vec4<f32>(1., 1.2, 0.18, 28.);
 const forth_wave = vec4<f32>(1., 3., 0.16, 24.);
 
+// TODO: Pass from main program
+const TIME_SCALE: f32 = 0.6;
+
 @vertex
 fn vertex(in: Vertex) -> VertexOutput {
     var out: VertexOutput;
 
-    var grid_point = in.position;
-    var p = grid_point;
-    let time = globals.time;
+    var p = in.position;
+    let time = globals.time * TIME_SCALE;
 
-    p += water_dynamics::gerstner_wave(first_wave, grid_point, time);
-    p += water_dynamics::gerstner_wave(second_wave, grid_point, time);
-    p += water_dynamics::gerstner_wave(third_wave, grid_point, time);
-    p += water_dynamics::gerstner_wave(forth_wave, grid_point, time);
+    p += water_dynamics::gerstner_wave(first_wave, in.position, time);
+    p += water_dynamics::gerstner_wave(second_wave, in.position, time);
+    p += water_dynamics::gerstner_wave(third_wave, in.position, time);
+    p += water_dynamics::gerstner_wave(forth_wave, in.position, time);
 
     var position = vec4<f32>(p, 1.);
 

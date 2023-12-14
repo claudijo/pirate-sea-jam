@@ -1,6 +1,6 @@
 use crate::components::ship::PlayerShip;
 use crate::game_state::GameState;
-use crate::resources::wave_machine::WaveMachine;
+use crate::resources::wave::Wave;
 use crate::systems::fluid_dynamics;
 use bevy::prelude::*;
 use bevy::render::view::VisibilitySystems;
@@ -142,7 +142,7 @@ pub struct OceanPlugin;
 
 impl Plugin for OceanPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(WaveMachine {
+        app.insert_resource(Wave {
             time_scale: 0.4,
             sample_count: 4,
         });

@@ -1,8 +1,8 @@
 use crate::components::pontoon::Pontoon;
 use crate::plugins::ocean_tile::{OceanTile, Tier};
-use crate::resources::wave_machine::WaveMachine;
+use crate::resources::wave::Wave;
 use crate::utils::tiles;
-use crate::utils::{liquid, liquid::SPHERE_DRAG_COEFFICIENT, sphere};
+use crate::utils::{water_dynamics, water_dynamics::SPHERE_DRAG_COEFFICIENT, sphere};
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 
@@ -10,7 +10,7 @@ use bevy_rapier3d::prelude::*;
 pub fn make_waves(
     ocean_tile_query: Query<(&Transform, &OceanTile, &Handle<Mesh>)>,
     mut assets: ResMut<Assets<Mesh>>,
-    wave_machine: Res<WaveMachine>,
+    wave_machine: Res<Wave>,
     time: Res<Time>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
@@ -70,7 +70,7 @@ pub fn buoyancy(
         &mut Damping,
     )>,
     time: Res<Time>,
-    wave_machine: Res<WaveMachine>,
+    wave_machine: Res<Wave>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
 
@@ -83,11 +83,11 @@ pub fn buoyancy(
             sphere::displaced_liquid_volume(pontoon.radius, translation.y, water_height);
 
         let buoyant_force =
-            liquid::buoyant_force(displaced_liquid_volume) * pontoon.buoyant_force_scale;
+            water_dynamics::buoyant_force(displaced_liquid_volume) * pontoon.buoyant_force_scale;
 
         let is_submerged = translation.y - pontoon.radius < water_height;
         let linear_damping = if is_submerged {
-            liquid::damping(
+            water_dynamics::damping(
                 velocity.linvel.y,
                 sphere::cross_section_area(pontoon.radius),
                 SPHERE_DRAG_COEFFICIENT,

@@ -19,10 +19,14 @@
 
 // Vec4 containing direction x, direction z, steepness, wave_length
 // Sum of all steepness values must not exceed 1.
+// TODO: Pass from main program
 const first_wave = vec4<f32>(1., 0., 0.22, 36.);
 const second_wave = vec4<f32>(1., 0.8, 0.2, 32.);
 const third_wave = vec4<f32>(1., 1.2, 0.18, 28.);
 const forth_wave = vec4<f32>(1., 3., 0.16, 24.);
+
+// TODO: Pass from main program
+const TIME_SCALE: f32 = 0.6;
 
 struct OceanMaterial {
     grid_size: f32,
@@ -35,24 +39,22 @@ var<uniform> ocean_material: OceanMaterial;
 fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput {
     var out: VertexOutput;
 
-    let time = globals.time;
+    let time = globals.time * TIME_SCALE;
 
-    var grid_point = in.position;
-    var tangent = vec3<f32>(1., 0., 0.);
-    var binormal = vec3<f32>(0., 0., 1.);
-    var p = grid_point;
+    var p = in.position;
 
-    let adjecent_grid_points: array<vec3<f32>,2> = utils::get_adjecent_grid_points(vertex_index, grid_point, ocean_material.grid_size);
+    let adjecent_grid_points: array<vec3<f32>,2> = utils::get_adjecent_grid_points(vertex_index, in.position, ocean_material.grid_size);
 
     let grid_point_cw = adjecent_grid_points[0];
     let grid_point_ccw = adjecent_grid_points[1];
+
     var p_cw = grid_point_cw;
     var p_ccw = grid_point_ccw;
 
-    p += water_dynamics::gerstner_wave(first_wave, grid_point, time);
-    p += water_dynamics::gerstner_wave(second_wave, grid_point, time);
-    p += water_dynamics::gerstner_wave(third_wave, grid_point, time);
-    p += water_dynamics::gerstner_wave(forth_wave, grid_point, time);
+    p += water_dynamics::gerstner_wave(first_wave, in.position, time);
+    p += water_dynamics::gerstner_wave(second_wave, in.position, time);
+    p += water_dynamics::gerstner_wave(third_wave, in.position, time);
+    p += water_dynamics::gerstner_wave(forth_wave, in.position, time);
 
     p_cw += water_dynamics::gerstner_wave(first_wave, grid_point_cw, time);
     p_cw += water_dynamics::gerstner_wave(second_wave, grid_point_cw, time);
@@ -70,7 +72,10 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
         p_cw - p
     ));
 
-    var position = vec4<f32>(p, 1.);
+    var position = vec4<f32>(
+        p,
+        1.
+    );
     var model = mesh_functions::get_model_matrix(in.instance_index);
 
     out.position = mesh_functions::mesh_position_local_to_clip(

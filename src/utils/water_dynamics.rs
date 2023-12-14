@@ -1,7 +1,8 @@
+use std::f32::consts::PI;
 use bevy::prelude::*;
 
 pub const LIQUID_DENSITY: f32 = 1025.;
-pub const GRAVITY: f32 = 9.81;
+const GRAVITY: f32 = 9.807;
 pub const SPHERE_DRAG_COEFFICIENT: f32 = 0.47;
 
 // https://www.omnicalculator.com/physics/buoyancy
@@ -17,7 +18,7 @@ pub fn damping(relative_velocity: f32, reference_area: f32, drag_coefficient: f3
 // http://www-evasion.imag.fr/Membres/Fabrice.Neyret/NaturalScenes/fluids/water/waves/fluids-nuages/waves/Jonathan/articlesCG/simulating-ocean-water-01.pdf
 // wave_vector points in the direction of the travel of the wave
 // For wave_vector.length() * amplitude > 1, an undesired loop forms at the tops of the wave
-pub fn gerstner_wave(
+pub fn gerstner_wave_old(
     point_on_surface: Vec2,
     time: f32,
     wave_vector: Vec2,
@@ -32,6 +33,24 @@ pub fn gerstner_wave(
     let y = amplitude * (wave_vector.dot(point_on_surface) - frequency * time).cos();
 
     Vec3::new(xz.x, y, xz.y)
+}
+
+// `wave`: Vec4 containing direction x, direction z, steepness, wave_length
+pub fn gerstner_wave(wave: Vec4, p: Vec3, time: f32) -> Vec3 {
+    let steepness = wave.z;
+    let wave_length = wave.w;
+
+    let k: f32 = 2. * PI / wave_length;
+    let c: f32 = (GRAVITY / k).sqrt();
+    let d: Vec2 = wave.xy().normalize();
+    let f: f32 = k * (d.dot(p.xz()) - c * time);
+    let a: f32 = steepness / k;
+
+    return Vec3::new(
+        d.x * (a * f.cos()),
+        a * f.sin(),
+        d.y * (a * f.cos())
+    );
 }
 
 // https://www.youtube.com/watch?v=kGEqaX4Y4bQ&t=746s

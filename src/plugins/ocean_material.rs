@@ -5,10 +5,6 @@ use bevy::{
     reflect::TypePath,
     render::render_resource::{AsBindGroup, ShaderRef},
 };
-use bevy::render::render_asset::RenderAssets;
-use bevy::render::render_resource::{AsBindGroupError, BindGroupLayout, BindGroupLayoutEntry, UnpreparedBindGroup};
-use bevy::render::renderer::RenderDevice;
-use bevy::render::texture::FallbackImage;
 
 pub const OCEAN_TILE_SIZE: f32 = 100.;
 const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 19; // Needs to be odd

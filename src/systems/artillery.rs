@@ -3,7 +3,7 @@ use crate::components::ship::{PlayerShip, Ship};
 use crate::components::shooting_target::ShootingTarget;
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::plugins::assets::ModelAssets;
-use crate::resources::wave_machine::WaveMachine;
+use crate::resources::wave::Wave;
 use crate::systems::ship::{EndAimCannonAnimationClips, StartAimCannonAnimationClips};
 use crate::utils::targeting;
 use bevy::animation::RepeatAnimation;
@@ -139,7 +139,7 @@ pub fn handle_cannon_fire_event(
 pub fn despawn_cannon_ball(
     mut commands: Commands,
     cannon_ball_query: Query<(Entity, &GlobalTransform), With<CannonBall>>,
-    wave_machine: Res<WaveMachine>,
+    wave_machine: Res<Wave>,
     time: Res<Time>,
 ) {
     let elapsed_time = time.elapsed().as_secs_f32();
