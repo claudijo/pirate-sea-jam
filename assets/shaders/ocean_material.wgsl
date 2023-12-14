@@ -66,7 +66,6 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
     p_ccw += water_dynamics::gerstner_wave(third_wave, grid_point_ccw, time);
     p_ccw += water_dynamics::gerstner_wave(forth_wave, grid_point_ccw, time);
 
-
     var normal: vec3<f32> = normalize(cross(
         p_ccw - p,
         p_cw - p

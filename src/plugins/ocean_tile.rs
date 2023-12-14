@@ -143,7 +143,7 @@ pub struct OceanPlugin;
 impl Plugin for OceanPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Wave {
-            time_scale: 0.4,
+            time_scale: 0.6,
             sample_count: 4,
         });
 
