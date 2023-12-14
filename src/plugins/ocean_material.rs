@@ -5,6 +5,10 @@ use bevy::{
     reflect::TypePath,
     render::render_resource::{AsBindGroup, ShaderRef},
 };
+use bevy::render::render_asset::RenderAssets;
+use bevy::render::render_resource::{AsBindGroupError, BindGroupLayout, BindGroupLayoutEntry, UnpreparedBindGroup};
+use bevy::render::renderer::RenderDevice;
+use bevy::render::texture::FallbackImage;
 
 pub const OCEAN_TILE_SIZE: f32 = 100.;
 const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 19; // Needs to be odd
@@ -12,6 +16,9 @@ const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS *
 
 pub const WATER_DYNAMICS_HANDLE: Handle<Shader> =
     Handle::weak_from_u128(0x64632a74ee9240ea8097a33da35f3ad5);
+
+pub const UTILS_HANDLE: Handle<Shader> =
+    Handle::weak_from_u128(0x24c6df2a389f4396aa11f2840f30c5da);
 
 fn setup(
     mut commands: Commands,
@@ -35,7 +42,7 @@ fn setup(
                 ..Default::default()
             },
             extension: OceanMaterial {
-                grid_size: OCEAN_TILE_SIZE / (OCEAN_PRIMARY_TILE_SUBDIVISIONS + 1) as f32
+                grid_size: OCEAN_TILE_SIZE / (OCEAN_PRIMARY_TILE_SUBDIVISIONS + 1) as f32,
             },
         }),
         ..default()
@@ -43,6 +50,7 @@ fn setup(
 }
 
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone)]
+
 pub struct OceanMaterial {
     // We need to ensure that the bindings of the base material and the extension do not conflict,
     // so we start from binding slot 100, leaving slots 0-99 for the base material.
@@ -74,6 +82,16 @@ impl Plugin for OceanMaterialPlugin {
             concat!(
                 env!("CARGO_MANIFEST_DIR"),
                 "/assets/shaders/water_dynamics.wgsl"
+            ),
+            Shader::from_wgsl
+        );
+
+        load_internal_asset!(
+            app,
+            UTILS_HANDLE,
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/assets/shaders/utils.wgsl"
             ),
             Shader::from_wgsl
         );

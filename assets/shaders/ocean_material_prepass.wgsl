@@ -27,8 +27,6 @@ fn vertex(in: Vertex) -> VertexOutput {
     var out: VertexOutput;
 
     var grid_point = in.position;
-    var tangent = vec3<f32>(1., 0., 0.);
-    var binormal = vec3<f32>(0., 0., 1.);
     var p = grid_point;
     let time = globals.time;
 
@@ -37,7 +35,6 @@ fn vertex(in: Vertex) -> VertexOutput {
     p += water_dynamics::gerstner_wave(third_wave, grid_point, time);
     p += water_dynamics::gerstner_wave(forth_wave, grid_point, time);
 
-    var normal: vec3<f32> = normalize(cross(binormal, tangent));
     var position = vec4<f32>(p, 1.);
 
     out.position = mesh_functions::mesh_position_local_to_clip(

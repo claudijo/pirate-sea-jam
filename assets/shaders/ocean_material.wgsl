@@ -10,7 +10,12 @@
 
 #import pirate_sea_jam::{
     water_dynamics,
+    utils,
 }
+
+// https://github.com/bevyengine/bevy/blob/latest/assets/shaders/custom_material.wgsl
+// we can import items from shader modules in the assets folder with a quoted path
+//#import "shaders/custom_material_import.wgsl"::COLOR_MULTIPLIER
 
 // Vec4 containing direction x, direction z, steepness, wave_length
 // Sum of all steepness values must not exceed 1.
@@ -30,56 +35,24 @@ var<uniform> ocean_material: OceanMaterial;
 fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput {
     var out: VertexOutput;
 
+    let time = globals.time;
+
     var grid_point = in.position;
     var tangent = vec3<f32>(1., 0., 0.);
     var binormal = vec3<f32>(0., 0., 1.);
     var p = grid_point;
-    let time = globals.time;
+
+    let adjecent_grid_points: array<vec3<f32>,2> = utils::get_adjecent_grid_points(vertex_index, grid_point, ocean_material.grid_size);
+
+    let grid_point_cw = adjecent_grid_points[0];
+    let grid_point_ccw = adjecent_grid_points[1];
+    var p_cw = grid_point_cw;
+    var p_ccw = grid_point_ccw;
 
     p += water_dynamics::gerstner_wave(first_wave, grid_point, time);
     p += water_dynamics::gerstner_wave(second_wave, grid_point, time);
     p += water_dynamics::gerstner_wave(third_wave, grid_point, time);
     p += water_dynamics::gerstner_wave(forth_wave, grid_point, time);
-
-    var cw_delta: vec3<f32>;
-    var ccw_delta: vec3<f32>;
-
-    switch vertex_index % 6u {
-        case 0u {
-            cw_delta = vec3<f32>(-1., 0., 0.);
-            ccw_delta = vec3<f32>(0., 0., -1.);
-        }
-        case 1u {   // Multiple selector values can be used
-            cw_delta = vec3<f32>(0., 0., 1.);
-            ccw_delta = vec3<f32>(-1., 0., 1.);
-        }
-        case 2u {
-            cw_delta = vec3<f32>(1., 0., -1.);
-            ccw_delta = vec3<f32>(1., 0., 0.);
-        }
-        case 3u {
-            cw_delta = vec3<f32>(1., 0., 0.);
-            ccw_delta = vec3<f32>(0., 0., 1.);
-        }
-        case 4u {
-            cw_delta = vec3<f32>(0., 0., -1.);
-            ccw_delta = vec3<f32>(1., 0., -1.);
-        }
-        case 5u {
-            cw_delta = vec3<f32>(-1., 0., 1.);
-            ccw_delta = vec3<f32>(-1., 0., 0.);
-        }
-        default {
-            cw_delta = vec3<f32>(0.);
-            ccw_delta = vec3<f32>(0.);
-        }
-    }
-
-    let grid_point_cw = grid_point + cw_delta * ocean_material.grid_size;
-    let grid_point_ccw = grid_point + ccw_delta * ocean_material.grid_size;
-
-    var p_cw = grid_point_cw;
-    var p_ccw = grid_point_ccw;
 
     p_cw += water_dynamics::gerstner_wave(first_wave, grid_point_cw, time);
     p_cw += water_dynamics::gerstner_wave(second_wave, grid_point_cw, time);
@@ -98,7 +71,6 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
     ));
 
     var position = vec4<f32>(p, 1.);
-
     var model = mesh_functions::get_model_matrix(in.instance_index);
 
     out.position = mesh_functions::mesh_position_local_to_clip(
