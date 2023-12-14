@@ -1,8 +1,8 @@
 use crate::game_state::GameState;
-use crate::plugins::ocean_tile::OCEAN_TILE_SIZE;
 use crate::plugins::orbiting_camera::OrbitingCamera;
 use bevy::prelude::*;
 use bevy::window::{Cursor, CursorGrabMode};
+use crate::plugins::ocean_material::OCEAN_TILE_SIZE;
 
 pub fn spawn_camera(mut commands: Commands) {
     let pitch = 30_f32.to_radians();
@@ -25,7 +25,7 @@ pub fn spawn_camera(mut commands: Commands) {
             directional_light_exponent: 30.0,
             falloff: FogFalloff::Linear {
                 start: OCEAN_TILE_SIZE * 0.25,
-                end: OCEAN_TILE_SIZE * 2.,
+                end: OCEAN_TILE_SIZE * 1.5,
             },
         },
     ));
