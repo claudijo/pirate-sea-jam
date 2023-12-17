@@ -2,6 +2,7 @@
 
 struct OceanMaterial {
     grid_size: f32,
+    animation_time_scale: f32,
     first_wave: vec4<f32>,
     second_wave: vec4<f32>,
     third_wave: vec4<f32>,

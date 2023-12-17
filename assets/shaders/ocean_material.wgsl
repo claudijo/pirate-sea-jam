@@ -22,14 +22,11 @@ const second_wave = vec4<f32>(1., 0.8, 0.2, 32.);
 const third_wave = vec4<f32>(1., 1.2, 0.18, 28.);
 const forth_wave = vec4<f32>(1., 3., 0.16, 24.);
 
-// TODO: Pass from main program
-const TIME_SCALE: f32 = 0.6;
-
 @vertex
 fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput {
     var out: VertexOutput;
 
-    let time = globals.time * TIME_SCALE;
+    let time = globals.time * ocean_material_bindings::ocean_material.animation_time_scale;
 
     var p = in.position;
 

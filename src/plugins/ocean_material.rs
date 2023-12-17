@@ -8,6 +8,8 @@ use bevy::{
     render::render_resource::{AsBindGroup, ShaderRef},
 };
 
+pub const OCEAN_ANIMATION_TIME_SCALE: f32 = 0.6;
+
 pub const OCEAN_TILE_SIZE: f32 = 200.;
 const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 19; // Needs to be odd
 const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS * 2 + 1;
@@ -63,7 +65,8 @@ fn spawn_ocean_tile(
                     ..Default::default()
                 },
                 extension: OceanMaterial {
-                    grid_size: 5., //size / (subdivisions + 1) as f32,
+                    grid_size: size / (subdivisions + 1) as f32,
+                    animation_time_scale: OCEAN_ANIMATION_TIME_SCALE,
                     first_wave: Vec4::new(1., 0., 0.22, 36.),
                     second_wave: Vec4::new(1., 0.8, 0.2, 32.),
                     third_wave: Vec4::new(1., 1.2, 0.18, 28.),
@@ -121,6 +124,7 @@ pub struct OceanMaterial {
     // We need to ensure that the bindings of the base material and the extension do not conflict,
     // so we start from binding slot 100, leaving slots 0-99 for the base material.
     grid_size: f32,
+    animation_time_scale: f32,
     first_wave: Vec4,
     second_wave: Vec4,
     third_wave: Vec4,
@@ -130,6 +134,7 @@ pub struct OceanMaterial {
 #[derive(Clone, Default, ShaderType)]
 pub struct OceanMaterialUniform {
     grid_size: f32,
+    animation_time_scale: f32,
     first_wave: Vec4,
     second_wave: Vec4,
     third_wave: Vec4,
@@ -139,11 +144,12 @@ pub struct OceanMaterialUniform {
 impl AsBindGroupShaderType<OceanMaterialUniform> for OceanMaterial {
     fn as_bind_group_shader_type(&self, images: &RenderAssets<Image>) -> OceanMaterialUniform {
         OceanMaterialUniform {
+            grid_size: self.grid_size,
+            animation_time_scale: self.animation_time_scale,
             first_wave: self.first_wave,
             second_wave: self.second_wave,
             third_wave: self.third_wave,
             fourth_wave: self.fourth_wave,
-            grid_size: self.grid_size,
         }
     }
 }

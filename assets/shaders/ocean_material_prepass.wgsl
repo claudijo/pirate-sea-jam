@@ -9,7 +9,10 @@
     morph,
 }
 
-#import pirate_sea_jam::water_dynamics
+#import pirate_sea_jam::{
+    water_dynamics,
+    ocean_material_bindings,
+}
 
 // From https://github.com/rust-adventure/bevy-examples/blob/main/examples/dissolve-sphere-standard-material-extensions/assets/shaders/dissolve_material_prepass.wgsl
 // Just importing `bevy_pbr::mesh_view_bindings::globals` will not work if running as prepass vertex shader
@@ -23,15 +26,12 @@ const second_wave = vec4<f32>(1., 0.8, 0.2, 32.);
 const third_wave = vec4<f32>(1., 1.2, 0.18, 28.);
 const forth_wave = vec4<f32>(1., 3., 0.16, 24.);
 
-// TODO: Pass from main program
-const TIME_SCALE: f32 = 0.6;
-
 @vertex
 fn vertex(in: Vertex) -> VertexOutput {
     var out: VertexOutput;
 
     var p = in.position;
-    let time = globals.time * TIME_SCALE;
+    let time = globals.time * ocean_material_bindings::ocean_material.animation_time_scale;
 
     p += water_dynamics::gerstner_wave(first_wave, in.position, time);
     p += water_dynamics::gerstner_wave(second_wave, in.position, time);
