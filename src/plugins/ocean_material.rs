@@ -7,6 +7,7 @@ use bevy::{
     prelude::*,
     render::render_resource::{AsBindGroup, ShaderRef},
 };
+use crate::resources::wave::WAVES;
 
 pub const OCEAN_ANIMATION_TIME_SCALE: f32 = 0.6;
 
@@ -67,10 +68,7 @@ fn spawn_ocean_tile(
                 extension: OceanMaterial {
                     grid_size: size / (subdivisions + 1) as f32,
                     animation_time_scale: OCEAN_ANIMATION_TIME_SCALE,
-                    first_wave: Vec4::new(1., 0., 0.22, 36.),
-                    second_wave: Vec4::new(1., 0.8, 0.2, 32.),
-                    third_wave: Vec4::new(1., 1.2, 0.18, 28.),
-                    fourth_wave: Vec4::new(1., 3., 0.16, 24.),
+                    waves: WAVES,
                 },
             }),
             ..default()
@@ -125,20 +123,14 @@ pub struct OceanMaterial {
     // so we start from binding slot 100, leaving slots 0-99 for the base material.
     grid_size: f32,
     animation_time_scale: f32,
-    first_wave: Vec4,
-    second_wave: Vec4,
-    third_wave: Vec4,
-    fourth_wave: Vec4,
+    waves: [Vec4; 4],
 }
 
 #[derive(Clone, Default, ShaderType)]
 pub struct OceanMaterialUniform {
     grid_size: f32,
     animation_time_scale: f32,
-    first_wave: Vec4,
-    second_wave: Vec4,
-    third_wave: Vec4,
-    fourth_wave: Vec4,
+    waves: [Vec4; 4],
 }
 
 impl AsBindGroupShaderType<OceanMaterialUniform> for OceanMaterial {
@@ -146,10 +138,7 @@ impl AsBindGroupShaderType<OceanMaterialUniform> for OceanMaterial {
         OceanMaterialUniform {
             grid_size: self.grid_size,
             animation_time_scale: self.animation_time_scale,
-            first_wave: self.first_wave,
-            second_wave: self.second_wave,
-            third_wave: self.third_wave,
-            fourth_wave: self.fourth_wave,
+            waves: self.waves,
         }
     }
 }

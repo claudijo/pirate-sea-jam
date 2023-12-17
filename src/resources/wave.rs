@@ -7,12 +7,14 @@ pub struct Wave {
     pub sample_count: u8,
 }
 
-// Vec4 containing direction x, direction z, steepness, wave_length
+// Each Vec4 containing direction x, direction z, steepness, wave_length
 // Sum of all steepness values must not exceed 1.
-const FIRST_WAVE: Vec4 = Vec4::new(1., 0., 0.22, 36.);
-const SECOND_WAVE: Vec4 = Vec4::new(1., 0.8, 0.2, 32.);
-const THIRD_WAVE: Vec4 = Vec4::new(1., 1.2, 0.18, 28.);
-const FORTH_WAVE: Vec4 = Vec4::new(1., 3., 0.16, 24.);
+pub const WAVES: [Vec4; 4] = [
+    Vec4::new(1., 0., 0.22, 36.),
+    Vec4::new(1., 0.8, 0.2, 32.),
+    Vec4::new(1., 1.2, 0.18, 28.),
+    Vec4::new(1., 3., 0.16, 24.),
+];
 
 impl Wave {
     pub fn next_position(&self, mut position: Vec3, time: f32) -> Vec3 {
@@ -20,12 +22,9 @@ impl Wave {
 
         let time = time * self.time_scale;
 
-        position += water_dynamics::gerstner_wave(FIRST_WAVE, position, time);
-        position += water_dynamics::gerstner_wave(SECOND_WAVE, position, time);
-        position += water_dynamics::gerstner_wave(THIRD_WAVE, position, time);
-        position += water_dynamics::gerstner_wave(FORTH_WAVE, position, time);
-
-        position
+        position + WAVES.into_iter()
+            .map(|wave| water_dynamics::gerstner_wave(wave, position, time))
+            .sum::<Vec3>()
     }
 
     pub fn surface_height(&self, point: Vec3, time: f32) -> f32 {
