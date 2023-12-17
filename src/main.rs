@@ -62,7 +62,6 @@ fn main() {
         libs::plugins::touch_button::TouchButtonPlugin,
         plugins::debug_fps::DebugFpsPlugin,
         plugins::sky::SkyPlugin,
-        MaterialPlugin::<ExtendedMaterial<StandardMaterial, OceanMaterial>>::default(),
         plugins::ocean_material::OceanMaterialPlugin,
     ));
 

@@ -11,11 +11,8 @@
 #import pirate_sea_jam::{
     water_dynamics,
     utils,
+    ocean_material_bindings,
 }
-
-// https://github.com/bevyengine/bevy/blob/latest/assets/shaders/custom_material.wgsl
-// we can import items from shader modules in the assets folder with a quoted path
-//#import "shaders/custom_material_import.wgsl"::COLOR_MULTIPLIER
 
 // Vec4 containing direction x, direction z, steepness, wave_length
 // Sum of all steepness values must not exceed 1.
@@ -28,13 +25,6 @@ const forth_wave = vec4<f32>(1., 3., 0.16, 24.);
 // TODO: Pass from main program
 const TIME_SCALE: f32 = 0.6;
 
-struct OceanMaterial {
-    grid_size: f32,
-}
-
-@group(1) @binding(100)
-var<uniform> ocean_material: OceanMaterial;
-
 @vertex
 fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput {
     var out: VertexOutput;
@@ -43,7 +33,11 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
 
     var p = in.position;
 
-    let adjecent_grid_points: array<vec3<f32>,2> = utils::get_adjecent_grid_points(vertex_index, in.position, ocean_material.grid_size);
+    let adjecent_grid_points: array<vec3<f32>,2> = utils::get_adjecent_grid_points(
+        vertex_index,
+        in.position,
+        ocean_material_bindings::ocean_material.grid_size
+    );
 
     let grid_point_cw = adjecent_grid_points[0];
     let grid_point_ccw = adjecent_grid_points[1];
