@@ -58,7 +58,7 @@ fn spawn_ocean_tile(
     let mut mesh = Mesh::from(shape::Plane { size, subdivisions });
     mesh.duplicate_vertices();
 
-    // Use custom AABB to prevent culling issues of meshes when drawn after being animated and slightly displaced in the shader.
+    // Use custom AABB to prevent culling issues of meshes after being animated and displaced in the shader.
     const MAX_ANIMATED_VERTEX_DISPLACEMENT: f32 = 3.;
     let aabb = Aabb {
         center: Vec3A::ZERO,
