@@ -22,9 +22,11 @@ impl Wave {
 
         let time = time * self.time_scale;
 
-        position + WAVES.into_iter()
-            .map(|wave| water_dynamics::gerstner_wave(wave, position, time))
-            .sum::<Vec3>()
+        position
+            + WAVES
+                .into_iter()
+                .map(|wave| water_dynamics::gerstner_wave(wave, position, time))
+                .sum::<Vec3>()
     }
 
     pub fn surface_height(&self, point: Vec3, time: f32) -> f32 {

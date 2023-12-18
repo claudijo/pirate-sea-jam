@@ -34,10 +34,10 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
     var p_cw = grid_point_cw;
     var p_ccw = grid_point_ccw;
 
-     for (var i = 0; i < ocean_material_bindings::WAVES_COUNT; i += 1) {
-        p += water_dynamics::gerstner_wave(ocean_material_bindings::ocean_material.waves[i], in.position, time);
-        p_cw += water_dynamics::gerstner_wave(ocean_material_bindings::ocean_material.waves[i], grid_point_cw, time);
-        p_ccw += water_dynamics::gerstner_wave(ocean_material_bindings::ocean_material.waves[i], grid_point_ccw, time);
+    for (var i = 0; i < ocean_material_bindings::WAVES_COUNT; i += 1) {
+        p += water_dynamics::gerstner_wave(ocean_material_bindings::ocean_material.waves[i], in.position + ocean_material_bindings::ocean_material.offset, time);
+        p_cw += water_dynamics::gerstner_wave(ocean_material_bindings::ocean_material.waves[i], grid_point_cw + ocean_material_bindings::ocean_material.offset, time);
+        p_ccw += water_dynamics::gerstner_wave(ocean_material_bindings::ocean_material.waves[i], grid_point_ccw + ocean_material_bindings::ocean_material.offset, time);
     }
 
     var normal: vec3<f32> = normalize(cross(p_ccw - p, p_cw - p));

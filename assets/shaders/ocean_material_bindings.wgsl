@@ -4,6 +4,7 @@ const WAVES_COUNT: i32 = 4;
 
 struct OceanMaterial {
     grid_size: f32,
+    offset: vec3<f32>,
     animation_time_scale: f32,
     waves: array<vec4<f32>, WAVES_COUNT>,
 }

@@ -1,18 +1,20 @@
+use crate::resources::wave::WAVES;
 use bevy::asset::load_internal_asset;
+use bevy::math::Vec3A;
 use bevy::pbr::{ExtendedMaterial, MaterialExtension};
 use bevy::reflect::TypeUuid;
+use bevy::render::primitives::Aabb;
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::{AsBindGroupShaderType, ShaderType};
 use bevy::{
     prelude::*,
     render::render_resource::{AsBindGroup, ShaderRef},
 };
-use crate::resources::wave::WAVES;
 
 pub const OCEAN_ANIMATION_TIME_SCALE: f32 = 0.6;
 
-pub const OCEAN_TILE_SIZE: f32 = 200.;
-const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 19; // Needs to be odd
+pub const OCEAN_TILE_SIZE: f32 = 40.;
+const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 5; // Needs to be odd
 const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS * 2 + 1;
 
 const OFFSET_BASES: [Vec3; 8] = [
@@ -31,15 +33,16 @@ pub const WATER_DYNAMICS_HANDLE: Handle<Shader> =
 
 pub const UTILS_HANDLE: Handle<Shader> = Handle::weak_from_u128(0x24c6df2a389f4396aa11f2840f30c5da);
 
-pub const OCEAN_MATERIAL_BINDINGS: Handle<Shader> = Handle::weak_from_u128(0x06a957f34bac4aabad104c64a301c3fb);
+pub const OCEAN_MATERIAL_BINDINGS: Handle<Shader> =
+    Handle::weak_from_u128(0x06a957f34bac4aabad104c64a301c3fb);
 
 pub type StandardOceanMaterial = ExtendedMaterial<StandardMaterial, OceanMaterial>;
 
-enum Tier {
-    Primary,
-    Secondary,
-    Tertiary,
-}
+// enum Tier {
+//     Primary,
+//     Secondary,
+//     Tertiary,
+// }
 
 #[derive(Component)]
 pub struct OceanTile;
@@ -55,10 +58,22 @@ fn spawn_ocean_tile(
     let mut mesh = Mesh::from(shape::Plane { size, subdivisions });
     mesh.duplicate_vertices();
 
-    commands.spawn((
+    // Use custom AABB to prevent culling issues of meshes when drawn after being animated and slightly displaced in the shader.
+    const MAX_ANIMATED_VERTEX_DISPLACEMENT: f32 = 3.;
+    let aabb = Aabb {
+        center: Vec3A::ZERO,
+        half_extents: Vec3A::new(
+            size / 2. + MAX_ANIMATED_VERTEX_DISPLACEMENT,
+            MAX_ANIMATED_VERTEX_DISPLACEMENT,
+            size / 2. + MAX_ANIMATED_VERTEX_DISPLACEMENT,
+        ),
+    };
+
+    let commands1 = commands.spawn((
         MaterialMeshBundle {
             mesh: meshes.add(mesh),
             transform: Transform::from_translation(offset),
+
             material: materials.add(ExtendedMaterial {
                 base: StandardMaterial {
                     base_color: Color::rgb(0.15, 0.74, 0.86),
@@ -67,12 +82,17 @@ fn spawn_ocean_tile(
                 },
                 extension: OceanMaterial {
                     grid_size: size / (subdivisions + 1) as f32,
+                    offset,
                     animation_time_scale: OCEAN_ANIMATION_TIME_SCALE,
                     waves: WAVES,
                 },
             }),
             ..default()
         },
+        aabb,
+        // AabbGizmo {
+        //     color: Some(Color::PINK),
+        // },
         OceanTile,
     ));
 }
@@ -92,36 +112,37 @@ fn setup(
         &mut materials,
     );
 
-    // for offset_base in &OFFSET_BASES {
-    //     // Secondary tiles
-    //     spawn_ocean_tile(
-    //         OCEAN_TILE_SIZE,
-    //         OCEAN_SECONDARY_TILE_SUBDIVISIONS,
-    //         *offset_base * OCEAN_TILE_SIZE,
-    //         &mut commands,
-    //         &mut meshes,
-    //         &mut materials,
-    //     );
-    //
-    //     // Tertiary tiles
-    //     spawn_ocean_tile(
-    //         OCEAN_TILE_SIZE * 3.,
-    //         0,
-    //         *offset_base * OCEAN_TILE_SIZE * 3.,
-    //         &mut commands,
-    //         &mut meshes,
-    //         &mut materials,
-    //     );
-    // }
+    for offset_base in OFFSET_BASES {
+        // Secondary tiles
+        spawn_ocean_tile(
+            OCEAN_TILE_SIZE,
+            OCEAN_SECONDARY_TILE_SUBDIVISIONS,
+            offset_base * OCEAN_TILE_SIZE,
+            &mut commands,
+            &mut meshes,
+            &mut materials,
+        );
+
+        // Tertiary tiles
+        spawn_ocean_tile(
+            OCEAN_TILE_SIZE * 3.,
+            0,
+            offset_base * OCEAN_TILE_SIZE * 3.,
+            &mut commands,
+            &mut meshes,
+            &mut materials,
+        );
+    }
 }
 
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone, TypeUuid)]
-#[uuid = "8cdffa6c-7768-4405-b959-113767fdc3c5"]
+#[uuid = "20a0e61b-868f-4db2-b5c7-4bbc2b74b842"]
 #[uniform(100, OceanMaterialUniform)]
 pub struct OceanMaterial {
     // We need to ensure that the bindings of the base material and the extension do not conflict,
     // so we start from binding slot 100, leaving slots 0-99 for the base material.
     grid_size: f32,
+    offset: Vec3,
     animation_time_scale: f32,
     waves: [Vec4; 4],
 }
@@ -129,14 +150,16 @@ pub struct OceanMaterial {
 #[derive(Clone, Default, ShaderType)]
 pub struct OceanMaterialUniform {
     grid_size: f32,
+    offset: Vec3,
     animation_time_scale: f32,
     waves: [Vec4; 4],
 }
 
 impl AsBindGroupShaderType<OceanMaterialUniform> for OceanMaterial {
-    fn as_bind_group_shader_type(&self, images: &RenderAssets<Image>) -> OceanMaterialUniform {
+    fn as_bind_group_shader_type(&self, _images: &RenderAssets<Image>) -> OceanMaterialUniform {
         OceanMaterialUniform {
             grid_size: self.grid_size,
+            offset: self.offset,
             animation_time_scale: self.animation_time_scale,
             waves: self.waves,
         }
@@ -181,17 +204,14 @@ impl Plugin for OceanMaterialPlugin {
         load_internal_asset!(
             app,
             OCEAN_MATERIAL_BINDINGS,
-            concat!(env!("CARGO_MANIFEST_DIR"), "/assets/shaders/ocean_material_bindings.wgsl"),
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/assets/shaders/ocean_material_bindings.wgsl"
+            ),
             Shader::from_wgsl
         );
 
-        app.add_plugins(MaterialPlugin::<StandardOceanMaterial> {
-            // prepass_enabled: false,
-            ..default()
-        });
-
-        // app.register_asset_reflect::<OceanMaterial>()
-        // .register_asset_reflect::<StandardOceanMaterial>();
+        app.add_plugins(MaterialPlugin::<StandardOceanMaterial> { ..default() });
 
         app.add_systems(Startup, setup);
     }

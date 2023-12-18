@@ -2,11 +2,11 @@
 
 use crate::components::ship::PlayerShip;
 use crate::game_state::GameState;
+use crate::plugins::ocean_material::OCEAN_ANIMATION_TIME_SCALE;
 use crate::resources::wave::Wave;
 use crate::systems::fluid_dynamics;
 use bevy::prelude::*;
 use bevy::render::view::VisibilitySystems;
-use crate::plugins::ocean_material::OCEAN_ANIMATION_TIME_SCALE;
 
 pub enum Tier {
     Primary,
