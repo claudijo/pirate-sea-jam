@@ -69,7 +69,7 @@ fn spawn_ocean_tile(
         ),
     };
 
-    let commands1 = commands.spawn((
+    commands.spawn((
         MaterialMeshBundle {
             mesh: meshes.add(mesh),
             transform: Transform::from_translation(offset),
