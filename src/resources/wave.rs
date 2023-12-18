@@ -16,6 +16,14 @@ pub const WAVES: [Vec4; 4] = [
     Vec4::new(1., 3., 0.16, 24.),
 ];
 
+// Will cancel out and generate a Vec3::ZERO when passed to gerstner wave function
+pub const NO_WAVES: [Vec4; 4] = [
+    Vec4::new(1., 0., 0., 1.),
+    Vec4::new(1., 0., 0., 1.),
+    Vec4::new(1., 0., 0., 1.),
+    Vec4::new(1., 0., 0., 1.),
+];
+
 impl Wave {
     pub fn next_position(&self, mut position: Vec3, time: f32) -> Vec3 {
         position.y = 0.; // Neutral water level
