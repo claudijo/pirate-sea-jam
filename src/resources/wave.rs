@@ -26,9 +26,8 @@ pub const NO_WAVES: [Vec4; 4] = [
 
 impl Wave {
     pub fn next_position(&self, mut position: Vec3, time: f32) -> Vec3 {
-        position.y = 0.; // Neutral water level
-
         let time = time * self.time_scale;
+        position.y = 0.; // Neutral water level
 
         position
             + WAVES

@@ -9,7 +9,7 @@ fn get_adjecent_grid_points(vertex_index: u32, grid_point: vec3<f32>, grid_size:
             cw_delta = vec3<f32>(-1., 0., 0.);
             ccw_delta = vec3<f32>(0., 0., -1.);
         }
-        case 1u {   // Multiple selector values can be used
+        case 1u {
             cw_delta = vec3<f32>(0., 0., 1.);
             ccw_delta = vec3<f32>(-1., 0., 1.);
         }
@@ -41,3 +41,9 @@ fn get_adjecent_grid_points(vertex_index: u32, grid_point: vec3<f32>, grid_size:
     );
 }
 
+
+fn smoothen_edges(vertex_index: u32, grid_point: vec3<f32>, tile_size: f32) -> vec3<f32> {
+
+
+    return grid_point;
+}

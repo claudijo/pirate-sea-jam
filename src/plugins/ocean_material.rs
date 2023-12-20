@@ -11,6 +11,7 @@ use bevy::{
     render::render_resource::{AsBindGroup, ShaderRef},
 };
 use crate::components::ship::PlayerShip;
+use crate::game_state::GameState;
 use crate::utils::water_dynamics::gerstner_wave;
 
 pub const OCEAN_ANIMATION_TIME_SCALE: f32 = 0.6;
@@ -40,15 +41,16 @@ pub const OCEAN_MATERIAL_BINDINGS: Handle<Shader> =
 
 pub type StandardOceanMaterial = ExtendedMaterial<StandardMaterial, OceanMaterial>;
 
-// enum Tier {
-//     Primary,
-//     Secondary,
-//     Tertiary,
-// }
-
 #[derive(Component)]
 pub struct OceanTile {
     pub offset: Vec3,
+}
+
+#[derive(Clone, Copy)]
+pub enum Tier {
+    Primary,
+    Secondary,
+    Tertiary,
 }
 
 fn spawn_ocean_tile(
@@ -56,6 +58,7 @@ fn spawn_ocean_tile(
     subdivisions: u32,
     waves: [Vec4; 4],
     offset: Vec3,
+    tier: Tier,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardOceanMaterial>>,
@@ -64,7 +67,7 @@ fn spawn_ocean_tile(
     mesh.duplicate_vertices();
 
     // Use custom AABB to prevent culling issues of meshes after being animated and displaced in the shader.
-    const MAX_ANIMATED_VERTEX_DISPLACEMENT: f32 = 3.;
+    const MAX_ANIMATED_VERTEX_DISPLACEMENT: f32 = 3.6;
     let aabb = Aabb {
         center: Vec3A::ZERO,
         half_extents: Vec3A::new(
@@ -78,8 +81,7 @@ fn spawn_ocean_tile(
         MaterialMeshBundle {
             mesh: meshes.add(mesh),
             transform: Transform::from_translation(offset),
-
-            material: materials.add(ExtendedMaterial {
+            material: materials.add(StandardOceanMaterial {
                 base: StandardMaterial {
                     base_color: Color::rgb(0.15, 0.74, 0.86),
                     metallic: 1.,
@@ -87,6 +89,7 @@ fn spawn_ocean_tile(
                 },
                 extension: OceanMaterial {
                     grid_size: size / (subdivisions + 1) as f32,
+                    tier: tier as u32,
                     offset,
                     animation_time_scale: OCEAN_ANIMATION_TIME_SCALE,
                     waves,
@@ -116,6 +119,7 @@ fn setup(
         OCEAN_PRIMARY_TILE_SUBDIVISIONS,
         WAVES,
         Vec3::ZERO,
+        Tier::Primary,
         &mut commands,
         &mut meshes,
         &mut materials,
@@ -128,6 +132,7 @@ fn setup(
             OCEAN_SECONDARY_TILE_SUBDIVISIONS,
             WAVES,
             offset_base * OCEAN_TILE_SIZE,
+            Tier::Secondary,
             &mut commands,
             &mut meshes,
             &mut materials,
@@ -139,13 +144,12 @@ fn setup(
             0,
             NO_WAVES,
             offset_base * OCEAN_TILE_SIZE * 3.,
+            Tier::Tertiary,
             &mut commands,
             &mut meshes,
             &mut materials,
         );
     }
-
-
 }
 
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone, TypeUuid)]
@@ -155,6 +159,7 @@ pub struct OceanMaterial {
     // We need to ensure that the bindings of the base material and the extension do not conflict,
     // so we start from binding slot 100, leaving slots 0-99 for the base material.
     grid_size: f32,
+    tier: u32,
     offset: Vec3,
     animation_time_scale: f32,
     waves: [Vec4; 4],
@@ -163,6 +168,7 @@ pub struct OceanMaterial {
 #[derive(Clone, Default, ShaderType)]
 pub struct OceanMaterialUniform {
     grid_size: f32,
+    tier: u32,
     offset: Vec3,
     animation_time_scale: f32,
     waves: [Vec4; 4],
@@ -172,6 +178,7 @@ impl AsBindGroupShaderType<OceanMaterialUniform> for OceanMaterial {
     fn as_bind_group_shader_type(&self, _images: &RenderAssets<Image>) -> OceanMaterialUniform {
         OceanMaterialUniform {
             grid_size: self.grid_size,
+            tier: self.tier,
             offset: self.offset,
             animation_time_scale: self.animation_time_scale,
             waves: self.waves,
@@ -195,7 +202,7 @@ impl MaterialExtension for OceanMaterial {
 
 fn track_player_ship_position(
     ship_query: Query<&Transform, (With<PlayerShip>, Without<OceanTile>)>,
-    mut ocean_tile_query: Query<(&mut Transform, &OceanTile)>,
+    mut ocean_tile_query: Query<(&mut Transform, &mut OceanTile)>,
 ) {
     // TODO: Translation changes need to be update in shader.
 
