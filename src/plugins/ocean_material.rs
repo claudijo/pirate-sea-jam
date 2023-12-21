@@ -1,4 +1,7 @@
+use crate::components::ship::PlayerShip;
+use crate::game_state::GameState;
 use crate::resources::wave::{NO_WAVES, WAVES};
+use crate::utils::water_dynamics::gerstner_wave;
 use bevy::asset::load_internal_asset;
 use bevy::math::Vec3A;
 use bevy::pbr::{ExtendedMaterial, MaterialExtension};
@@ -10,9 +13,6 @@ use bevy::{
     prelude::*,
     render::render_resource::{AsBindGroup, ShaderRef},
 };
-use crate::components::ship::PlayerShip;
-use crate::game_state::GameState;
-use crate::utils::water_dynamics::gerstner_wave;
 
 pub const OCEAN_ANIMATION_TIME_SCALE: f32 = 0.6;
 
@@ -39,7 +39,7 @@ pub const UTILS_HANDLE: Handle<Shader> = Handle::weak_from_u128(0x24c6df2a389f43
 pub const OCEAN_MATERIAL_BINDINGS: Handle<Shader> =
     Handle::weak_from_u128(0x06a957f34bac4aabad104c64a301c3fb);
 
-pub type StandardOceanMaterial = ExtendedMaterial<StandardMaterial, OceanMaterial>;
+pub type StandardOceanMaterial = ExtendedMaterial<StandardMaterial, OceanMaterialExtension>;
 
 #[derive(Component)]
 pub struct OceanTile {
@@ -87,12 +87,17 @@ fn spawn_ocean_tile(
                     metallic: 1.,
                     ..Default::default()
                 },
-                extension: OceanMaterial {
-                    grid_size: size / (subdivisions + 1) as f32,
-                    tier: tier as u32,
-                    offset,
-                    animation_time_scale: OCEAN_ANIMATION_TIME_SCALE,
-                    waves,
+                extension: OceanMaterialExtension {
+                    settings: OceanMaterialSettings {
+                        grid_size: size / (subdivisions + 1) as f32,
+                        tier: tier as u32,
+                        offset,
+                        animation_time_scale: OCEAN_ANIMATION_TIME_SCALE,
+                        waves,
+                    },
+                    globals: OceanMaterialGlobals {
+                        center_offset: Vec3::ZERO,
+                    }
                 },
             }),
             ..default()
@@ -101,17 +106,14 @@ fn spawn_ocean_tile(
         AabbGizmo {
             color: Some(Color::PINK),
         },
-        OceanTile {
-            offset,
-        },
+        OceanTile { offset },
     ));
 }
 
 fn setup(
-    time: Res<Time>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ExtendedMaterial<StandardMaterial, OceanMaterial>>>,
+    mut materials: ResMut<Assets<StandardOceanMaterial>>,
 ) {
     // Center tile
     spawn_ocean_tile(
@@ -152,41 +154,32 @@ fn setup(
     }
 }
 
-#[derive(Asset, AsBindGroup, Reflect, Debug, Clone, TypeUuid)]
-#[uuid = "20a0e61b-868f-4db2-b5c7-4bbc2b74b842"]
-#[uniform(100, OceanMaterialUniform)]
-pub struct OceanMaterial {
+#[derive(ShaderType, Clone, Reflect, Debug)]
+struct OceanMaterialSettings {
+    grid_size: f32,
+    tier: u32,
+    offset: Vec3,
+    animation_time_scale: f32,
+    waves: [Vec4; 4],
+}
+
+#[derive(ShaderType, Clone, Reflect, Debug)]
+struct OceanMaterialGlobals {
+    center_offset: Vec3,
+}
+
+#[derive(Asset, AsBindGroup, Reflect, Debug, Clone)]
+struct OceanMaterialExtension {
     // We need to ensure that the bindings of the base material and the extension do not conflict,
     // so we start from binding slot 100, leaving slots 0-99 for the base material.
-    grid_size: f32,
-    tier: u32,
-    offset: Vec3,
-    animation_time_scale: f32,
-    waves: [Vec4; 4],
+    #[uniform(100)]
+    settings: OceanMaterialSettings,
+
+    #[uniform(101)]
+    globals: OceanMaterialGlobals,
 }
 
-#[derive(Clone, Default, ShaderType)]
-pub struct OceanMaterialUniform {
-    grid_size: f32,
-    tier: u32,
-    offset: Vec3,
-    animation_time_scale: f32,
-    waves: [Vec4; 4],
-}
-
-impl AsBindGroupShaderType<OceanMaterialUniform> for OceanMaterial {
-    fn as_bind_group_shader_type(&self, _images: &RenderAssets<Image>) -> OceanMaterialUniform {
-        OceanMaterialUniform {
-            grid_size: self.grid_size,
-            tier: self.tier,
-            offset: self.offset,
-            animation_time_scale: self.animation_time_scale,
-            waves: self.waves,
-        }
-    }
-}
-
-impl MaterialExtension for OceanMaterial {
+impl MaterialExtension for OceanMaterialExtension {
     fn vertex_shader() -> ShaderRef {
         "shaders/ocean_material.wgsl".into()
     }
@@ -203,13 +196,20 @@ impl MaterialExtension for OceanMaterial {
 fn track_player_ship_position(
     ship_query: Query<&Transform, (With<PlayerShip>, Without<OceanTile>)>,
     mut ocean_tile_query: Query<(&mut Transform, &mut OceanTile)>,
+    mut materials: ResMut<Assets<StandardOceanMaterial>>,
 ) {
-    // TODO: Translation changes need to be update in shader.
-
     for ship_transform in &ship_query {
         for (mut ocean_tile_transform, ocean_tile) in &mut ocean_tile_query {
             ocean_tile_transform.translation.x = ship_transform.translation.x + ocean_tile.offset.x;
             ocean_tile_transform.translation.z = ship_transform.translation.z + ocean_tile.offset.z;
+
+            for (_, mat) in materials.iter_mut() {
+                mat.extension.globals.center_offset = Vec3::new(
+                    ship_transform.translation.x,
+                    0.,
+                    ship_transform.translation.z,
+                );
+            }
         }
     }
 }
@@ -245,13 +245,15 @@ impl Plugin for OceanMaterialPlugin {
             Shader::from_wgsl
         );
 
-        app.add_plugins(MaterialPlugin::<StandardOceanMaterial> { ..default() });
+        app.add_plugins(MaterialPlugin::<
+            ExtendedMaterial<StandardMaterial, OceanMaterialExtension>,
+        >::default());
 
         app.add_systems(Startup, setup);
 
-        // app.add_systems(
-        //     Update,
-        //     track_player_ship_position.run_if(in_state(GameState::InGame)),
-        // );
+        app.add_systems(
+            Update,
+            track_player_ship_position.run_if(in_state(GameState::InGame)),
+        );
     }
 }

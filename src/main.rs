@@ -6,9 +6,7 @@
 
 use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
 use crate::events::game::RestartGameEvent;
-use crate::plugins::ocean_material::OceanMaterial;
 use bevy::asset::AssetMetaCheck;
-use bevy::pbr::ExtendedMaterial;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
 

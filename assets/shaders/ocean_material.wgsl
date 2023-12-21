@@ -18,14 +18,15 @@
 fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput {
     var out: VertexOutput;
 
-    let time = globals.time * ocean_material_bindings::ocean_material.animation_time_scale;
+    let time = globals.time * ocean_material_bindings::settings.animation_time_scale;
+    let position_with_center_offset = in.position + ocean_material_bindings::globals.center_offset;
 
-    var p = in.position;
+    var p = position_with_center_offset;
 
     let adjecent_grid_points: array<vec3<f32>,2> = utils::get_adjecent_grid_points(
         vertex_index,
-        in.position,
-        ocean_material_bindings::ocean_material.grid_size
+        position_with_center_offset,
+        ocean_material_bindings::settings.grid_size
     );
 
     let grid_point_cw = adjecent_grid_points[0];
@@ -36,18 +37,18 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
 
     for (var i = 0; i < ocean_material_bindings::WAVES_COUNT; i += 1) {
         p += water_dynamics::gerstner_wave(
-            ocean_material_bindings::ocean_material.waves[i],
-            in.position + ocean_material_bindings::ocean_material.offset,
+            ocean_material_bindings::settings.waves[i],
+            position_with_center_offset + ocean_material_bindings::settings.offset,
             time
         );
         p_cw += water_dynamics::gerstner_wave(
-            ocean_material_bindings::ocean_material.waves[i],
-            grid_point_cw + ocean_material_bindings::ocean_material.offset,
+            ocean_material_bindings::settings.waves[i],
+            grid_point_cw + ocean_material_bindings::settings.offset,
             time
         );
         p_ccw += water_dynamics::gerstner_wave(
-            ocean_material_bindings::ocean_material.waves[i],
-            grid_point_ccw + ocean_material_bindings::ocean_material.offset,
+            ocean_material_bindings::settings.waves[i],
+            grid_point_ccw + ocean_material_bindings::settings.offset,
             time
         );
     }
