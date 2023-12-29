@@ -8,6 +8,7 @@ struct OceanMaterialConfig {
     offset: vec3<f32>,
     animation_time_scale: f32,
     waves: array<vec4<f32>, WAVES_COUNT>,
+    subdivision_count: u32,
 }
 
 struct OceanMaterialGlobals {

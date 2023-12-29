@@ -19,7 +19,7 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
     var out: VertexOutput;
 
     let time = globals.time * ocean_material_bindings::settings.animation_time_scale;
-    let position_with_center_offset = in.position + ocean_material_bindings::globals.center_offset;
+    var position_with_center_offset = in.position + ocean_material_bindings::globals.center_offset;
 
     var p = position_with_center_offset;
 
@@ -52,6 +52,18 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
             time
         );
     }
+
+     if ocean_material_bindings::settings.tier == 0u {
+        p = utils::smoothen_edges(
+            vertex_index,
+            position_with_center_offset,
+            ocean_material_bindings::settings.subdivision_count,
+            ocean_material_bindings::settings.grid_size,
+            p,
+            time
+        );
+    }
+
 
     var normal: vec3<f32> = normalize(cross(p_ccw - p, p_cw - p));
     var position = vec4<f32>(p, 1.);

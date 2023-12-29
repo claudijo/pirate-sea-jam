@@ -15,7 +15,6 @@ use bevy::{
 };
 
 pub const OCEAN_ANIMATION_TIME_SCALE: f32 = 0.6;
-
 pub const OCEAN_TILE_SIZE: f32 = 40.;
 const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 5; // Needs to be odd
 const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS * 2 + 1;
@@ -54,8 +53,8 @@ pub enum Tier {
 }
 
 fn spawn_ocean_tile(
-    size: f32,
-    subdivisions: u32,
+    tile_size: f32,
+    subdivision_count: u32,
     waves: [Vec4; 4],
     offset: Vec3,
     tier: Tier,
@@ -63,7 +62,7 @@ fn spawn_ocean_tile(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardOceanMaterial>>,
 ) {
-    let mut mesh = Mesh::from(shape::Plane { size, subdivisions });
+    let mut mesh = Mesh::from(shape::Plane { size: tile_size, subdivisions: subdivision_count });
     mesh.duplicate_vertices();
 
     // Use custom AABB to prevent culling issues of meshes after being animated and displaced in the shader.
@@ -71,9 +70,9 @@ fn spawn_ocean_tile(
     let aabb = Aabb {
         center: Vec3A::ZERO,
         half_extents: Vec3A::new(
-            size / 2. + MAX_ANIMATED_VERTEX_DISPLACEMENT,
+            tile_size / 2. + MAX_ANIMATED_VERTEX_DISPLACEMENT,
             MAX_ANIMATED_VERTEX_DISPLACEMENT,
-            size / 2. + MAX_ANIMATED_VERTEX_DISPLACEMENT,
+            tile_size / 2. + MAX_ANIMATED_VERTEX_DISPLACEMENT,
         ),
     };
 
@@ -89,11 +88,12 @@ fn spawn_ocean_tile(
                 },
                 extension: OceanMaterialExtension {
                     settings: OceanMaterialSettings {
-                        grid_size: size / (subdivisions + 1) as f32,
+                        grid_size: tile_size / (subdivision_count + 1) as f32,
                         tier: tier as u32,
                         offset,
                         animation_time_scale: OCEAN_ANIMATION_TIME_SCALE,
                         waves,
+                        subdivision_count,
                     },
                     globals: OceanMaterialGlobals {
                         center_offset: Vec3::ZERO,
@@ -161,6 +161,7 @@ struct OceanMaterialSettings {
     offset: Vec3,
     animation_time_scale: f32,
     waves: [Vec4; 4],
+    subdivision_count: u32,
 }
 
 #[derive(ShaderType, Clone, Reflect, Debug)]
@@ -251,9 +252,9 @@ impl Plugin for OceanMaterialPlugin {
 
         app.add_systems(Startup, setup);
 
-        app.add_systems(
-            Update,
-            track_player_ship_position.run_if(in_state(GameState::InGame)),
-        );
+        // app.add_systems(
+        //     Update,
+        //     track_player_ship_position.run_if(in_state(GameState::InGame)),
+        // );
     }
 }

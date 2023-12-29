@@ -100,8 +100,6 @@ pub fn smoothen_edges(mut positions: Vec<[f32; 3]>, subdivisions_count: u32) -> 
                 }
             } else {
                 // Odd row
-                let order = i % VERTICES_PER_QUAD;
-
                 if order == 3 {
                     let midpoint =
                         get_midpoint(positions[i - size * VERTICES_PER_QUAD], positions[i + 1]);
