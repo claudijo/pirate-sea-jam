@@ -1,14 +1,11 @@
 use crate::components::ship::PlayerShip;
 use crate::game_state::GameState;
 use crate::resources::wave::{NO_WAVES, WAVES};
-use crate::utils::water_dynamics::gerstner_wave;
 use bevy::asset::load_internal_asset;
 use bevy::math::Vec3A;
 use bevy::pbr::{ExtendedMaterial, MaterialExtension};
-use bevy::reflect::TypeUuid;
 use bevy::render::primitives::Aabb;
-use bevy::render::render_asset::RenderAssets;
-use bevy::render::render_resource::{AsBindGroupShaderType, ShaderType};
+use bevy::render::render_resource::ShaderType;
 use bevy::{
     prelude::*,
     render::render_resource::{AsBindGroup, ShaderRef},
