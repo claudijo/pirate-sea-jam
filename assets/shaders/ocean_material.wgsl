@@ -19,54 +19,68 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
     var out: VertexOutput;
 
     let time = globals.time * ocean_material_bindings::settings.animation_time_scale;
-    var position_with_center_offset = in.position + ocean_material_bindings::globals.center_offset;
+    let initial_position_with_center_offset = in.position + ocean_material_bindings::globals.center_offset;
 
-    var p = position_with_center_offset;
+    var next_position = initial_position_with_center_offset;
 
     let adjecent_grid_points: array<vec3<f32>,2> = utils::get_adjecent_grid_points(
         vertex_index,
-        position_with_center_offset,
-        ocean_material_bindings::settings.grid_size
+        initial_position_with_center_offset,
+        ocean_material_bindings::settings.quad_cell_size
     );
 
-    let grid_point_cw = adjecent_grid_points[0];
-    let grid_point_ccw = adjecent_grid_points[1];
+    let initial_position_cw = adjecent_grid_points[0];
+    let initial_position_ccw = adjecent_grid_points[1];
 
-    var p_cw = grid_point_cw;
-    var p_ccw = grid_point_ccw;
+    var next_position_cw = initial_position_cw;
+    var next_position_ccw = initial_position_ccw;
 
     for (var i = 0; i < ocean_material_bindings::WAVES_COUNT; i += 1) {
-        p += water_dynamics::gerstner_wave(
+        next_position += water_dynamics::gerstner_wave(
             ocean_material_bindings::settings.waves[i],
-            position_with_center_offset + ocean_material_bindings::settings.offset,
+            initial_position_with_center_offset + ocean_material_bindings::settings.offset,
             time
         );
-        p_cw += water_dynamics::gerstner_wave(
+        next_position_cw += water_dynamics::gerstner_wave(
             ocean_material_bindings::settings.waves[i],
-            grid_point_cw + ocean_material_bindings::settings.offset,
+            initial_position_cw + ocean_material_bindings::settings.offset,
             time
         );
-        p_ccw += water_dynamics::gerstner_wave(
+        next_position_ccw += water_dynamics::gerstner_wave(
             ocean_material_bindings::settings.waves[i],
-            grid_point_ccw + ocean_material_bindings::settings.offset,
+            initial_position_ccw + ocean_material_bindings::settings.offset,
             time
         );
     }
 
-     if ocean_material_bindings::settings.tier == 0u {
-        p = utils::smoothen_edges(
-            vertex_index,
-            position_with_center_offset,
-            ocean_material_bindings::settings.subdivision_count,
-            ocean_material_bindings::settings.grid_size,
-            p,
-            time
-        );
+    switch ocean_material_bindings::settings.tier {
+        case 0u: {
+            next_position = utils::smoothen_edges(
+                vertex_index,
+                initial_position_with_center_offset,
+                ocean_material_bindings::settings.subdivision_count,
+                ocean_material_bindings::settings.quad_cell_size,
+                next_position,
+                time
+            );
+        }
+        case 1u: {
+            let tile_size_cubed = pow(ocean_material_bindings::settings.tile_size, 2.);
+            let near = sqrt(tile_size_cubed * 2.) * 0.5;
+            let far = ocean_material_bindings::settings.tile_size * 1.5;
+            next_position = utils::level_out(
+                next_position, 
+                initial_position_with_center_offset,
+                ocean_material_bindings::settings.offset,
+                near, 
+                far
+            );
+        }
+        default {} // No-op
     }
 
-
-    var normal: vec3<f32> = normalize(cross(p_ccw - p, p_cw - p));
-    var position = vec4<f32>(p, 1.);
+    var normal: vec3<f32> = normalize(cross(next_position_ccw - next_position, next_position_cw - next_position));
+    var position = vec4<f32>(next_position, 1.);
     var model = mesh_functions::get_model_matrix(in.instance_index);
 
     out.position = mesh_functions::mesh_position_local_to_clip(

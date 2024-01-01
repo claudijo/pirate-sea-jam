@@ -36,7 +36,7 @@ fn get_wave_adjusted_midpoint(a: vec3<f32>, b: vec3<f32>, time: f32) -> vec3<f32
     return get_midpoint(grid_point_a, grid_point_b);
 }
 
-fn get_adjecent_grid_points(vertex_index: u32, grid_point: vec3<f32>, grid_size: f32) -> array<vec3<f32>,2>  {
+fn get_adjecent_grid_points(vertex_index: u32, grid_point: vec3<f32>, quad_cell_size: f32) -> array<vec3<f32>,2>  {
     var cw_delta: vec3<f32>;
     var ccw_delta: vec3<f32>;
 
@@ -72,28 +72,50 @@ fn get_adjecent_grid_points(vertex_index: u32, grid_point: vec3<f32>, grid_size:
     }
 
     return array(
-        grid_point + cw_delta * grid_size,
-        grid_point + ccw_delta * grid_size,
+        grid_point + cw_delta * quad_cell_size,
+        grid_point + ccw_delta * quad_cell_size,
     );
 }
 
-fn get_grid_point_north(grid_point: vec3<f32>, grid_size: f32) -> vec3<f32> {
-    return grid_point + vec3<f32>(0., 0., -grid_size);
+fn get_grid_point_north(grid_point: vec3<f32>, quad_cell_size: f32) -> vec3<f32> {
+    return grid_point + vec3<f32>(0., 0., -quad_cell_size);
 }
 
-fn get_grid_point_south(grid_point: vec3<f32>, grid_size: f32) -> vec3<f32> {
-    return grid_point + vec3<f32>(0., 0., grid_size);
+fn get_grid_point_south(grid_point: vec3<f32>, quad_cell_size: f32) -> vec3<f32> {
+    return grid_point + vec3<f32>(0., 0., quad_cell_size);
 }
 
-fn get_grid_point_east(grid_point: vec3<f32>, grid_size: f32) -> vec3<f32> {
-    return grid_point + vec3<f32>(grid_size, 0., 0.);
+fn get_grid_point_east(grid_point: vec3<f32>, quad_cell_size: f32) -> vec3<f32> {
+    return grid_point + vec3<f32>(quad_cell_size, 0., 0.);
 }
 
-fn get_grid_point_west(grid_point: vec3<f32>, grid_size: f32) -> vec3<f32> {
-    return grid_point + vec3<f32>(-grid_size, 0., 0.);
+fn get_grid_point_west(grid_point: vec3<f32>, quad_cell_size: f32) -> vec3<f32> {
+    return grid_point + vec3<f32>(-quad_cell_size, 0., 0.);
 }
 
-fn smoothen_edges(vertex_index: u32, position: vec3<f32>, subdivision_count: u32, grid_size: f32, default_grid_point: vec3<f32>, time: f32) -> vec3<f32> {
+fn level_out(
+    next_position: vec3<f32>,
+    initial_position: vec3<f32>,
+    offset: vec3<f32>,
+    near: f32,
+    far: f32,
+) -> vec3<f32> {
+    let span = far - near;
+    let distance = length(initial_position + offset);
+    let clamped = clamp(distance, near, far);
+    let scale = 1. - (clamped - near) / span;
+
+    return mix(initial_position, next_position, scale);
+}
+
+fn smoothen_edges(
+    vertex_index: u32,
+    position: vec3<f32>,
+    subdivision_count: u32,
+    quad_cell_size: f32,
+    default_grid_point: vec3<f32>,
+    time: f32
+) -> vec3<f32> {
     let tile_size = subdivision_count + 1u;
     let row = vertex_index / (tile_size * VERTICES_PER_QUAD);
     let col = (vertex_index / VERTICES_PER_QUAD) % tile_size;
@@ -104,16 +126,16 @@ fn smoothen_edges(vertex_index: u32, position: vec3<f32>, subdivision_count: u32
         if col % 2u == 0u { // Even col
             if order == 1u || order == 5u {
                 return get_wave_adjusted_midpoint(
-                    get_grid_point_west(position, grid_size),
-                    get_grid_point_east(position, grid_size),
+                    get_grid_point_west(position, quad_cell_size),
+                    get_grid_point_east(position, quad_cell_size),
                     time
                 );
             }
         } else { // Odd col
             if order == 3u {
                  return get_wave_adjusted_midpoint(
-                    get_grid_point_west(position, grid_size),
-                    get_grid_point_east(position, grid_size),
+                    get_grid_point_west(position, quad_cell_size),
+                    get_grid_point_east(position, quad_cell_size),
                     time
                  );
             }
@@ -124,16 +146,16 @@ fn smoothen_edges(vertex_index: u32, position: vec3<f32>, subdivision_count: u32
         if col % 2u == 0u { // Even col
             if order == 0u {
                 return get_wave_adjusted_midpoint(
-                    get_grid_point_west(position, grid_size),
-                    get_grid_point_east(position, grid_size),
+                    get_grid_point_west(position, quad_cell_size),
+                    get_grid_point_east(position, quad_cell_size),
                     time
                 );
             }
         } else { // Odd col
             if order == 2u || order == 4u {
                 return get_wave_adjusted_midpoint(
-                    get_grid_point_west(position, grid_size),
-                    get_grid_point_east(position, grid_size),
+                    get_grid_point_west(position, quad_cell_size),
+                    get_grid_point_east(position, quad_cell_size),
                     time
                 );
             }
@@ -145,16 +167,16 @@ fn smoothen_edges(vertex_index: u32, position: vec3<f32>, subdivision_count: u32
         if row % 2u == 0u { // Even row
             if order == 2u || order == 4u {
                 return get_wave_adjusted_midpoint(
-                    get_grid_point_north(position, grid_size),
-                    get_grid_point_south(position, grid_size),
+                    get_grid_point_north(position, quad_cell_size),
+                    get_grid_point_south(position, quad_cell_size),
                     time
                 );
             }
         } else { // Odd row
             if order == 3u {
                 return get_wave_adjusted_midpoint(
-                    get_grid_point_north(position, grid_size),
-                    get_grid_point_south(position, grid_size),
+                    get_grid_point_north(position, quad_cell_size),
+                    get_grid_point_south(position, quad_cell_size),
                     time
                 );
             }
@@ -165,16 +187,16 @@ fn smoothen_edges(vertex_index: u32, position: vec3<f32>, subdivision_count: u32
         if row % 2u == 0u { // Even row
             if order == 0u {
                 return get_wave_adjusted_midpoint(
-                    get_grid_point_north(position, grid_size),
-                    get_grid_point_south(position, grid_size),
+                    get_grid_point_north(position, quad_cell_size),
+                    get_grid_point_south(position, quad_cell_size),
                     time
                 );
             }
         } else { // Odd row
             if order == 1u || order == 5u {
                 return get_wave_adjusted_midpoint(
-                    get_grid_point_north(position, grid_size),
-                    get_grid_point_south(position, grid_size),
+                    get_grid_point_north(position, quad_cell_size),
+                    get_grid_point_south(position, quad_cell_size),
                     time
                 );
             }

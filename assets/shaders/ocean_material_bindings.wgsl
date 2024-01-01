@@ -2,8 +2,9 @@
 
 const WAVES_COUNT: i32 = 4;
 
-struct OceanMaterialConfig {
-    grid_size: f32,
+struct OceanMaterialSetting {
+    tile_size: f32,
+    quad_cell_size: f32,
     tier: u32,
     offset: vec3<f32>,
     animation_time_scale: f32,
@@ -16,7 +17,7 @@ struct OceanMaterialGlobals {
 }
 
 @group(1) @binding(100)
-var<uniform> settings: OceanMaterialConfig;
+var<uniform> settings: OceanMaterialSetting;
 
 @group(1) @binding(101)
 var<uniform> globals: OceanMaterialGlobals;

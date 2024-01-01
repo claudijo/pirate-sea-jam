@@ -12,8 +12,8 @@ use bevy::{
 };
 
 pub const OCEAN_ANIMATION_TIME_SCALE: f32 = 0.6;
-pub const OCEAN_TILE_SIZE: f32 = 40.;
-const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 5; // Needs to be odd
+pub const OCEAN_TILE_SIZE: f32 = 120.;
+const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 15; // Needs to be odd
 const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS * 2 + 1;
 
 const OFFSET_BASES: [Vec3; 8] = [
@@ -53,7 +53,7 @@ fn spawn_ocean_tile(
     tile_size: f32,
     subdivision_count: u32,
     waves: [Vec4; 4],
-    offset: Vec3,
+    translation: Vec3,
     tier: Tier,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
@@ -76,7 +76,7 @@ fn spawn_ocean_tile(
     commands.spawn((
         MaterialMeshBundle {
             mesh: meshes.add(mesh),
-            transform: Transform::from_translation(offset),
+            transform: Transform::from_translation(translation),
             material: materials.add(StandardOceanMaterial {
                 base: StandardMaterial {
                     base_color: Color::rgb(0.15, 0.74, 0.86),
@@ -85,9 +85,10 @@ fn spawn_ocean_tile(
                 },
                 extension: OceanMaterialExtension {
                     settings: OceanMaterialSettings {
-                        grid_size: tile_size / (subdivision_count + 1) as f32,
+                        tile_size,
+                        quad_cell_size: tile_size / (subdivision_count + 1) as f32,
                         tier: tier as u32,
-                        offset,
+                        offset: translation,
                         animation_time_scale: OCEAN_ANIMATION_TIME_SCALE,
                         waves,
                         subdivision_count,
@@ -103,7 +104,7 @@ fn spawn_ocean_tile(
         AabbGizmo {
             color: Some(Color::PINK),
         },
-        OceanTile { offset },
+        OceanTile { offset: translation },
     ));
 }
 
@@ -153,7 +154,8 @@ fn setup(
 
 #[derive(ShaderType, Clone, Reflect, Debug)]
 struct OceanMaterialSettings {
-    grid_size: f32,
+    tile_size: f32,
+    quad_cell_size: f32,
     tier: u32,
     offset: Vec3,
     animation_time_scale: f32,
@@ -200,14 +202,11 @@ fn track_player_ship_position(
         for (mut ocean_tile_transform, ocean_tile) in &mut ocean_tile_query {
             ocean_tile_transform.translation.x = ship_transform.translation.x + ocean_tile.offset.x;
             ocean_tile_transform.translation.z = ship_transform.translation.z + ocean_tile.offset.z;
+        }
 
-            for (_, mat) in materials.iter_mut() {
-                mat.extension.globals.center_offset = Vec3::new(
-                    ship_transform.translation.x,
-                    0.,
-                    ship_transform.translation.z,
-                );
-            }
+        for (_, material) in materials.iter_mut() {
+            material.extension.globals.center_offset.x = ship_transform.translation.x;
+            material.extension.globals.center_offset.z = ship_transform.translation.z;
         }
     }
 }
