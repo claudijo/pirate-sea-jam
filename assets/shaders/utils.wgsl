@@ -113,7 +113,7 @@ fn smoothen_edges(
     position: vec3<f32>,
     subdivision_count: u32,
     quad_cell_size: f32,
-    default_grid_point: vec3<f32>,
+    default_position: vec3<f32>,
     time: f32
 ) -> vec3<f32> {
     let tile_size = subdivision_count + 1u;
@@ -203,5 +203,5 @@ fn smoothen_edges(
         }
     }
 
-    return default_grid_point;
+    return default_position;
 }

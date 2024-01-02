@@ -21,16 +21,19 @@
 @vertex
 fn vertex(in: Vertex) -> VertexOutput {
     let time = globals.time * ocean_material_bindings::settings.animation_time_scale;
-    let position_with_center_offset = in.position + ocean_material_bindings::globals.center_offset;
 
     var out: VertexOutput;
-    var p = position_with_center_offset;
+    var next_position = in.position;
 
     for (var i = 0; i < ocean_material_bindings::WAVES_COUNT; i += 1) {
-        p += water_dynamics::gerstner_wave(ocean_material_bindings::settings.waves[i], position_with_center_offset, time);
+        next_position += water_dynamics::gerstner_wave(
+            ocean_material_bindings::settings.waves[i],
+            in.position + ocean_material_bindings::settings.offset,
+            time
+        );
     }
 
-    var position = vec4<f32>(p, 1.);
+    var position = vec4<f32>(next_position, 1.);
 
     out.position = mesh_functions::mesh_position_local_to_clip(
         mesh_functions::get_model_matrix(in.instance_index),

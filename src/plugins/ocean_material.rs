@@ -12,7 +12,7 @@ use bevy::{
 };
 
 pub const OCEAN_ANIMATION_TIME_SCALE: f32 = 0.6;
-pub const OCEAN_TILE_SIZE: f32 = 120.;
+pub const OCEAN_TILE_SIZE: f32 = 100.;
 const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 15; // Needs to be odd
 const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS * 2 + 1;
 
@@ -53,7 +53,7 @@ fn spawn_ocean_tile(
     tile_size: f32,
     subdivision_count: u32,
     waves: [Vec4; 4],
-    translation: Vec3,
+    position: Vec3,
     tier: Tier,
     commands: &mut Commands,
     meshes: &mut ResMut<Assets<Mesh>>,
@@ -76,7 +76,7 @@ fn spawn_ocean_tile(
     commands.spawn((
         MaterialMeshBundle {
             mesh: meshes.add(mesh),
-            transform: Transform::from_translation(translation),
+            transform: Transform::from_translation(position),
             material: materials.add(StandardOceanMaterial {
                 base: StandardMaterial {
                     base_color: Color::rgb(0.15, 0.74, 0.86),
@@ -84,18 +84,15 @@ fn spawn_ocean_tile(
                     ..Default::default()
                 },
                 extension: OceanMaterialExtension {
-                    settings: OceanMaterialSettings {
+                    settings: OceanTileSettings {
                         tile_size,
                         quad_cell_size: tile_size / (subdivision_count + 1) as f32,
                         tier: tier as u32,
-                        offset: translation,
+                        offset: position,
                         animation_time_scale: OCEAN_ANIMATION_TIME_SCALE,
                         waves,
                         subdivision_count,
                     },
-                    globals: OceanMaterialGlobals {
-                        center_offset: Vec3::ZERO,
-                    }
                 },
             }),
             ..default()
@@ -104,7 +101,7 @@ fn spawn_ocean_tile(
         AabbGizmo {
             color: Some(Color::PINK),
         },
-        OceanTile { offset: translation },
+        OceanTile { offset: position },
     ));
 }
 
@@ -153,7 +150,7 @@ fn setup(
 }
 
 #[derive(ShaderType, Clone, Reflect, Debug)]
-struct OceanMaterialSettings {
+struct OceanTileSettings {
     tile_size: f32,
     quad_cell_size: f32,
     tier: u32,
@@ -163,20 +160,12 @@ struct OceanMaterialSettings {
     subdivision_count: u32,
 }
 
-#[derive(ShaderType, Clone, Reflect, Debug)]
-struct OceanMaterialGlobals {
-    center_offset: Vec3,
-}
-
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone)]
 struct OceanMaterialExtension {
     // We need to ensure that the bindings of the base material and the extension do not conflict,
     // so we start from binding slot 100, leaving slots 0-99 for the base material.
     #[uniform(100)]
-    settings: OceanMaterialSettings,
-
-    #[uniform(101)]
-    globals: OceanMaterialGlobals,
+    settings: OceanTileSettings,
 }
 
 impl MaterialExtension for OceanMaterialExtension {
@@ -196,17 +185,11 @@ impl MaterialExtension for OceanMaterialExtension {
 fn track_player_ship_position(
     ship_query: Query<&Transform, (With<PlayerShip>, Without<OceanTile>)>,
     mut ocean_tile_query: Query<(&mut Transform, &mut OceanTile)>,
-    mut materials: ResMut<Assets<StandardOceanMaterial>>,
 ) {
     for ship_transform in &ship_query {
         for (mut ocean_tile_transform, ocean_tile) in &mut ocean_tile_query {
             ocean_tile_transform.translation.x = ship_transform.translation.x + ocean_tile.offset.x;
             ocean_tile_transform.translation.z = ship_transform.translation.z + ocean_tile.offset.z;
-        }
-
-        for (_, material) in materials.iter_mut() {
-            material.extension.globals.center_offset.x = ship_transform.translation.x;
-            material.extension.globals.center_offset.z = ship_transform.translation.z;
         }
     }
 }
@@ -248,9 +231,9 @@ impl Plugin for OceanMaterialPlugin {
 
         app.add_systems(Startup, setup);
 
-        // app.add_systems(
-        //     Update,
-        //     track_player_ship_position.run_if(in_state(GameState::InGame)),
-        // );
+        app.add_systems(
+            Update,
+            track_player_ship_position.run_if(in_state(GameState::InGame)),
+        );
     }
 }
