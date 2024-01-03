@@ -15,6 +15,7 @@ pub fn damping(relative_velocity: f32, reference_area: f32, drag_coefficient: f3
     0.5 * LIQUID_DENSITY * relative_velocity.powi(2) * reference_area * drag_coefficient
 }
 
+// See: https://catlikecoding.com/unity/tutorials/flow/waves/
 // `wave`: Vec4 containing direction x, direction z, steepness, wave_length
 pub fn gerstner_wave(wave: Vec4, p: Vec3, time: f32) -> Vec3 {
     let steepness = wave.z;

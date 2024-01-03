@@ -59,7 +59,10 @@ fn spawn_ocean_tile(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardOceanMaterial>>,
 ) {
-    let mut mesh = Mesh::from(shape::Plane { size: tile_size, subdivisions: subdivision_count });
+    let mut mesh = Mesh::from(shape::Plane {
+        size: tile_size,
+        subdivisions: subdivision_count,
+    });
     mesh.duplicate_vertices();
 
     // Use custom AABB to prevent culling issues of meshes after being animated and displaced in the shader.
@@ -161,7 +164,7 @@ struct OceanTileSettings {
 }
 
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone)]
-struct OceanMaterialExtension {
+pub struct OceanMaterialExtension {
     // We need to ensure that the bindings of the base material and the extension do not conflict,
     // so we start from binding slot 100, leaving slots 0-99 for the base material.
     #[uniform(100)]

@@ -14,6 +14,8 @@
     ocean_material_bindings,
 }
 
+// Note:`in.position` does not seems to include tranlsation done when creating the material. Associated translation etc.
+// seems to be be applied using the provided mesh function
 @vertex
 fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput {
     let time = globals.time * ocean_material_bindings::settings.animation_time_scale;

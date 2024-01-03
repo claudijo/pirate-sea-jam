@@ -1,5 +1,6 @@
 pub mod artillery;
 pub mod assets;
+pub mod buoy;
 pub mod camera;
 pub mod debug_fps;
 pub mod debug_text;

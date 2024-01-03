@@ -61,6 +61,7 @@ fn main() {
         plugins::debug_fps::DebugFpsPlugin,
         plugins::sky::SkyPlugin,
         plugins::ocean_material::OceanMaterialPlugin,
+        plugins::buoy::BuoyPlugin,
     ));
 
     app.add_state::<game_state::GameState>();

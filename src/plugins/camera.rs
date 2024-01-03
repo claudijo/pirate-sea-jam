@@ -1,5 +1,4 @@
 use crate::game_state::GameState;
-use crate::plugins::ocean_material::OCEAN_TILE_SIZE;
 use crate::plugins::orbiting_camera::OrbitingCamera;
 use bevy::prelude::*;
 use bevy::window::{Cursor, CursorGrabMode};
