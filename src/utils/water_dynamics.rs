@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::f32::consts::PI;
 
-pub const LIQUID_DENSITY: f32 = 1025.;
+pub const LIQUID_DENSITY: f32 = 1.025;
 const GRAVITY: f32 = 9.807;
 pub const SPHERE_DRAG_COEFFICIENT: f32 = 0.47;
 
@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn buoyancy() {
         let force = buoyant_force(64.);
-        assert_eq!(force, Vec3::Y * 643536.);
+        assert_eq!(force, Vec3::Y * 643339.2);
     }
 
     #[test]

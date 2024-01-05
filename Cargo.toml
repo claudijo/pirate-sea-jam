@@ -7,6 +7,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 bevy = "0.12.1"
 bevy_rapier3d = "0.23.0"
+bevy_xpbd_3d = "0.3.2"
 rand = "0.8.5"
 
 # Enable a small amount of optimization in debug mode

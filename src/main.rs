@@ -9,6 +9,7 @@ use crate::events::game::RestartGameEvent;
 use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
 use bevy_rapier3d::prelude::*;
+use bevy_xpbd_3d::prelude::*;
 
 mod components;
 mod events;
@@ -35,6 +36,8 @@ fn main() {
     }));
 
     app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
+
+    app.add_plugins(PhysicsPlugins::default());
 
     app.add_plugins((
         plugins::assets::AssetsPlugin,
