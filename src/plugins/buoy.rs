@@ -13,6 +13,8 @@ pub struct Buoy;
 
 #[derive(Bundle)]
 pub struct BuoyBundle {
+    pub transform: Transform,
+    pub global_transform: GlobalTransform,
     pub collider: Collider,
     pub collider_density: ColliderDensity,
     pub buoy: Buoy,
@@ -23,12 +25,28 @@ pub struct BuoyBundle {
 impl Default for BuoyBundle {
     fn default() -> Self {
         Self {
+            transform: Transform::default(),
+            global_transform: GlobalTransform::default(),
             collider: Collider::ball(1.),
             collider_density: ColliderDensity(CORK_DENSITY),
             rigid_body: RigidBody::Dynamic,
             linear_damping: LinearDamping::default(),
             buoy: Buoy
         }
+    }
+}
+
+impl BuoyBundle {
+    pub fn from_transform(transform: Transform) -> Self {
+        Self {
+            transform,
+            ..default()
+        }
+    }
+
+    pub fn with_radius(mut self, radius: f32) -> Self {
+        self.collider = Collider::ball(radius);
+        self
     }
 }
 
@@ -39,17 +57,7 @@ fn spawn_buoy(
 ) {
     const RADIUS: f32 = 0.5;
     commands.spawn((
-        PbrBundle {
-            mesh: meshes.add(shape::Icosphere { radius: RADIUS, ..default() }.try_into().unwrap()),
-            material: materials.add(Color::ORANGE_RED.into()),
-            transform: Transform::from_xyz(8., 5., 10.),
-            ..default()
-        },
-        BuoyBundle {
-            collider: Collider::ball(RADIUS),
-            collider_density: ColliderDensity(0.75),
-            ..default()
-        },
+        BuoyBundle::default(),
     ));
 }
 

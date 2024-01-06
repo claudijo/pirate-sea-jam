@@ -9,11 +9,7 @@ pub fn spawn_raft(
     mut commands: Commands,
 ) {
     commands.spawn((
-        TransformBundle::from(Transform::from_xyz(8., 15., 5.)),
-        BuoyBundle {
-            collider: Collider::ball(0.5),
-            ..default()
-        },
+        BuoyBundle::from_transform(Transform::from_xyz(8., 15., 5.)).with_radius(0.5),
     ));
 }
 
