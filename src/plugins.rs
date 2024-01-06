@@ -19,3 +19,4 @@ pub mod text;
 pub mod virtual_gamepad;
 pub mod virtual_gamepad_input;
 pub mod wind;
+pub mod raft;

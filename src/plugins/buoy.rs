@@ -6,8 +6,31 @@ use crate::utils::water_dynamics::SPHERE_DRAG_COEFFICIENT;
 use bevy::prelude::*;
 use bevy_xpbd_3d::prelude::*;
 
+pub const CORK_DENSITY: f32 = 0.235;
+
 #[derive(Component)]
-struct Buoy;
+pub struct Buoy;
+
+#[derive(Bundle)]
+pub struct BuoyBundle {
+    pub collider: Collider,
+    pub collider_density: ColliderDensity,
+    pub buoy: Buoy,
+    pub rigid_body: RigidBody,
+    pub linear_damping: LinearDamping,
+}
+
+impl Default for BuoyBundle {
+    fn default() -> Self {
+        Self {
+            collider: Collider::ball(1.),
+            collider_density: ColliderDensity(CORK_DENSITY),
+            rigid_body: RigidBody::Dynamic,
+            linear_damping: LinearDamping::default(),
+            buoy: Buoy
+        }
+    }
+}
 
 fn spawn_buoy(
     mut commands: Commands,
@@ -22,11 +45,11 @@ fn spawn_buoy(
             transform: Transform::from_xyz(8., 5., 10.),
             ..default()
         },
-        Collider::ball(RADIUS),
-        ColliderDensity(0.75),
-        RigidBody::Dynamic,
-        LinearDamping::default(),
-        Buoy,
+        BuoyBundle {
+            collider: Collider::ball(RADIUS),
+            collider_density: ColliderDensity(0.75),
+            ..default()
+        },
     ));
 }
 
@@ -118,7 +141,7 @@ pub struct BuoyPlugin;
 
 impl Plugin for BuoyPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_buoy);
+        // app.add_systems(Startup, spawn_buoy);
         // app.add_systems(Update, keep_at_water_level);
         app.add_systems(Update, float);
     }

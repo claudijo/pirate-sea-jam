@@ -65,6 +65,7 @@ fn main() {
         plugins::sky::SkyPlugin,
         plugins::ocean_material::OceanMaterialPlugin,
         plugins::buoy::BuoyPlugin,
+        plugins::raft::RaftPlugin,
     ));
 
     app.add_state::<game_state::GameState>();
@@ -75,6 +76,9 @@ fn main() {
 
     #[cfg(debug_assertions)]
     app.add_plugins(RapierDebugRenderPlugin::default());
+
+    #[cfg(debug_assertions)]
+    app.add_plugins(PhysicsDebugPlugin::default());
 
     app.run();
 }
