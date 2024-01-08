@@ -135,43 +135,11 @@ fn float(
     }
 }
 
-fn ignore_collisions(
-    mut collisions: ResMut<Collisions>,
-    query: Query<(), With<Buoy>>,
-) {
-    // Remove collisions where one of the colliders has an `Invulnerable` component.
-    // In a real project, this could be done more efficiently with collision layers.
-    collisions.retain(|contacts| {
-        !query.contains(contacts.entity1) && !query.contains(contacts.entity2)
-    });
-}
-
-fn keep_at_water_level(
-    ship_query: Query<&Transform, (With<PlayerShip>, Without<Buoy>)>,
-    mut buoy_query: Query<&mut Transform, With<Buoy>>,
-    wave: Res<Wave>,
-    time: Res<Time>,
-) {
-    let elapsed_time = time.elapsed().as_secs_f32();
-
-    for ship_transform in &ship_query {
-        for mut buoy_transform in &mut buoy_query {
-            let water_height = wave.surface_height(
-                buoy_transform.translation - ship_transform.translation,
-                elapsed_time,
-            );
-            buoy_transform.translation.y = water_height;
-        }
-    }
-}
-
 pub struct BuoyPlugin;
 
 impl Plugin for BuoyPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, spawn_buoy);
-        // app.add_systems(Update, keep_at_water_level);
         app.add_systems(Update, float);
-        //app.add_systems(PostProcessCollisions, ignore_collisions);
     }
 }
