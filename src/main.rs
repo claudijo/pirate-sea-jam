@@ -46,7 +46,7 @@ fn main() {
         plugins::ocean_tile::OceanPlugin,
         plugins::light::LightPlugin,
         plugins::ship::ShipPlugin,
-        plugins::shooting_target::ShootingTargetPlugin,
+        // plugins::shooting_target::ShootingTargetPlugin,
         plugins::pontoon::PontoonPlugin,
         plugins::keyboard::KeyboardPlugin,
         plugins::wind::WindPlugin,
