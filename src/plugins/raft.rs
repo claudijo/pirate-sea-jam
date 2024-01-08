@@ -1,10 +1,16 @@
 use bevy::prelude::*;
 use bevy_xpbd_3d::prelude::*;
 use crate::components::ship::ShipFlag;
+use crate::events::game::RestartGameEvent;
 use crate::game_state::GameState;
 use crate::plugins::assets::ModelAssets;
 use crate::plugins::buoy::{BALSA_DENSITY, BuoyBundle, CORK_DENSITY, OAK_DENSITY, PINE_DENSITY};
-use crate::resources::wave::Wave;
+use crate::resources::despawn::ShootingTargetDespawnEntities;
+
+#[derive(Resource, Default)]
+struct DespwawnEntities {
+    entities: Vec<Entity>,
+}
 
 #[derive(Component)]
 pub struct Raft;
@@ -12,6 +18,7 @@ pub struct Raft;
 pub fn spawn_raft(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
+    mut despawn_entities: ResMut<DespwawnEntities>,
 ) {
     let spawn_at = Vec3::new(10., 6., 10.);
 
@@ -69,24 +76,62 @@ pub fn spawn_raft(
     ];
 
     for (position, radius) in buoy_configs {
-        let child_pontoon = commands.spawn((
+        let child_pontoon = commands.spawn(
             BuoyBundle::from_transform(Transform::from_translation(spawn_at + position))
                 .with_radius(radius),
-        )).id();
+        ).id();
 
-        commands.spawn(
+        let joint = commands.spawn(
             FixedJoint::new(parent_entity, child_pontoon).with_local_anchor_1(position),
-        );
+        ).id();
+
+        despawn_entities.entities.push(child_pontoon);
+        despawn_entities.entities.push(joint);
     }
+}
+
+fn reset_raft(
+    mut commands: Commands,
+    raft_query: Query<Entity, With<Raft>>,
+    mut restart_game_event_reader: EventReader<RestartGameEvent>,
+    model_assets: Res<ModelAssets>,
+    mut despawn_entities: ResMut<DespwawnEntities>,
+) {
+    if restart_game_event_reader.is_empty() {
+        return;
+    }
+
+    restart_game_event_reader.clear();
+
+    // Remove current raft
+    for parent in &raft_query {
+        commands.entity(parent).despawn_recursive();
+    }
+
+    for entity in &despawn_entities.entities {
+        commands.entity(*entity).despawn();
+    }
+
+    despawn_entities.entities.clear();
+
+    // Spawn new raft
+    spawn_raft(commands, model_assets, despawn_entities);
 }
 
 pub struct RaftPlugin;
 
 impl Plugin for RaftPlugin {
     fn build(&self, app: &mut App) {
+        app.insert_resource(DespwawnEntities::default());
+
         app.add_systems(
             OnEnter(GameState::SplashScreen),
             spawn_raft,
+        );
+
+        app.add_systems(
+            Update,
+            reset_raft.run_if(in_state(GameState::InGame)),
         );
     }
 }
