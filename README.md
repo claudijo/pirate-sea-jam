@@ -4,8 +4,6 @@ Jam-sized pirate game prototype in the making. Written in Rust and Bevy. Made wi
 
 Demo and devlog available at [https://claudijo.itch.io/pirate-sea-jam](https://claudijo.itch.io/pirate-sea-jam)
 
-> Learning game development is a journey on the open seas
-
 ## Changelog and Feature List
 The following brief changelog includes main concepts and features
 * Infinite ocean (v0.8)
