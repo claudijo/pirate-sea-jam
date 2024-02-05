@@ -2,20 +2,30 @@
 
 const WAVES_COUNT: i32 = 4;
 
-struct OceanMaterialConfig {
-    grid_size: f32,
+struct OceanTilelSettings {
+    tile_offset: vec3<f32>,
+    tile_size: f32,
+    quad_cell_size: f32,
     tier: u32,
-    offset: vec3<f32>,
-    animation_time_scale: f32,
+    time_scale: f32,
     waves: array<vec4<f32>, WAVES_COUNT>,
+    subdivision_count: u32,
 }
 
-struct OceanMaterialGlobals {
+struct OceanPosition {
     center_offset: vec3<f32>,
 }
 
+struct RollbackTime {
+    elapsed_seconds: f32,
+    padding: vec3<f32>,
+}
+
 @group(1) @binding(100)
-var<uniform> settings: OceanMaterialConfig;
+var<uniform> settings: OceanTilelSettings;
 
 @group(1) @binding(101)
-var<uniform> globals: OceanMaterialGlobals;
+var<uniform> position: OceanPosition;
+
+@group(1) @binding(102)
+var<uniform> time: RollbackTime;
