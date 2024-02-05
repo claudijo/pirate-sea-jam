@@ -1,6 +1,8 @@
-use crate::camera::systems::{grab_pointer, release_pointer, release_pointer_on_escape, spawn_camera};
-use bevy::prelude::*;
+use crate::camera::systems::{
+    grab_pointer, release_pointer, release_pointer_on_escape, spawn_camera,
+};
 use crate::game_state::states::GameState;
+use bevy::prelude::*;
 
 mod systems;
 

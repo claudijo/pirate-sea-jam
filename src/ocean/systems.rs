@@ -153,10 +153,7 @@ pub fn sync_ocean_tiles_center_offset(
     }
 }
 
-pub fn sync_shader_time(
-    time: Res<Time>,
-    mut materials: ResMut<Assets<StandardOceanMaterial>>,
-) {
+pub fn sync_shader_time(time: Res<Time>, mut materials: ResMut<Assets<StandardOceanMaterial>>) {
     for (_, material) in materials.iter_mut() {
         material.extension.rollback_time.elapsed_seconds = time.elapsed_seconds();
     }
