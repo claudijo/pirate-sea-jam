@@ -96,3 +96,17 @@ Prerequisites:
 For maximally fast iterative compiles (see https://bevyengine.org/learn/book/getting-started/setup/)
 
 `cargo run --features bevy/dynamic_linking`
+
+#### Rollback networking
+
+##### Matchbox server
+To run matchbox server locally:
+* `$ cargo install matchbox_server`
+* `$ matchbox_server`
+
+##### Run sync test
+* `$ cargo run -- --sync_test`
+
+##### Local game
+In general running in sync test mode with check distance set to 0 is suitable for local play
+* `$ cargo run -- --sync_test check_distance 0` 
