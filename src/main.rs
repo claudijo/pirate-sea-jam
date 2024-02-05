@@ -4,79 +4,93 @@
 // Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
-use crate::events::artillery::{AimCannonEvent, FireCannonEvent};
-use crate::events::game::RestartGameEvent;
+use crate::args::ArgsPlugin;
+use crate::connection::systems::RollbackConfig;
+use crate::floating_body::components::{Controls, LinearVelocity, Position, Yaw};
+use crate::game_state::states::GameState;
+use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
-use bevy_rapier3d::prelude::*;
+use bevy_editor_pls::EditorPlugin;
+use bevy_ggrs::{GgrsApp, GgrsPlugin};
 
-mod components;
-mod events;
+use crate::connection::FPS;
+use crate::debug_fps::DebugFpsPlugin;
+use crate::focal_point::FocalPointPlugin;
+use crate::instructions::InstructionsPlugin;
+use crate::orbiting_camera::OrbitingCameraPlugin;
+use crate::sky_box::SkyBoxPlugin;
+use crate::sync_test::SyncTestPlugin;
+use crate::wind::WindPlugin;
+
+mod args;
+mod artillery;
+mod assets;
+mod camera;
+mod connection;
+mod debug_fps;
+mod floating_body;
+mod focal_point;
 mod game_state;
-mod libs;
-mod plugins;
-mod resources;
-mod systems;
+mod inputs;
+mod instructions;
+mod light;
+mod ocean;
+mod orbiting_camera;
+mod player;
+mod sky_box;
+mod stats;
+mod sync_test;
 mod utils;
+mod wind;
 
 fn main() {
     let mut app = App::new();
 
-    // Uncomment and run once to produce dummy meta files with command.
-    // cargo run --features bevy/asset_processor
-    // See https://github.com/bevyengine/bevy/issues/10157
-    // app.add_plugins(DefaultPlugins.set(
-    //     AssetPlugin {
-    //         mode: AssetMode::Processed,
-    //         ..default()
-    //     }
-    // ));
+    app.insert_resource(AssetMetaCheck::Never);
+
+    app.add_state::<GameState>();
 
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
-            title: "Pirate Sea Jam".into(),
+            title: "Rogue Waves".into(),
             // This requires css html, body {margin: 0;height: 100%;} as explained https://github.com/bevyengine/bevy/pull/4726
             fit_canvas_to_parent: true,
             ..default()
         }),
         ..default()
     }));
+    app.add_plugins(GgrsPlugin::<RollbackConfig>::default());
+    // define frequency of rollback game logic update
+    app.set_rollback_schedule_fps(FPS);
 
-    app.add_plugins(RapierPhysicsPlugin::<NoUserData>::default());
+    app.add_plugins(light::LightPlugin);
+    app.add_plugins(camera::CameraPlugin);
+    app.add_plugins(ocean::OceanPlugin);
+    app.add_plugins(player::PlayerPlugin);
+    app.add_plugins(floating_body::ShipPlugin);
+    app.add_plugins(assets::AssetsPlugin);
+    app.add_plugins(inputs::InputsPlugin);
+    app.add_plugins(connection::ConnectionPlugin);
+    app.add_plugins(artillery::ArtilleryPlugin);
+    app.add_plugins(ArgsPlugin);
+    app.add_plugins(SyncTestPlugin);
+    app.add_plugins(FocalPointPlugin);
+    app.add_plugins(OrbitingCameraPlugin);
+    app.add_plugins(WindPlugin);
+    app.add_plugins(SkyBoxPlugin);
+    app.add_plugins(DebugFpsPlugin);
+    app.add_plugins(InstructionsPlugin);
 
-    app.add_plugins((
-        plugins::assets::AssetsPlugin,
-        plugins::camera::CameraPlugin,
-        plugins::menu::StartMenuPlugin,
-        plugins::ocean_tile::OceanPlugin,
-        plugins::light::LightPlugin,
-        plugins::ship::ShipPlugin,
-        plugins::shooting_target::ShootingTargetPlugin,
-        plugins::pontoon::PontoonPlugin,
-        plugins::keyboard::KeyboardPlugin,
-        plugins::wind::WindPlugin,
-        plugins::text::TextOverlayPlugin,
-        plugins::artillery::ArsenalPlugin,
-        plugins::virtual_gamepad::VirtualGamepadPlugin,
-        plugins::mouse_input::MouseInputPlugin,
-    ));
-
-    app.add_plugins((
-        plugins::virtual_gamepad_input::VirtualGamepadInputPlugin,
-        plugins::orbiting_camera::OrbitingCameraPlugin,
-        libs::plugins::virtual_joystick::VirtualJoystickPlugin,
-        libs::plugins::touch_button::TouchButtonPlugin,
-        plugins::debug_fps::DebugFpsPlugin,
-        plugins::sky::SkyPlugin,
-    ));
-
-    app.add_state::<game_state::GameState>();
-
-    app.add_event::<RestartGameEvent>();
-    app.add_event::<FireCannonEvent>();
-    app.add_event::<AimCannonEvent>();
+    app.register_type::<LinearVelocity>();
+    app.register_type::<Position>();
+    app.register_type::<Yaw>();
+    app.register_type::<Controls>();
 
     #[cfg(debug_assertions)]
-    app.add_plugins(RapierDebugRenderPlugin::default());
+    app.add_plugins(EditorPlugin::default());
+
+    #[cfg(debug_assertions)]
+    app.add_plugins(stats::StatsPlugin);
 
     app.run();
 }
