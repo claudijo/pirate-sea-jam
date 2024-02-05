@@ -153,7 +153,7 @@ pub fn sync_ocean_tiles_center_offset(
     }
 }
 
-pub fn sync_shader_rollback_time(
+pub fn sync_shader_time(
     time: Res<Time>,
     mut materials: ResMut<Assets<StandardOceanMaterial>>,
 ) {

@@ -17,6 +17,8 @@ const MODEL_FILE_NAMES: [&str; 7] = [
 
 const MESH_FILE_NAMES: [&str; 1] = ["medium_flag.glb"];
 
+const FONT_FILE_NAMES: [&str; 1] = ["the-bomb-regular.otf"];
+
 pub struct AssetsPlugin;
 
 impl Plugin for AssetsPlugin {

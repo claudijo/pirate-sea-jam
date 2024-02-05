@@ -17,6 +17,7 @@ use crate::connection::FPS;
 use crate::debug_fps::DebugFpsPlugin;
 use crate::focal_point::FocalPointPlugin;
 use crate::instructions::InstructionsPlugin;
+use crate::menu::MenuPlugin;
 use crate::orbiting_camera::OrbitingCameraPlugin;
 use crate::sky_box::SkyBoxPlugin;
 use crate::sync_test::SyncTestPlugin;
@@ -34,6 +35,7 @@ mod game_state;
 mod inputs;
 mod instructions;
 mod light;
+mod menu;
 mod ocean;
 mod orbiting_camera;
 mod player;
@@ -52,7 +54,7 @@ fn main() {
 
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
-            title: "Rogue Waves".into(),
+            title: "Pirate Sea Jam".into(),
             // This requires css html, body {margin: 0;height: 100%;} as explained https://github.com/bevyengine/bevy/pull/4726
             fit_canvas_to_parent: true,
             ..default()
@@ -80,6 +82,7 @@ fn main() {
     app.add_plugins(SkyBoxPlugin);
     app.add_plugins(DebugFpsPlugin);
     app.add_plugins(InstructionsPlugin);
+    app.add_plugins(MenuPlugin);
 
     app.register_type::<LinearVelocity>();
     app.register_type::<Position>();

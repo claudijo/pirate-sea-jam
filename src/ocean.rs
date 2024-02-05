@@ -1,9 +1,10 @@
 use crate::floating_body::systems::float;
 use crate::focal_point::resources::FocalPoint;
+use crate::game_state::states::GameState;
 use crate::ocean::materials::StandardOceanMaterial;
 use crate::ocean::resources::Wave;
 use crate::ocean::systems::{
-    spawn_ocean, sync_ocean_tiles_center_offset, sync_shader_rollback_time,
+    spawn_ocean, sync_ocean_tiles_center_offset, sync_shader_time,
 };
 use bevy::asset::load_internal_asset;
 use bevy::prelude::*;
@@ -86,6 +87,12 @@ impl Plugin for OceanPlugin {
             sync_ocean_tiles_center_offset.run_if(resource_changed::<FocalPoint>()),
         );
 
-        app.add_systems(GgrsSchedule, sync_shader_rollback_time.before(float));
+        // Animate waves (outside GGRS schedule) when displaying main menu
+        app.add_systems(
+            Update,
+            sync_shader_time.run_if(in_state(GameState::SplashScreen)),
+        );
+
+        app.add_systems(GgrsSchedule, sync_shader_time.before(float));
     }
 }
