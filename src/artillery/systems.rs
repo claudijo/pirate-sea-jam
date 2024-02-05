@@ -8,8 +8,7 @@
 // Add this in the rollback schedule (if a bullet fired by the other player was mis-predicted, this is obviously
 // something we’d want to correct!)
 #[allow(dead_code)]
-pub fn fire_cannons(
-    // mut commands: Commands,
+pub fn fire_cannons(// mut commands: Commands,
     // inputs: Res<PlayerInputs<RollbackConfig>>,
     // player_query: Query<(&Transform, &Player)>,
 ) {
