@@ -38,6 +38,7 @@ mod light;
 mod menu;
 mod ocean;
 mod orbiting_camera;
+mod physics;
 mod player;
 mod sky_box;
 mod stats;

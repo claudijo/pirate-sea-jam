@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 #[derive(Component, Clone, Copy, Default)]
-pub struct CannonsAreAiming(pub bool);
+pub struct ArtilleryReady(pub bool);
 
 #[derive(Component, Clone, Copy, Default)]
-pub struct CannonBall;
+pub struct Projectile;

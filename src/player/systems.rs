@@ -1,5 +1,5 @@
 use crate::args::resources::Args;
-use crate::artillery::components::CannonsAreAiming;
+use crate::artillery::components::ArtilleryReady;
 use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
 use crate::floating_body::components::{
@@ -22,8 +22,8 @@ use std::f32::consts::{E, PI, TAU};
 
 pub fn spawn_players(
     mut commands: Commands,
-    model_assets: Res<ModelAssets>,
     args: Res<Args>,
+    model_assets: Res<ModelAssets>,
     mut assets: ResMut<Assets<Mesh>>,
 ) {
     let placement_circle_radius = 5.;
@@ -47,7 +47,7 @@ pub fn spawn_players(
                 Controls::default(),
                 LinearVelocity::default(),
                 YawRotationalSpeed::default(),
-                CannonsAreAiming::default(),
+                ArtilleryReady::default(),
                 Name::new("Ship"),
             ))
             .with_children(|child_builder| {
@@ -229,7 +229,7 @@ pub fn apply_inputs(
 }
 
 // Take control component and calculate new velocity and update velocity component
-pub fn update_velocity(
+pub fn update_player_velocity(
     mut player_query: Query<
         (
             &mut LinearVelocity,
@@ -283,7 +283,7 @@ pub fn debug_velocity(
     }
 }
 
-pub fn update_position(
+pub fn update_player_position(
     mut player_query: Query<
         (
             &mut Yaw,

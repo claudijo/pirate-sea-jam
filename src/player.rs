@@ -4,7 +4,8 @@ pub mod systems;
 use crate::game_state::states::GameState;
 use crate::player::components::Player;
 use crate::player::systems::{
-    animate_flag, animate_helm, apply_inputs, spawn_players, update_position, update_velocity,
+    animate_flag, animate_helm, apply_inputs, spawn_players, update_player_position,
+    update_player_velocity,
 };
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
@@ -24,7 +25,7 @@ impl Plugin for PlayerPlugin {
         app.add_systems(OnEnter(GameState::InGame), spawn_players);
         app.add_systems(
             GgrsSchedule,
-            (apply_inputs, update_velocity, update_position).chain(),
+            (apply_inputs, update_player_velocity, update_player_position).chain(),
         );
 
         app.add_systems(

@@ -28,7 +28,6 @@ pub fn read_local_inputs(
         local_inputs.insert(*handle, input);
     }
 
-    // TODO Should this really be on ReadInputs schedule?
     commands.insert_resource(LocalInputs::<RollbackConfig>(local_inputs));
 }
 

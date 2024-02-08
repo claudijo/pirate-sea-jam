@@ -1,31 +1,48 @@
-// use crate::connection::systems::RollbackConfig;
-// use crate::inputs::fire;
-// use crate::player::components::Player;
-// use bevy::prelude::{Commands, Query, Res, Transform};
-// use bevy_ggrs::PlayerInputs;
+use crate::artillery::components::{ArtilleryReady, Projectile};
+use crate::assets::resources::ModelAssets;
+use crate::connection::systems::RollbackConfig;
+use crate::inputs::fire;
+use crate::player::components::Player;
+use bevy::prelude::*;
+use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs};
 
 // Check https://johanhelsing.studio/posts/extreme-bevy-3
 // Add this in the rollback schedule (if a bullet fired by the other player was mis-predicted, this is obviously
 // something we’d want to correct!)
-#[allow(dead_code)]
-pub fn fire_cannons(// mut commands: Commands,
-    // inputs: Res<PlayerInputs<RollbackConfig>>,
-    // player_query: Query<(&Transform, &Player)>,
+pub fn fire_artillery(
+    mut commands: Commands,
+    inputs: Res<PlayerInputs<RollbackConfig>>,
+    mut player_query: Query<(&mut ArtilleryReady, &Transform, &Player)>,
+    model_assets: Res<ModelAssets>,
 ) {
-    // Will keep record of fire button being pressed and act on transitions
-    // not pressed -> pressed = start aiming
-    // pressed -> not pressed = stop aiming, fire cannon
+    for (mut artillery_ready, transform, player) in &mut player_query {
+        let (input, _) = inputs[player.handle];
+        if fire(input) && artillery_ready.0 {
+            commands
+                .spawn((
+                    SceneBundle {
+                        scene: model_assets.scene_handles["cannon_ball.glb"].clone(),
+                        transform: Transform::from_translation(transform.translation),
+                        ..default()
+                    },
+                    Name::new("Projectile"),
+                    Projectile,
+                ))
+                .add_rollback();
 
-    // Should only be run on fire button state change
-
-    // for (transform, player) in &player_query {
-    //     let (input, _) = inputs[player.handle];
-    //     if !fire(input) {
-    //         // Spawn cannon balls
-    //         // Remember to add .add_rollback(); to the entity
-    //     }
-    // }
+            artillery_ready.0 = false;
+        }
+    }
 }
 
-#[allow(dead_code)]
-pub fn move_cannon_ball() {}
+pub fn reload_artillery(
+    inputs: Res<PlayerInputs<RollbackConfig>>,
+    mut player_query: Query<(&mut ArtilleryReady, &Player)>,
+) {
+    for (mut artillery_ready, player) in &mut player_query {
+        let (input, _) = inputs[player.handle];
+        if !fire(input) {
+            artillery_ready.0 = true;
+        }
+    }
+}

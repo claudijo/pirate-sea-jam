@@ -3,7 +3,7 @@ use crate::floating_body::components::{
     LinearVelocity, Position, Yaw, YawRotationalSpeed,
 };
 use crate::floating_body::systems::float;
-use crate::player::systems::update_position;
+use crate::player::systems::update_player_position;
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
 
@@ -14,7 +14,7 @@ pub struct ShipPlugin;
 
 impl Plugin for ShipPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(GgrsSchedule, float.before(update_position));
+        app.add_systems(GgrsSchedule, float.before(update_player_position));
 
         // Component candidates for roll back
         app.rollback_component_with_copy::<LinearVelocity>();
