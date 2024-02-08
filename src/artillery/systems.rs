@@ -5,6 +5,7 @@ use crate::inputs::fire;
 use crate::player::components::Player;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs};
+use crate::physics::components::{LinearAcceleration, LinearDamping, LinearVelocity, PhysicsBody};
 
 // Check https://johanhelsing.studio/posts/extreme-bevy-3
 // Add this in the rollback schedule (if a bullet fired by the other player was mis-predicted, this is obviously
@@ -27,6 +28,10 @@ pub fn fire_artillery(
                     },
                     Name::new("Projectile"),
                     Projectile,
+                    PhysicsBody,
+                    LinearVelocity(Vec3::Y * 18.),
+                    LinearAcceleration(Vec3::NEG_Y * 15.),
+                    LinearDamping(0.999),
                 ))
                 .add_rollback();
 

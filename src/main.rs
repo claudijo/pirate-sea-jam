@@ -6,7 +6,7 @@
 
 use crate::args::ArgsPlugin;
 use crate::connection::systems::RollbackConfig;
-use crate::floating_body::components::{Controls, LinearVelocity, Position, Yaw};
+use crate::floating_body::components::{Controls, FloatingLinearVelocity, FloatingPosition, Yaw};
 use crate::game_state::states::GameState;
 use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
@@ -19,6 +19,7 @@ use crate::focal_point::FocalPointPlugin;
 use crate::instructions::InstructionsPlugin;
 use crate::menu::MenuPlugin;
 use crate::orbiting_camera::OrbitingCameraPlugin;
+use crate::physics::PhysicsPlugin;
 use crate::sky_box::SkyBoxPlugin;
 use crate::sync_test::SyncTestPlugin;
 use crate::wind::WindPlugin;
@@ -84,9 +85,10 @@ fn main() {
     app.add_plugins(DebugFpsPlugin);
     app.add_plugins(InstructionsPlugin);
     app.add_plugins(MenuPlugin);
+    app.add_plugins(PhysicsPlugin);
 
-    app.register_type::<LinearVelocity>();
-    app.register_type::<Position>();
+    app.register_type::<FloatingLinearVelocity>();
+    app.register_type::<FloatingPosition>();
     app.register_type::<Yaw>();
     app.register_type::<Controls>();
 

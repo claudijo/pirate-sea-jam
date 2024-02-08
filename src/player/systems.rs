@@ -3,7 +3,7 @@ use crate::artillery::components::ArtilleryReady;
 use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
 use crate::floating_body::components::{
-    Controls, LinearVelocity, Position, Yaw, YawRotationalSpeed,
+    Controls, FloatingLinearVelocity, FloatingPosition, Yaw, YawRotationalSpeed,
 };
 use crate::inputs::turn_action_from_input;
 use crate::player::components::{Flag, Helm, Player};
@@ -42,10 +42,10 @@ pub fn spawn_players(
             .spawn((
                 SpatialBundle::default(),
                 Player { handle },
-                Position(Vec2::new(x, y)),
+                FloatingPosition(Vec2::new(x, y)),
                 Yaw::default(),
                 Controls::default(),
-                LinearVelocity::default(),
+                FloatingLinearVelocity::default(),
                 YawRotationalSpeed::default(),
                 ArtilleryReady::default(),
                 Name::new("Ship"),
@@ -232,7 +232,7 @@ pub fn apply_inputs(
 pub fn update_player_velocity(
     mut player_query: Query<
         (
-            &mut LinearVelocity,
+            &mut FloatingLinearVelocity,
             &mut YawRotationalSpeed,
             &Yaw,
             &Controls,
@@ -266,7 +266,7 @@ pub fn update_player_velocity(
 
 #[allow(dead_code)]
 pub fn debug_velocity(
-    player_query: Query<(&Transform, &Yaw, &LinearVelocity), With<Rollback>>,
+    player_query: Query<(&Transform, &Yaw, &FloatingLinearVelocity), With<Rollback>>,
     mut gizmos: Gizmos,
 ) {
     for (transform, yaw, linear_velocity) in &player_query {
@@ -287,8 +287,8 @@ pub fn update_player_position(
     mut player_query: Query<
         (
             &mut Yaw,
-            &mut Position,
-            &LinearVelocity,
+            &mut FloatingPosition,
+            &FloatingLinearVelocity,
             &YawRotationalSpeed,
         ),
         With<Rollback>,

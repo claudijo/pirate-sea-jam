@@ -18,7 +18,9 @@ impl Plugin for ArtilleryPlugin {
             GgrsSchedule,
             (
                 reload_artillery,
-                fire_artillery.after(update_player_position).after(reload_artillery),
+                fire_artillery
+                    .after(update_player_position)
+                    .after(reload_artillery),
             ),
         );
     }

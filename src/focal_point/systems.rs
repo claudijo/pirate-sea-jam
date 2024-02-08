@@ -1,4 +1,4 @@
-use crate::floating_body::components::Position;
+use crate::floating_body::components::FloatingPosition;
 use crate::focal_point::resources::FocalPoint;
 use crate::player::components::Player;
 use crate::utils::vec2_extensions::Vec2Ext;
@@ -6,7 +6,7 @@ use bevy::prelude::*;
 use bevy_ggrs::LocalPlayers;
 
 pub fn update_focal_point(
-    player_query: Query<(&Player, &Position)>,
+    player_query: Query<(&Player, &FloatingPosition)>,
     local_players: Res<LocalPlayers>,
     mut focal_point: ResMut<FocalPoint>,
 ) {

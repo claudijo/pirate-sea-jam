@@ -1,11 +1,11 @@
-use crate::floating_body::components::{Position, Yaw};
+use crate::floating_body::components::{FloatingPosition, Yaw};
 use crate::ocean::resources::Wave;
 use crate::utils::vec2_extensions::Vec2Ext;
 use bevy::prelude::*;
 use bevy_ggrs::prelude::*;
 
 pub fn float(
-    mut ship_query: Query<(&mut Transform, &Yaw, &Position), With<Rollback>>,
+    mut ship_query: Query<(&mut Transform, &Yaw, &FloatingPosition), With<Rollback>>,
     wave: Res<Wave>,
     time: Res<Time>,
 ) {
