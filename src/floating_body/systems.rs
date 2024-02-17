@@ -5,12 +5,12 @@ use bevy::prelude::*;
 use bevy_ggrs::prelude::*;
 
 pub fn float(
-    mut ship_query: Query<(&mut Transform, &Yaw, &FloatingPosition), With<Rollback>>,
+    mut floating_body_query: Query<(&mut Transform, &Yaw, &FloatingPosition), With<Rollback>>,
     wave: Res<Wave>,
     time: Res<Time>,
 ) {
     let elapsed_time = time.elapsed_seconds();
-    for (mut transform, yaw, position) in &mut ship_query {
+    for (mut transform, yaw, position) in &mut floating_body_query {
         let (next_position, normal) =
             wave.next_position_normal(position.0.extend_with_y(0.), wave.configs, elapsed_time);
 

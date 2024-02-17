@@ -1,10 +1,11 @@
 use crate::physics::components::{Damping, Mass, Particle, Velocity};
 use crate::physics::resources::Gravity;
 use bevy::prelude::*;
+use bevy_ggrs::Rollback;
 
 pub fn update_velocity(
     gravity: Res<Gravity>,
-    mut physics_query: Query<(&Mass, &Damping, &mut Velocity), With<Particle>>,
+    mut physics_query: Query<(&Mass, &Damping, &mut Velocity), With<Rollback>>,
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
@@ -16,7 +17,7 @@ pub fn update_velocity(
 }
 
 pub fn update_position(
-    mut physics_query: Query<(&Velocity, &mut Transform), With<Particle>>,
+    mut physics_query: Query<(&Velocity, &mut Transform), With<Rollback>>,
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
