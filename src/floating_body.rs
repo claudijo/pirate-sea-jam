@@ -1,6 +1,6 @@
 use crate::floating_body::components::{
-    checksum_floating_linear_velocity, checksum_floating_position, checksum_yaw, checksum_yaw_rotation_speed,
-    FloatingLinearVelocity, FloatingPosition, Yaw, YawRotationalSpeed,
+    checksum_floating_linear_velocity, checksum_floating_position, checksum_yaw,
+    checksum_yaw_rotation_speed, FloatingLinearVelocity, FloatingPosition, Yaw, YawRotationalSpeed,
 };
 use crate::floating_body::systems::float;
 use crate::player::systems::update_player_position;
