@@ -13,10 +13,10 @@ mod materials;
 pub mod resources;
 mod systems;
 
-pub const OCEAN_TILE_SIZE: f32 = 100.;
+pub const OCEAN_TILE_SIZE: f32 = 160.;
 
 // Needs to be odd
-const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 9;
+const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 15;
 
 const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS * 2 + 1;
 
