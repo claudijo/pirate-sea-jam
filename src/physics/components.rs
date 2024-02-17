@@ -1,4 +1,4 @@
-use crate::utils::hash::{hash_f32_number, hash_vec2, hash_vec3};
+use crate::utils::hash::{hash_f32_number, hash_vec3};
 use bevy::prelude::*;
 
 #[derive(Component, Reflect, Clone, Copy, Default)]
@@ -30,6 +30,16 @@ impl Default for Damping {
     }
 }
 
+#[derive(Component, Reflect, Clone, Copy)]
+#[reflect(Component)]
+pub struct Mass(pub f32);
+
+impl Default for Mass {
+    fn default() -> Self {
+        Mass(1.) // 1kg
+    }
+}
+
 pub fn checksum_velocity(value: &Velocity) -> u64 {
     hash_vec3(value.0)
 }
@@ -39,5 +49,9 @@ pub fn checksum_acceleration(value: &Acceleration) -> u64 {
 }
 
 pub fn checksum_damping(value: &Damping) -> u64 {
+    hash_f32_number(value.0)
+}
+
+pub fn checksum_mass(value: &Mass) -> u64 {
     hash_f32_number(value.0)
 }

@@ -1,6 +1,6 @@
 use crate::assets::resources::FontAssets;
 use crate::game_state::states::GameState;
-use crate::menu::resources::{StartGameButton, StartMenuLayout};
+use crate::menu::components::{StartGameButton, StartMenuLayout};
 use crate::menu::{START_BUTTON_HOVER, START_BUTTON_NORMAL};
 use bevy::prelude::*;
 

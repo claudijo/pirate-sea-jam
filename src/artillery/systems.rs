@@ -2,11 +2,11 @@ use crate::artillery::components::{ArtilleryReady, Projectile};
 use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
 use crate::inputs::fire;
-use crate::physics::components::{Acceleration, Damping, Particle, Velocity};
+use crate::physics::bundles::ParticleBundle;
+use crate::physics::components::{Velocity};
 use crate::player::components::Player;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs};
-use crate::physics::bundles::ParticleBundle;
 
 // Check https://johanhelsing.studio/posts/extreme-bevy-3
 // Add this in the rollback schedule (if a bullet fired by the other player was mis-predicted, this
