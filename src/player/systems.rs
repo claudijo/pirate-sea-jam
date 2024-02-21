@@ -1,5 +1,5 @@
 use crate::args::resources::Args;
-use crate::artillery::components::ArtilleryReady;
+use crate::artillery::components::{Artillery, ArtilleryReady};
 use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
 use crate::floating_body::components::{
@@ -118,6 +118,7 @@ pub fn spawn_players(
                                         .with_rotation(Quat::from_rotation_y(cannon_y_rotation)),
                                         ..default()
                                     },
+                                    Artillery { muzzle_velocity: 18. },
                                     Name::new(name),
                                 ))
                                 .add_rollback();

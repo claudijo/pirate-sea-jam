@@ -3,7 +3,7 @@ use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
 use crate::inputs::fire;
 use crate::physics::bundles::ParticleBundle;
-use crate::physics::components::{Velocity};
+use crate::physics::components::Velocity;
 use crate::player::components::Player;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs};
@@ -17,6 +17,7 @@ pub fn fire_artillery(
     mut player_query: Query<(&mut ArtilleryReady, &Transform, &Player)>,
     model_assets: Res<ModelAssets>,
 ) {
+    // TODO: Query for artillery. Sort out what cannons are to be fired. Use muzzle_velocity for projectiles.
     for (mut artillery_ready, transform, player) in &mut player_query {
         let (input, _) = inputs[player.handle];
         if fire(input) && artillery_ready.0 {

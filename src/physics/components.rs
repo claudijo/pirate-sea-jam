@@ -9,15 +9,9 @@ pub struct Particle;
 #[reflect(Component)]
 pub struct Velocity(pub Vec3);
 
-#[derive(Component, Reflect, Clone, Copy)]
+#[derive(Component, Reflect, Clone, Copy, Default)]
 #[reflect(Component)]
 pub struct Acceleration(pub Vec3);
-
-impl Default for Acceleration {
-    fn default() -> Self {
-        Acceleration(Vec3::NEG_Y * 15.)
-    }
-}
 
 //  A value of 0.999 might be perfect for damping (pp 50)
 #[derive(Component, Reflect, Clone, Copy)]
