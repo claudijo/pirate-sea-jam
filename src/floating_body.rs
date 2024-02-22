@@ -14,7 +14,7 @@ pub struct ShipPlugin;
 
 impl Plugin for ShipPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(GgrsSchedule, float.before(update_player_position));
+        app.add_systems(GgrsSchedule, float.after(update_player_position));
 
         // Component candidates for roll back
         app.rollback_component_with_copy::<FloatingLinearVelocity>();

@@ -1,4 +1,4 @@
-use crate::physics::components::{Acceleration, Damping, Mass, Particle, Velocity};
+use crate::physics::components::{Damping, ExternalForce, Mass, Particle, Velocity};
 use crate::physics::resources::Gravity;
 use bevy::prelude::*;
 use bevy_ggrs::Rollback;
@@ -9,7 +9,7 @@ pub fn integrate(
         (
             &Mass,
             &Damping,
-            &Acceleration,
+            &ExternalForce,
             &mut Velocity,
             &mut Transform,
         ),
@@ -18,7 +18,7 @@ pub fn integrate(
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
-    for (mass, damping, acceleration, mut velocity, mut transform) in &mut particle_query {
+    for (mass, damping, external_force, mut velocity, mut transform) in &mut particle_query {
         if mass.0 <= 0. {
             continue;
         }
@@ -27,7 +27,7 @@ pub fn integrate(
         transform.translation += velocity.0 * delta_time;
 
         // Work out the acceleration from the force.
-        let mut resulting_acceleration = acceleration.0;
+        let mut resulting_acceleration = external_force.0 / mass.0;
         resulting_acceleration += gravity.0;
 
         // Update linear velocity from the acceleration.

@@ -11,7 +11,7 @@ pub struct Velocity(pub Vec3);
 
 #[derive(Component, Reflect, Clone, Copy, Default)]
 #[reflect(Component)]
-pub struct Acceleration(pub Vec3);
+pub struct ExternalForce(pub Vec3);
 
 //  A value of 0.999 might be perfect for damping (pp 50)
 #[derive(Component, Reflect, Clone, Copy)]
@@ -38,7 +38,7 @@ pub fn checksum_velocity(value: &Velocity) -> u64 {
     hash_vec3(value.0)
 }
 
-pub fn checksum_acceleration(value: &Acceleration) -> u64 {
+pub fn checksum_external_force(value: &ExternalForce) -> u64 {
     hash_vec3(value.0)
 }
 

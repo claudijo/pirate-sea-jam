@@ -3,6 +3,8 @@ use crate::artillery::systems::{fire_artillery, reload_artillery};
 use crate::player::systems::update_player_position;
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
+use crate::floating_body::systems::float;
+use crate::physics::systems::integrate;
 
 pub mod components;
 mod systems;
@@ -20,7 +22,9 @@ impl Plugin for ArtilleryPlugin {
                 reload_artillery,
                 fire_artillery
                     .after(update_player_position)
-                    .after(reload_artillery),
+                    .after(reload_artillery)
+                    .after(integrate)
+                    .after(float),
             ),
         );
     }
