@@ -4,6 +4,9 @@ use bevy::prelude::*;
 pub struct ArtilleryReady(pub bool);
 
 #[derive(Component, Clone, Copy, Default)]
+pub struct ArtilleryAiming(pub bool);
+
+#[derive(Component, Clone, Copy, Default)]
 pub struct Projectile;
 
 #[derive(Component, Clone, Copy, Default)]

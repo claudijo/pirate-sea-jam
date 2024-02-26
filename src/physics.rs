@@ -1,5 +1,8 @@
 use crate::floating_body::systems::float;
-use crate::physics::components::{checksum_damping, checksum_external_force, checksum_mass, checksum_velocity, Damping, ExternalForce, Mass, Particle, Velocity};
+use crate::physics::components::{
+    checksum_damping, checksum_external_force, checksum_mass, checksum_velocity, Damping,
+    ExternalForce, Mass, Particle, Velocity,
+};
 use crate::physics::resources::Gravity;
 use crate::physics::systems::{integrate, update_position, update_velocity};
 use bevy::prelude::*;
