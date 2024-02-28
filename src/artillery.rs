@@ -1,7 +1,8 @@
 use crate::artillery::components::{ArtilleryAiming, ArtilleryReady};
 use crate::artillery::systems::{
     fire_artillery, register_start_aim_artillery_animations,
-    register_stop_aim_artillery_animations, reload_artillery,
+    register_stop_aim_artillery_animations, reload_artillery, start_aim_artillery,
+    stop_aim_and_fire_artillery,
 };
 use crate::floating_body::systems::float;
 use crate::physics::systems::integrate;
@@ -13,10 +14,10 @@ pub mod components;
 mod resources;
 mod systems;
 
-const PORT_BACK_CANNON_TAG: &str = "Port back cannon";
-const PORT_FRONT_CANNON_TAG: &str = "Port front cannon";
-const STARBOARD_BACK_CANNON_TAG: &str = "Starboard back cannon";
-const STARBOARD_FRONT_CANNON_TAG: &str = "Starboard front cannon";
+pub const PORT_BACK_CANNON_TAG: &str = "Port back cannon";
+pub const PORT_FRONT_CANNON_TAG: &str = "Port front cannon";
+pub const STARBOARD_BACK_CANNON_TAG: &str = "Starboard back cannon";
+pub const STARBOARD_FRONT_CANNON_TAG: &str = "Starboard front cannon";
 
 pub struct ArtilleryPlugin;
 
@@ -38,6 +39,8 @@ impl Plugin for ArtilleryPlugin {
             GgrsSchedule,
             (
                 reload_artillery,
+                start_aim_artillery.after(integrate).after(float),
+                stop_aim_and_fire_artillery.after(start_aim_artillery),
                 fire_artillery
                     .after(update_player_position)
                     .after(reload_artillery)

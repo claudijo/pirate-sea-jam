@@ -19,6 +19,7 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs, Rollback};
 use std::f32::consts::{E, PI, TAU};
+use crate::artillery::{PORT_BACK_CANNON_TAG, PORT_FRONT_CANNON_TAG, STARBOARD_BACK_CANNON_TAG, STARBOARD_FRONT_CANNON_TAG};
 
 pub fn spawn_players(
     mut commands: Commands,
@@ -101,10 +102,10 @@ pub fn spawn_players(
 
                         #[rustfmt::skip]
                             let cannons = [
-                            ([1.1769, 1.4593, -0.5485], PI, "Cannon port back"),
-                            ([1.13846, 1.54822, 1.54781], PI, "Cannon port front"),
-                            ([-1.1769, 1.4593, -0.5485], 0., "Cannon starboard back"),
-                            ([-1.13846, 1.54822, 1.54781], 0., "Cannon starboard back"),
+                            ([1.1769, 1.4593, -0.5485], PI, PORT_BACK_CANNON_TAG),
+                            ([1.13846, 1.54822, 1.54781], PI, PORT_FRONT_CANNON_TAG),
+                            ([-1.1769, 1.4593, -0.5485], 0., STARBOARD_BACK_CANNON_TAG),
+                            ([-1.13846, 1.54822, 1.54781], 0., STARBOARD_FRONT_CANNON_TAG),
                         ];
 
                         for (cannon_transform, cannon_y_rotation, name) in cannons {
@@ -121,7 +122,9 @@ pub fn spawn_players(
                                     },
                                     Artillery {
                                         muzzle_velocity: 18.,
+                                        ..default()
                                     },
+                                    AnimationPlayer::default(),
                                     Name::new(name),
                                 ))
                                 .add_rollback();

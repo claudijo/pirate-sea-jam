@@ -1,4 +1,4 @@
-use crate::artillery::components::{ArtilleryReady, Projectile};
+use crate::artillery::components::{Artillery, ArtilleryAiming, ArtilleryReady, Projectile};
 use crate::artillery::resources::{EndAimArtilleryAnimationClips, StartAimArtilleryAnimationClips};
 use crate::artillery::{
     PORT_BACK_CANNON_TAG, PORT_FRONT_CANNON_TAG, STARBOARD_BACK_CANNON_TAG,
@@ -10,10 +10,12 @@ use crate::inputs::fire;
 use crate::physics::bundles::ParticleBundle;
 use crate::physics::components::Velocity;
 use crate::player::components::Player;
+use crate::utils::linear_algebra::is_facing;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs};
 use std::collections::HashMap;
 use std::f32::consts::PI;
+use std::time::Duration;
 
 // Check https://johanhelsing.studio/posts/extreme-bevy-3
 // Add this in the rollback schedule (if a bullet fired by the other player was mis-predicted, this
@@ -49,10 +51,6 @@ pub fn fire_artillery(
     }
 }
 
-pub fn start_aiming(inputs: Res<PlayerInputs<RollbackConfig>>) {}
-
-pub fn _fire_artillery() {}
-
 pub fn reload_artillery(
     inputs: Res<PlayerInputs<RollbackConfig>>,
     mut player_query: Query<(&mut ArtilleryReady, &Player)>,
@@ -61,6 +59,69 @@ pub fn reload_artillery(
         let (input, _) = inputs[player.handle];
         if !fire(input) && !artillery_ready.0 {
             artillery_ready.0 = true;
+        }
+    }
+}
+
+// Continue from https://github.com/claudijo/pirate-sea-jam/blob/infinite-ocean/src/systems/artillery.rs
+pub fn start_aim_artillery(
+    mut artillery_query: Query<(
+        &GlobalTransform,
+        &Name,
+        &mut Artillery,
+        &mut AnimationPlayer,
+    )>,
+    children_query: Query<&Children>,
+    mut player_query: Query<(Entity, &mut ArtilleryAiming, &Player)>,
+    inputs: Res<PlayerInputs<RollbackConfig>>,
+    animation_clips: Res<StartAimArtilleryAnimationClips>,
+) {
+    let dummy_closest_target = Vec3::ZERO;
+
+    for (ship_entity, mut artillery_aiming, player) in &mut player_query {
+        let (input, _) = inputs[player.handle];
+        if fire(input) && !artillery_aiming.0 {
+            println!("Start aiming");
+            artillery_aiming.0 = true;
+
+            for descendant in children_query.iter_descendants(ship_entity) {
+                if let Ok((global_transform, name, mut artillery, mut animation_player)) =
+                    artillery_query.get_mut(descendant)
+                {
+                    if is_facing(
+                        global_transform.left(),
+                        global_transform.translation(),
+                        dummy_closest_target,
+                    ) {
+                        if let Some(animation_clip_handle) =
+                            animation_clips.handles.get(name.as_str())
+                        {
+                            artillery.is_aiming = true;
+
+                            animation_player
+                                .play_with_transition(
+                                    animation_clip_handle.clone_weak(),
+                                    Duration::from_secs(0.6 as u64),
+                                )
+                                .repeat();
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub fn stop_aim_and_fire_artillery(
+    inputs: Res<PlayerInputs<RollbackConfig>>,
+    mut player_query: Query<(&mut ArtilleryAiming, &Player)>,
+    animation_clips: Res<EndAimArtilleryAnimationClips>,
+) {
+    for (mut artillery_aiming, player) in &mut player_query {
+        let (input, _) = inputs[player.handle];
+        if !fire(input) && artillery_aiming.0 {
+            println!("stop aiming and fire");
+            artillery_aiming.0 = false;
         }
     }
 }

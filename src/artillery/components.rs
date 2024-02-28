@@ -12,4 +12,5 @@ pub struct Projectile;
 #[derive(Component, Clone, Copy, Default)]
 pub struct Artillery {
     pub muzzle_velocity: f32,
+    pub is_aiming: bool,
 }
