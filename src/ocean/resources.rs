@@ -10,7 +10,6 @@ pub struct Wave {
 }
 
 impl Wave {
-    #[allow(dead_code)]
     pub fn next_position(&self, mut position: Vec3, waves: [Vec4; 4], time: f32) -> Vec3 {
         let time = time * self.time_scale;
         position.y = 0.; // Neutral water level
@@ -53,7 +52,6 @@ impl Wave {
         (position, normal)
     }
 
-    #[allow(dead_code)]
     pub fn height(&self, point: Vec3, waves: [Vec4; 4], time: f32) -> f32 {
         water_mechanics::wave_height(
             point,

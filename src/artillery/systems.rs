@@ -6,64 +6,21 @@ use crate::artillery::{
 };
 use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
+use crate::floating_body::components::FloatingLinearVelocity;
 use crate::inputs::fire;
 use crate::physics::bundles::ParticleBundle;
 use crate::physics::components::Velocity;
 use crate::player::components::Player;
 use crate::utils::linear_algebra::is_facing;
+use crate::utils::vec2_extensions::Vec2Ext;
+use bevy::animation::RepeatAnimation;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs};
 use std::collections::HashMap;
 use std::f32::consts::PI;
 use std::time::Duration;
+use crate::ocean::resources::Wave;
 
-// Check https://johanhelsing.studio/posts/extreme-bevy-3
-// Add this in the rollback schedule (if a bullet fired by the other player was mis-predicted, this
-// is obviously something we’d want to correct!)
-pub fn fire_artillery(
-    mut commands: Commands,
-    inputs: Res<PlayerInputs<RollbackConfig>>,
-    mut player_query: Query<(&mut ArtilleryReady, &Transform, &Player)>,
-    model_assets: Res<ModelAssets>,
-) {
-    // TODO: Query for artillery. Sort out what cannons are to be fired. Use muzzle_velocity for projectiles.
-    for (mut artillery_ready, transform, player) in &mut player_query {
-        let (input, _) = inputs[player.handle];
-        if fire(input) && artillery_ready.0 {
-            commands
-                .spawn((
-                    SceneBundle {
-                        scene: model_assets.scene_handles["cannon_ball.glb"].clone(),
-                        transform: Transform::from_translation(transform.translation),
-                        ..default()
-                    },
-                    Name::new("Projectile"),
-                    Projectile,
-                    ParticleBundle {
-                        velocity: Velocity(Vec3::Y * 18.),
-                        ..default()
-                    },
-                ))
-                .add_rollback();
-
-            artillery_ready.0 = false;
-        }
-    }
-}
-
-pub fn reload_artillery(
-    inputs: Res<PlayerInputs<RollbackConfig>>,
-    mut player_query: Query<(&mut ArtilleryReady, &Player)>,
-) {
-    for (mut artillery_ready, player) in &mut player_query {
-        let (input, _) = inputs[player.handle];
-        if !fire(input) && !artillery_ready.0 {
-            artillery_ready.0 = true;
-        }
-    }
-}
-
-// Continue from https://github.com/claudijo/pirate-sea-jam/blob/infinite-ocean/src/systems/artillery.rs
 pub fn start_aim_artillery(
     mut artillery_query: Query<(
         &GlobalTransform,
@@ -81,7 +38,6 @@ pub fn start_aim_artillery(
     for (ship_entity, mut artillery_aiming, player) in &mut player_query {
         let (input, _) = inputs[player.handle];
         if fire(input) && !artillery_aiming.0 {
-            println!("Start aiming");
             artillery_aiming.0 = true;
 
             for descendant in children_query.iter_descendants(ship_entity) {
@@ -113,15 +69,78 @@ pub fn start_aim_artillery(
 }
 
 pub fn stop_aim_and_fire_artillery(
+    mut commands: Commands,
+    model_assets: Res<ModelAssets>,
     inputs: Res<PlayerInputs<RollbackConfig>>,
-    mut player_query: Query<(&mut ArtilleryAiming, &Player)>,
+    mut player_query: Query<(&mut ArtilleryAiming, &Player, &FloatingLinearVelocity)>,
+    mut artillery_query: Query<(
+        &GlobalTransform,
+        &Name,
+        &mut Artillery,
+        &mut AnimationPlayer,
+    )>,
     animation_clips: Res<EndAimArtilleryAnimationClips>,
 ) {
-    for (mut artillery_aiming, player) in &mut player_query {
+    for (mut artillery_aiming, player, floating_linear_velocity) in &mut player_query {
         let (input, _) = inputs[player.handle];
         if !fire(input) && artillery_aiming.0 {
-            println!("stop aiming and fire");
             artillery_aiming.0 = false;
+
+            for (global_transform, name, mut artillery, mut animation_player) in
+                &mut artillery_query
+            {
+                if artillery.is_aiming {
+                    artillery.is_aiming = false;
+
+                    if let Some(animation_clip_handle) = animation_clips.handles.get(name.as_str())
+                    {
+                        animation_player
+                            .set_repeat(RepeatAnimation::Never)
+                            .play_with_transition(
+                                animation_clip_handle.clone_weak(),
+                                Duration::from_secs(1.2 as u64),
+                            );
+                    }
+
+                    // Spawn projectile
+                    commands
+                        .spawn((
+                            SceneBundle {
+                                scene: model_assets.scene_handles["cannon_ball.glb"].clone(),
+                                transform: Transform::from_translation(
+                                    global_transform.translation(),
+                                ),
+                                ..default()
+                            },
+                            Name::new("Projectile"),
+                            Projectile,
+                            ParticleBundle {
+                                velocity: Velocity(
+                                    global_transform.left() * artillery.muzzle_velocity
+                                        + floating_linear_velocity.0.extend_with_y(0.),
+                                ),
+                                ..default()
+                            },
+                        ))
+                        .add_rollback();
+                }
+            }
+        }
+    }
+}
+
+pub fn despawn_projectile(
+    mut commands: Commands,
+    projectile_query: Query<(Entity, &GlobalTransform), With<Projectile>>,
+    wave: Res<Wave>,
+    time: Res<Time>,
+) {
+    let elapsed_time = time.elapsed().as_secs_f32();
+    for (entity, global_transform) in &projectile_query {
+        let translation = global_transform.translation();
+        let wave_height = wave.height(translation, wave.configs, elapsed_time);
+        if translation.y + 2. < wave_height {
+            commands.entity(entity).despawn_recursive();
         }
     }
 }

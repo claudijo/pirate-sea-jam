@@ -1,5 +1,9 @@
 use crate::args::resources::Args;
 use crate::artillery::components::{Artillery, ArtilleryAiming, ArtilleryReady};
+use crate::artillery::{
+    PORT_BACK_CANNON_TAG, PORT_FRONT_CANNON_TAG, STARBOARD_BACK_CANNON_TAG,
+    STARBOARD_FRONT_CANNON_TAG,
+};
 use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
 use crate::floating_body::components::{
@@ -19,7 +23,6 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs, Rollback};
 use std::f32::consts::{E, PI, TAU};
-use crate::artillery::{PORT_BACK_CANNON_TAG, PORT_FRONT_CANNON_TAG, STARBOARD_BACK_CANNON_TAG, STARBOARD_FRONT_CANNON_TAG};
 
 pub fn spawn_players(
     mut commands: Commands,
