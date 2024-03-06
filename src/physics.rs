@@ -4,7 +4,7 @@ use crate::physics::components::{
     ExternalForce, Mass, Particle, Velocity,
 };
 use crate::physics::resources::Gravity;
-use crate::physics::systems::{integrate, update_position, update_velocity};
+use crate::physics::systems::{update_position, update_velocity};
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
 
@@ -21,8 +21,7 @@ impl Plugin for PhysicsPlugin {
 
         app.add_systems(
             GgrsSchedule,
-            // (update_velocity, update_position).chain().before(float),
-            (integrate).chain().before(float),
+            (update_velocity, update_position).chain().before(float),
         );
 
         app.rollback_component_with_copy::<Particle>();

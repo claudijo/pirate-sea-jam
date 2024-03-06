@@ -8,6 +8,7 @@ use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
 use crate::floating_body::components::FloatingLinearVelocity;
 use crate::inputs::fire;
+use crate::ocean::resources::Wave;
 use crate::physics::bundles::ParticleBundle;
 use crate::physics::components::Velocity;
 use crate::player::components::Player;
@@ -19,7 +20,6 @@ use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs};
 use std::collections::HashMap;
 use std::f32::consts::PI;
 use std::time::Duration;
-use crate::ocean::resources::Wave;
 
 pub fn start_aim_artillery(
     mut artillery_query: Query<(

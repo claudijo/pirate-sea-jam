@@ -1,8 +1,9 @@
 use crate::artillery::components::{ArtilleryAiming, ArtilleryReady};
-use crate::artillery::systems::{despawn_projectile, register_start_aim_artillery_animations, register_stop_aim_artillery_animations, start_aim_artillery, stop_aim_and_fire_artillery};
+use crate::artillery::systems::{
+    despawn_projectile, register_start_aim_artillery_animations,
+    register_stop_aim_artillery_animations, start_aim_artillery, stop_aim_and_fire_artillery,
+};
 use crate::floating_body::systems::float;
-use crate::physics::systems::integrate;
-use crate::player::systems::update_player_position;
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
 
@@ -35,7 +36,7 @@ impl Plugin for ArtilleryPlugin {
             GgrsSchedule,
             (
                 // reload_artillery,
-                start_aim_artillery.after(integrate).after(float),
+                start_aim_artillery.after(float),
                 stop_aim_and_fire_artillery.after(start_aim_artillery),
                 despawn_projectile,
                 // fire_artillery
