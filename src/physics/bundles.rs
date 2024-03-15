@@ -1,4 +1,7 @@
-use crate::physics::components::{AngularDamping, AngularVelocity, ExternalForce, ExternalTorque, Inertia, LinearDamping, LinearVelocity, Mass};
+use crate::physics::components::{
+    AngularDamping, AngularVelocity, ExternalForce, ExternalTorque, Inertia, LinearDamping,
+    LinearVelocity, Mass,
+};
 use bevy::prelude::*;
 
 #[derive(Bundle, Default)]

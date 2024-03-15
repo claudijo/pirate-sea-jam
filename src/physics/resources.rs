@@ -8,3 +8,13 @@ impl Default for Gravity {
         Gravity(Vec3::NEG_Y * 15.)
     }
 }
+
+#[derive(Resource)]
+pub struct LiquidDensity(pub f32);
+
+impl Default for LiquidDensity {
+    fn default() -> Self {
+        // 1000 kg per cubic meter.
+        LiquidDensity(1000.)
+    }
+}

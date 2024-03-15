@@ -21,6 +21,15 @@ pub struct ExternalForce(pub Vec3);
 #[reflect(Component)]
 pub struct ExternalTorque(pub Vec3);
 
+#[derive(Component, Reflect, Clone, Copy, Default)]
+#[reflect(Component)]
+pub struct Buoy {
+    pub volume: f32,
+    pub water_height: f32,
+    // The maximum submersion depth of the object before it generates its maximum buoyancy force.
+    pub max_depth: f32,
+}
+
 // The inertia tensor, unlike the other variables that
 // define a rigid body, is given in body space.
 #[derive(Component, Reflect, Clone, Copy, Default)]

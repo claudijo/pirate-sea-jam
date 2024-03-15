@@ -3,7 +3,10 @@ use crate::focal_point::resources::FocalPoint;
 use crate::game_state::states::GameState;
 use crate::ocean::materials::StandardOceanMaterial;
 use crate::ocean::resources::Wave;
-use crate::ocean::systems::{spawn_ocean, sync_ocean_tiles_center_offset, sync_shader_time};
+use crate::ocean::systems::{
+    spawn_ocean, sync_ocean_tiles_center_offset, sync_shader_time, update_buoy_water_height,
+};
+use crate::physics::systems::update_buoyant_force;
 use bevy::asset::load_internal_asset;
 use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
@@ -92,5 +95,9 @@ impl Plugin for OceanPlugin {
         );
 
         app.add_systems(GgrsSchedule, sync_shader_time.before(float));
+        app.add_systems(
+            GgrsSchedule,
+            update_buoy_water_height.before(update_buoyant_force),
+        );
     }
 }

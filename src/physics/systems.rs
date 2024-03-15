@@ -1,9 +1,9 @@
-use bevy::math::Mat3A;
+use crate::ocean::resources::Wave;
 use crate::physics::components::{
-    AngularDamping, AngularVelocity, ExternalForce, ExternalTorque, Inertia,
-    LinearDamping, LinearVelocity, Mass,
+    AngularDamping, AngularVelocity, Buoy, ExternalForce, ExternalTorque, Inertia, LinearDamping,
+    LinearVelocity, Mass,
 };
-use crate::physics::resources::Gravity;
+use crate::physics::resources::{Gravity, LiquidDensity};
 use bevy::prelude::*;
 use bevy_ggrs::Rollback;
 
@@ -92,5 +92,30 @@ pub fn update_position(
 
         // Update linear position
         transform.translation += velocity.0 * delta_time;
+    }
+}
+
+pub fn update_buoyant_force(
+    buoy_query: Query<(Entity, &Buoy, &GlobalTransform, &Transform)>,
+    mut floating_body_query: Query<&mut ExternalForce>,
+    parent_query: Query<&Parent>,
+    liquid_density: Res<LiquidDensity>,
+) {
+    for (entity, buoy, global_transform, transform) in &buoy_query {
+        let submerged_proportion =
+            (global_transform.translation().y - buoy.water_height - buoy.max_depth)
+                / (-2. * buoy.max_depth);
+
+        let force_magnitude = match submerged_proportion {
+            s if s <= 0. => 0.,
+            s if s >= 1. => buoy.volume * liquid_density.0,
+            _ => submerged_proportion * buoy.volume * liquid_density.0,
+        };
+
+        for ancestor in parent_query.iter_ancestors(entity) {
+            if let Ok(mut external_force) = floating_body_query.get_mut(ancestor) {
+                external_force.0 = Vec3::Y * force_magnitude;
+            }
+        }
     }
 }

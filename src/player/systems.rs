@@ -10,6 +10,8 @@ use crate::floating_body::components::{
     Controls, FloatingLinearVelocity, FloatingPosition, Yaw, YawRotationalSpeed,
 };
 use crate::inputs::turn_action_from_input;
+use crate::physics::bundles::{ParticleBundle, SpindleBundle};
+use crate::physics::components::{AngularVelocity, Buoy, Inertia, LinearDamping, Mass};
 use crate::player::components::{Flag, Helm, Player};
 use crate::player::{
     ANGULAR_ACCELERATION, ANGULAR_DAMPING, LINEAR_ACCELERATION, LINEAR_DAMPING, MAX_ANGULAR_SPEED,
@@ -23,20 +25,21 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs, Rollback};
 use std::f32::consts::{E, PI, TAU};
-use crate::physics::bundles::SpindleBundle;
-use crate::physics::components::{AngularVelocity, Inertia};
+use crate::ocean::resources::Wave;
 
 pub fn spawn_players(
     mut commands: Commands,
     args: Res<Args>,
     model_assets: Res<ModelAssets>,
     mut assets: ResMut<Assets<Mesh>>,
+    wave: Res<Wave>,
+    time: Res<Time>,
 ) {
     let placement_circle_radius = 5.;
     for handle in 0..args.num_players {
         let placement_angle = handle as f32 / args.num_players as f32 * 2. * PI;
         let x = placement_circle_radius * placement_angle.cos();
-        let y = placement_circle_radius * placement_angle.sin();
+        let z = placement_circle_radius * placement_angle.sin();
 
         // Duplicate vertices once for flag mesh here, which will facilitate recalculating normals when animating the
         // flag later on, even if accessing the mesh through the scene asset
@@ -46,9 +49,9 @@ pub fn spawn_players(
 
         commands
             .spawn((
-                SpatialBundle::default(),
+                SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, 0., z))),
                 Player { handle },
-                FloatingPosition(Vec2::new(x, y)),
+                FloatingPosition(Vec2::new(x, z)),
                 Yaw::default(),
                 Controls::default(),
                 FloatingLinearVelocity::default(),
@@ -57,12 +60,27 @@ pub fn spawn_players(
                 ArtilleryAiming::default(),
                 Name::new("Ship"),
                 SpindleBundle {
-                    angular_velocity: AngularVelocity(Vec3::X),
                     inertia: Inertia::ellipsoid(1., 2., 0.5, 1.),
+                    ..default()
+                },
+                ParticleBundle {
+                    mass: Mass(25.),
+                    linear_damping: LinearDamping(0.25),
                     ..default()
                 },
             ))
             .with_children(|child_builder| {
+                child_builder
+                    .spawn((
+                        TransformBundle::default(),
+                        Buoy {
+                            volume: 0.8,
+                            max_depth: 0.5,
+                            ..default()
+                        },
+                    ))
+                    .add_rollback();
+
                 child_builder
                     .spawn((
                         SceneBundle {

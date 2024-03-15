@@ -7,9 +7,11 @@ use crate::ocean::resources::Wave;
 use crate::ocean::{
     OCEAN_PRIMARY_TILE_SUBDIVISIONS, OCEAN_SECONDARY_TILE_SUBDIVISIONS, OCEAN_TILE_SIZE,
 };
+use crate::physics::components::Buoy;
 use bevy::math::Vec3A;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
+use bevy_ggrs::Rollback;
 
 #[derive(Clone, Copy)]
 pub enum Tier {
@@ -156,5 +158,16 @@ pub fn sync_ocean_tiles_center_offset(
 pub fn sync_shader_time(time: Res<Time>, mut materials: ResMut<Assets<StandardOceanMaterial>>) {
     for (_, material) in materials.iter_mut() {
         material.extension.rollback_time.elapsed_seconds = time.elapsed_seconds();
+    }
+}
+
+pub fn update_buoy_water_height(
+    mut buoy_query: Query<(&GlobalTransform, &mut Buoy), With<Rollback>>,
+    wave: Res<Wave>,
+    time: Res<Time>,
+) {
+    let elapsed_time = time.elapsed_seconds();
+    for (global_transform, mut buoy) in &mut buoy_query {
+        buoy.water_height = wave.height(global_transform.translation(), wave.configs, elapsed_time);
     }
 }
