@@ -43,3 +43,19 @@ pub fn hash_vec3(value: Vec3) -> u64 {
     #[allow(clippy::manual_hash_one)]
     hasher.finish()
 }
+
+pub fn hash_quat(value: Quat) -> u64 {
+    assert!(
+        value.is_finite(),
+        "Hashing is not stable for Quaternion with NaN f32 values."
+    );
+
+    let mut hasher = FixedState.build_hasher();
+    value.x.to_bits().hash(&mut hasher);
+    value.y.to_bits().hash(&mut hasher);
+    value.z.to_bits().hash(&mut hasher);
+    value.w.to_bits().hash(&mut hasher);
+
+    #[allow(clippy::manual_hash_one)]
+    hasher.finish()
+}

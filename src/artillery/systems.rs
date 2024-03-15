@@ -10,7 +10,7 @@ use crate::floating_body::components::FloatingLinearVelocity;
 use crate::inputs::fire;
 use crate::ocean::resources::Wave;
 use crate::physics::bundles::ParticleBundle;
-use crate::physics::components::Velocity;
+use crate::physics::components::LinearVelocity;
 use crate::player::components::Player;
 use crate::utils::linear_algebra::is_facing;
 use crate::utils::vec2_extensions::Vec2Ext;
@@ -115,7 +115,7 @@ pub fn stop_aim_and_fire_artillery(
                             Name::new("Projectile"),
                             Projectile,
                             ParticleBundle {
-                                velocity: Velocity(
+                                linear_velocity: LinearVelocity(
                                     global_transform.left() * artillery.muzzle_velocity
                                         + floating_linear_velocity.0.extend_with_y(0.),
                                 ),

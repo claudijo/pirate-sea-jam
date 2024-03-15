@@ -1,10 +1,14 @@
 use crate::floating_body::systems::float;
 use crate::physics::components::{
-    checksum_damping, checksum_external_force, checksum_mass, checksum_velocity, Damping,
-    ExternalForce, Mass, Particle, Velocity,
+    checksum_angular_velocity, checksum_bending_spring_orientation,
+    checksum_bending_spring_rest_orientation, checksum_damping, checksum_external_force,
+    checksum_linear_velocity, checksum_mass, checksum_spring_damping, checksum_spring_stiffness,
+    checksum_torque_impulse, AngularVelocity, BendingSpringOrientation,
+    BendingSpringRestOrientation, ExternalForce, LinearDamping, LinearVelocity, Mass,
+    SpringDamping, SpringStiffness, TorqueImpulse,
 };
 use crate::physics::resources::Gravity;
-use crate::physics::systems::{update_position, update_velocity};
+use crate::physics::systems::{update_angular_velocity, update_linear_velocity, update_orientation, update_position};
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
 
@@ -21,18 +25,31 @@ impl Plugin for PhysicsPlugin {
 
         app.add_systems(
             GgrsSchedule,
-            (update_velocity, update_position).chain().before(float),
+            (update_angular_velocity, update_orientation, update_linear_velocity, update_position)
+                .chain()
+                .before(float),
         );
 
-        app.rollback_component_with_copy::<Particle>();
-        app.rollback_component_with_copy::<Velocity>();
+        app.rollback_component_with_copy::<LinearVelocity>();
         app.rollback_component_with_copy::<ExternalForce>();
-        app.rollback_component_with_copy::<Damping>();
-        app.rollback_component_with_copy::<Mass>();
+        app.rollback_component_with_copy::<LinearDamping>();
+        app.rollback_component_with_copy::<SpringStiffness>();
+        app.rollback_component_with_copy::<SpringDamping>();
+        app.rollback_component_with_copy::<BendingSpringRestOrientation>();
+        app.rollback_component_with_copy::<BendingSpringOrientation>();
+        app.rollback_component_with_copy::<TorqueImpulse>();
 
-        app.checksum_component::<Velocity>(checksum_velocity);
+        app.checksum_component::<LinearVelocity>(checksum_linear_velocity);
         app.checksum_component::<ExternalForce>(checksum_external_force);
-        app.checksum_component::<Damping>(checksum_damping);
+        app.checksum_component::<LinearDamping>(checksum_damping);
         app.checksum_component::<Mass>(checksum_mass);
+        app.checksum_component::<AngularVelocity>(checksum_angular_velocity);
+        app.checksum_component::<TorqueImpulse>(checksum_torque_impulse);
+        app.checksum_component::<SpringStiffness>(checksum_spring_stiffness);
+        app.checksum_component::<SpringDamping>(checksum_spring_damping);
+        app.checksum_component::<BendingSpringRestOrientation>(
+            checksum_bending_spring_rest_orientation,
+        );
+        app.checksum_component::<BendingSpringOrientation>(checksum_bending_spring_orientation);
     }
 }
