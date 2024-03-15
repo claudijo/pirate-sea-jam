@@ -25,7 +25,7 @@ impl Plugin for PhysicsPlugin {
 
         app.add_systems(
             GgrsSchedule,
-            (update_angular_velocity, update_orientation, update_linear_velocity, update_position)
+            (update_linear_velocity, update_position, update_angular_velocity, update_orientation)
                 .chain()
                 .before(float),
         );

@@ -28,7 +28,6 @@ pub fn update_angular_velocity(
             continue;
         }
 
-        // TODO: correct order? Correct at all?
         let world_coordinates_inertia = inertia.0 * Mat3::from(global_transform.affine().matrix3);
         let angular_acceleration = world_coordinates_inertia.inverse() * external_torque.0;
 
@@ -51,7 +50,7 @@ pub fn update_orientation(
         }
 
         // Update angular position
-        transform.rotation *= Quat::from_scaled_axis(angular_velocity.0) * delta_time / 2.;
+        transform.rotation *= Quat::from_scaled_axis(angular_velocity.0 * delta_time);
     }
 }
 

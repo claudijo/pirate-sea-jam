@@ -23,6 +23,8 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs, Rollback};
 use std::f32::consts::{E, PI, TAU};
+use crate::physics::bundles::SpindleBundle;
+use crate::physics::components::{AngularVelocity, Inertia};
 
 pub fn spawn_players(
     mut commands: Commands,
@@ -54,6 +56,11 @@ pub fn spawn_players(
                 ArtilleryReady::default(),
                 ArtilleryAiming::default(),
                 Name::new("Ship"),
+                SpindleBundle {
+                    angular_velocity: AngularVelocity(Vec3::X),
+                    inertia: Inertia::ellipsoid(1., 2., 0.5, 1.),
+                    ..default()
+                },
             ))
             .with_children(|child_builder| {
                 child_builder
