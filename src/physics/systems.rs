@@ -18,7 +18,6 @@ pub fn update_angular_velocity(
         ),
         With<Rollback>,
     >,
-    parent_query: Query<&Transform>,
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
