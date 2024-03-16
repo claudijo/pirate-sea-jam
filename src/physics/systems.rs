@@ -11,7 +11,6 @@ pub fn update_angular_velocity(
     mut physics_query: Query<
         (
             &GlobalTransform,
-            &Transform,
             &Inertia,
             &AngularDamping,
             &mut ExternalTorque,
