@@ -30,10 +30,10 @@ pub fn update_angular_velocity(
         }
 
         let world_coordinates_inertia = inertia.0 * Mat3::from(global_transform.affine().matrix3);
-        let angular_acceleration_2 = world_coordinates_inertia.inverse() * external_torque.0;
+        let angular_acceleration = world_coordinates_inertia.inverse() * external_torque.0;
 
         // Update linear velocity from the acceleration.
-        angular_velocity.0 += angular_acceleration_2 * delta_time;
+        angular_velocity.0 += angular_acceleration * delta_time;
 
         // Impose drag.
         angular_velocity.0 *= angular_damping.0.powf(delta_time);

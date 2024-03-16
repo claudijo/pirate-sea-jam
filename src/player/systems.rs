@@ -49,7 +49,7 @@ pub fn spawn_players(
 
         commands
             .spawn((
-                SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, 0., z)).with_rotation(Quat::from_rotation_z(3.))),
+                SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, 0., z))),
                 Player { handle },
                 FloatingPosition(Vec2::new(x, z)),
                 Yaw::default(),
@@ -71,51 +71,23 @@ pub fn spawn_players(
                 },
             ))
             .with_children(|child_builder| {
-
-                child_builder
-                    .spawn((
-                        TransformBundle::from_transform(Transform::from_xyz(1.25, 0.5, 1.25)),
-                        Buoy {
-                            volume: 0.25,
-                            max_depth: 0.5,
-                            ..default()
-                        },
-                    ))
-                    .add_rollback();
-
-                child_builder
-                    .spawn((
-                        TransformBundle::from_transform(Transform::from_xyz(-1.25, 0.5, 1.25)),
-                        Buoy {
-                            volume: 0.25,
-                            max_depth: 0.5,
-                            ..default()
-                        },
-                    ))
-                    .add_rollback();
-
-                child_builder
-                    .spawn((
-                        TransformBundle::from_transform(Transform::from_xyz(1.25, 0.5, -1.25)),
-                        Buoy {
-                            volume: 0.25,
-                            max_depth: 0.5,
-                            ..default()
-                        },
-                    ))
-                    .add_rollback();
-
-                child_builder
-                    .spawn((
-                        TransformBundle::from_transform(Transform::from_xyz(-1.25, 0.5, -1.25)),
-                        Buoy {
-                            volume: 0.25,
-                            max_depth: 0.5,
-                            ..default()
-                        },
-                    ))
-                    .add_rollback();
-
+                for buoy_translation in [
+                    Vec3::new(1.25, 0.5, 1.25),
+                    Vec3::new(-1.25, 0.5, 1.25),
+                    Vec3::new(1.25, 0.5, -1.25),
+                    Vec3::new(-1.25, 0.5, -1.25),
+                ] {
+                    child_builder
+                        .spawn((
+                            TransformBundle::from_transform(Transform::from_translation(buoy_translation)),
+                            Buoy {
+                                volume: 1.25,
+                                max_depth: 0.5,
+                                ..default()
+                            },
+                        ))
+                        .add_rollback();
+                }
 
                 child_builder
                     .spawn((
