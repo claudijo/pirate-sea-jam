@@ -104,7 +104,7 @@ pub fn update_position(
 // Assume buoys apply buoyant force to parent
 pub fn update_buoyant_force(
     buoy_query: Query<(&Parent, &Buoy, &GlobalTransform, &Transform)>,
-    mut floating_body_query: Query<(&mut ExternalForce, &mut ExternalTorque)>,
+    mut floating_body_query: Query<(&GlobalTransform, &mut ExternalForce, &mut ExternalTorque)>,
     liquid_density: Res<LiquidDensity>,
 ) {
     for (parent, buoy, global_transform, transform) in &buoy_query {
@@ -118,9 +118,9 @@ pub fn update_buoyant_force(
             _ => submerged_proportion * buoy.volume * liquid_density.0,
         };
 
-        if let Ok((mut external_force, mut external_torque)) = floating_body_query.get_mut(parent.get()) {
+        if let Ok((parent_global_transform, mut external_force, mut external_torque)) = floating_body_query.get_mut(parent.get()) {
             let force =  Vec3::Y * force_magnitude;
-            external_torque.0 += transform.translation.cross(force);
+            external_torque.0 += (global_transform.translation() - parent_global_transform.translation()).cross(force);
             external_force.0 += force;
         }
     }

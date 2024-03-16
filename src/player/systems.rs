@@ -49,7 +49,7 @@ pub fn spawn_players(
 
         commands
             .spawn((
-                SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, 0., z))),
+                SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, 5., z))),
                 Player { handle },
                 FloatingPosition(Vec2::new(x, z)),
                 Yaw::default(),
@@ -81,7 +81,7 @@ pub fn spawn_players(
                         .spawn((
                             TransformBundle::from_transform(Transform::from_translation(buoy_translation)),
                             Buoy {
-                                volume: 1.25,
+                                volume: 0.25,
                                 max_depth: 0.5,
                                 ..default()
                             },
