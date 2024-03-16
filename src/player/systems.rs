@@ -11,7 +11,7 @@ use crate::floating_body::components::{
 };
 use crate::inputs::turn_action_from_input;
 use crate::physics::bundles::{ParticleBundle, SpindleBundle};
-use crate::physics::components::{AngularVelocity, Buoy, Inertia, LinearDamping, Mass};
+use crate::physics::components::{AngularDamping, Buoy, Inertia, LinearDamping, Mass};
 use crate::player::components::{Flag, Helm, Player};
 use crate::player::{
     ANGULAR_ACCELERATION, ANGULAR_DAMPING, LINEAR_ACCELERATION, LINEAR_DAMPING, MAX_ANGULAR_SPEED,
@@ -49,7 +49,7 @@ pub fn spawn_players(
 
         commands
             .spawn((
-                SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, 0., z))),
+                SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, 0., z)).with_rotation(Quat::from_rotation_z(3.))),
                 Player { handle },
                 FloatingPosition(Vec2::new(x, z)),
                 Yaw::default(),
@@ -60,21 +60,23 @@ pub fn spawn_players(
                 ArtilleryAiming::default(),
                 Name::new("Ship"),
                 SpindleBundle {
-                    inertia: Inertia::ellipsoid(1., 2., 0.5, 1.),
+                    inertia: Inertia::cuboid(2., 3., 1., 40.),
+                    angular_damping: AngularDamping(0.5),
                     ..default()
                 },
                 ParticleBundle {
-                    mass: Mass(25.),
-                    linear_damping: LinearDamping(0.25),
+                    mass: Mass(40.),
+                    linear_damping: LinearDamping(0.5),
                     ..default()
                 },
             ))
             .with_children(|child_builder| {
+
                 child_builder
                     .spawn((
-                        TransformBundle::default(),
+                        TransformBundle::from_transform(Transform::from_xyz(1.25, 0.5, 1.25)),
                         Buoy {
-                            volume: 0.8,
+                            volume: 0.25,
                             max_depth: 0.5,
                             ..default()
                         },
@@ -83,9 +85,43 @@ pub fn spawn_players(
 
                 child_builder
                     .spawn((
+                        TransformBundle::from_transform(Transform::from_xyz(-1.25, 0.5, 1.25)),
+                        Buoy {
+                            volume: 0.25,
+                            max_depth: 0.5,
+                            ..default()
+                        },
+                    ))
+                    .add_rollback();
+
+                child_builder
+                    .spawn((
+                        TransformBundle::from_transform(Transform::from_xyz(1.25, 0.5, -1.25)),
+                        Buoy {
+                            volume: 0.25,
+                            max_depth: 0.5,
+                            ..default()
+                        },
+                    ))
+                    .add_rollback();
+
+                child_builder
+                    .spawn((
+                        TransformBundle::from_transform(Transform::from_xyz(-1.25, 0.5, -1.25)),
+                        Buoy {
+                            volume: 0.25,
+                            max_depth: 0.5,
+                            ..default()
+                        },
+                    ))
+                    .add_rollback();
+
+
+                child_builder
+                    .spawn((
                         SceneBundle {
                             scene: model_assets.scene_handles["medium_hull.glb"].clone(),
-                            transform: Transform::from_xyz(0., -0.5, 0.),
+                            transform: Transform::from_xyz(0., 0., 0.),
                             ..default()
                         },
                         Name::new("Hull"),

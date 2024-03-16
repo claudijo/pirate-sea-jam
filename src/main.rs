@@ -22,6 +22,7 @@ use crate::orbiting_camera::OrbitingCameraPlugin;
 use crate::physics::PhysicsPlugin;
 use crate::sky_box::SkyBoxPlugin;
 use crate::sync_test::SyncTestPlugin;
+use crate::widget_debug::WidgetDebugPlugin;
 use crate::wind::WindPlugin;
 
 mod args;
@@ -46,6 +47,7 @@ mod stats;
 mod sync_test;
 mod utils;
 mod wind;
+mod widget_debug;
 
 fn main() {
     let mut app = App::new();
@@ -86,6 +88,7 @@ fn main() {
     app.add_plugins(InstructionsPlugin);
     app.add_plugins(MenuPlugin);
     app.add_plugins(PhysicsPlugin);
+    app.add_plugins(WidgetDebugPlugin);
 
     app.register_type::<FloatingLinearVelocity>();
     app.register_type::<FloatingPosition>();
