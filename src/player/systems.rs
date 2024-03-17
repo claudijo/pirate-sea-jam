@@ -11,7 +11,7 @@ use crate::floating_body::components::{
 };
 use crate::inputs::turn_action_from_input;
 use crate::physics::bundles::{ParticleBundle, SpindleBundle};
-use crate::physics::components::{AngularDamping, Buoy, Inertia, LinearDamping, Mass};
+use crate::physics::components::{AngularDamping, Buoy, LinearDrag, Inertia, LinearDamping, Mass, AngularDrag};
 use crate::player::components::{Flag, Helm, Player};
 use crate::player::{
     ANGULAR_ACCELERATION, ANGULAR_DAMPING, LINEAR_ACCELERATION, LINEAR_DAMPING, MAX_ANGULAR_SPEED,
@@ -59,14 +59,16 @@ pub fn spawn_players(
                 ArtilleryReady::default(),
                 ArtilleryAiming::default(),
                 Name::new("Ship"),
+                LinearDrag::default(),
+                AngularDrag::default(),
                 SpindleBundle {
-                    inertia: Inertia::cuboid(2., 3., 1., 40.),
-                    angular_damping: AngularDamping(0.5),
+                    inertia: Inertia::cuboid(3., 2., 2., 50.),
+                    // angular_damping: AngularDamping(0.5),
                     ..default()
                 },
                 ParticleBundle {
-                    mass: Mass(40.),
-                    linear_damping: LinearDamping(0.5),
+                    mass: Mass(50.),
+                    // linear_damping: LinearDamping(0.5),
                     ..default()
                 },
             ))
@@ -81,7 +83,7 @@ pub fn spawn_players(
                         .spawn((
                             TransformBundle::from_transform(Transform::from_translation(buoy_translation)),
                             Buoy {
-                                volume: 0.25,
+                                volume: 0.4,
                                 max_depth: 0.5,
                                 ..default()
                             },

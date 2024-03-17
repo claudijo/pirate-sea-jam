@@ -30,6 +30,10 @@ pub struct Buoy {
     pub max_depth: f32,
 }
 
+#[derive(Component, Reflect, Clone, Copy, Default)]
+#[reflect(Component)]
+pub struct Aerodynamic(pub Mat3);
+
 // The inertia tensor, unlike the other variables that
 // define a rigid body, is given in body space.
 #[derive(Component, Reflect, Clone, Copy, Default)]
@@ -81,17 +85,36 @@ pub struct BendingSpringOrientation(pub Quat);
 #[reflect(Component)]
 pub struct TorqueImpulse(pub Vec3);
 
+#[derive(Component, Reflect, Clone, Copy, Default, Debug)]
+#[reflect(Component)]
+pub struct LinearDrag {
+    pub velocity_drag_coefficient: f32,
+    pub velocity_squared_drag_coefficient: f32,
+}
+
+#[derive(Component, Reflect, Clone, Copy, Default, Debug)]
+#[reflect(Component)]
+pub struct AngularDrag {
+    pub velocity_drag_coefficient: f32,
+    pub velocity_squared_drag_coefficient: f32,
+}
+
 #[derive(Component, Reflect, Clone, Copy)]
 #[reflect(Component)]
 pub struct AngularDamping(pub f32);
 
+// If you don’t want the object to look like it is experiencing drag, but still want to use damping
+// to avoid numerical problems, then values slightly less than 1 are optimal. A value of 0.999
+// might be perfect, for example.
 impl Default for AngularDamping {
     fn default() -> Self {
         AngularDamping(0.999)
     }
 }
 
-//  A value of 0.999 might be perfect for damping (pp 50)
+// If you don’t want the object to look like it is experiencing drag, but still want to use damping
+// to avoid numerical problems, then values slightly less than 1 are optimal. A value of 0.999
+// might be perfect, for example.
 #[derive(Component, Reflect, Clone, Copy)]
 #[reflect(Component)]
 pub struct LinearDamping(pub f32);

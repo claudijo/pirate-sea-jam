@@ -7,7 +7,7 @@ use crate::ocean::resources::Wave;
 use crate::ocean::{
     OCEAN_PRIMARY_TILE_SUBDIVISIONS, OCEAN_SECONDARY_TILE_SUBDIVISIONS, OCEAN_TILE_SIZE,
 };
-use crate::physics::components::Buoy;
+use crate::physics::components::{AngularDamping, Buoy, LinearDrag, LinearDamping, AngularDrag};
 use bevy::math::Vec3A;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;
@@ -169,5 +169,29 @@ pub fn update_buoy_water_height(
     let elapsed_time = time.elapsed_seconds();
     for (global_transform, mut buoy) in &mut buoy_query {
         buoy.water_height = wave.height(global_transform.translation(), wave.configs, elapsed_time);
+    }
+}
+
+pub fn update_water_drag(
+    mut ship_query: Query<(&GlobalTransform, &mut LinearDrag, &mut AngularDrag, &mut LinearDamping, &mut AngularDamping), With<Rollback>>,
+    wave: Res<Wave>,
+    time: Res<Time>,
+) {
+    let elapsed_time = time.elapsed_seconds();
+    for (global_transform, mut linear_drag, mut angular_drag,mut linear_damping, mut angular_damping) in &mut ship_query {
+        let water_height = wave.height(global_transform.translation(), wave.configs, elapsed_time);
+        if global_transform.translation().y < water_height {
+            linear_drag.velocity_drag_coefficient = 10.;
+            linear_drag.velocity_squared_drag_coefficient = 20.;
+
+            angular_drag.velocity_drag_coefficient = 10.;
+            angular_drag.velocity_squared_drag_coefficient = 20.;
+        } else {
+            linear_drag.velocity_drag_coefficient = 0.;
+            linear_drag.velocity_squared_drag_coefficient = 0.;
+
+            angular_drag.velocity_drag_coefficient = 0.;
+            angular_drag.velocity_squared_drag_coefficient = 0.;
+        }
     }
 }
