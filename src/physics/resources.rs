@@ -10,11 +10,21 @@ impl Default for Gravity {
 }
 
 #[derive(Resource)]
-pub struct LiquidDensity(pub f32);
+pub struct WaterDensity(pub f32);
 
-impl Default for LiquidDensity {
+impl Default for WaterDensity {
     fn default() -> Self {
         // 1000 kg per cubic meter.
-        LiquidDensity(1000.)
+        WaterDensity(1000.)
+    }
+}
+
+#[derive(Resource)]
+pub struct AirDensity(pub f32);
+
+impl Default for crate::physics::resources::AirDensity {
+    fn default() -> Self {
+        // 1.2 kg per cubic meter.
+        AirDensity(1.2)
     }
 }

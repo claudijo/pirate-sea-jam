@@ -1,8 +1,11 @@
-use crate::physics::components::{Aerodynamic, AngularDamping, AngularVelocity, Buoy, LinearDrag, ExternalForce, ExternalTorque, Inertia, LinearDamping, LinearVelocity, Mass, AngularDrag};
-use crate::physics::resources::{Gravity, LiquidDensity};
+use crate::physics::components::{
+    AerofoilArea, AngularDamping, AngularDrag, AngularVelocity, Buoy, ExternalForce,
+    ExternalTorque, Inertia, LinearDamping, LinearDrag, LinearVelocity, Mass,
+};
+use crate::physics::resources::{AirDensity, Gravity, WaterDensity};
+use crate::wind::resources::Wind;
 use bevy::prelude::*;
 use bevy_ggrs::Rollback;
-use crate::wind::resources::Wind;
 
 pub fn update_angular_velocity(
     mut physics_query: Query<
@@ -58,7 +61,12 @@ pub fn update_orientation(
 pub fn update_linear_velocity(
     gravity: Res<Gravity>,
     mut physics_query: Query<
-        (&Mass, &LinearDamping, &mut ExternalForce, &mut LinearVelocity),
+        (
+            &Mass,
+            &LinearDamping,
+            &mut ExternalForce,
+            &mut LinearVelocity,
+        ),
         With<Rollback>,
     >,
     time: Res<Time>,
@@ -105,7 +113,8 @@ pub fn update_linear_drag_force(
 ) {
     for (linear_drag, mut linear_velocity, mut external_force) in &mut physics_query {
         let speed = linear_velocity.0.length();
-        let drag_coefficient = linear_drag.velocity_drag_coefficient * speed + linear_drag.velocity_squared_drag_coefficient * speed.powi(2);
+        let drag_coefficient = linear_drag.velocity_drag_coefficient * speed
+            + linear_drag.velocity_squared_drag_coefficient * speed.powi(2);
         if linear_velocity.0.length() > 0. {
             let drag_force = linear_velocity.0.normalize() * -drag_coefficient;
             external_force.0 += drag_force;
@@ -118,7 +127,8 @@ pub fn update_angular_drag_force(
 ) {
     for (angular_drag, mut angular_velocity, mut external_torque) in &mut physics_query {
         let speed = angular_velocity.0.length();
-        let drag_coefficient = angular_drag.velocity_drag_coefficient * speed + angular_drag.velocity_squared_drag_coefficient * speed.powi(2);
+        let drag_coefficient = angular_drag.velocity_drag_coefficient * speed
+            + angular_drag.velocity_squared_drag_coefficient * speed.powi(2);
         if angular_velocity.0.length() > 0. {
             let drag_force = angular_velocity.0.normalize() * -drag_coefficient;
             external_torque.0 += drag_force;
@@ -130,7 +140,7 @@ pub fn update_angular_drag_force(
 pub fn update_buoyant_force(
     buoy_query: Query<(&Parent, &Buoy, &GlobalTransform, &Transform)>,
     mut floating_body_query: Query<(&GlobalTransform, &mut ExternalForce, &mut ExternalTorque)>,
-    liquid_density: Res<LiquidDensity>,
+    water_density: Res<WaterDensity>,
 ) {
     for (parent, buoy, global_transform, transform) in &buoy_query {
         let submerged_proportion =
@@ -139,30 +149,75 @@ pub fn update_buoyant_force(
 
         let force_magnitude = match submerged_proportion {
             s if s <= 0. => 0.,
-            s if s >= 1. => buoy.volume * liquid_density.0,
-            _ => submerged_proportion * buoy.volume * liquid_density.0,
+            s if s >= 1. => buoy.volume * water_density.0,
+            _ => submerged_proportion * buoy.volume * water_density.0,
         };
 
-        if let Ok((parent_global_transform, mut external_force, mut external_torque)) = floating_body_query.get_mut(parent.get()) {
-            let force =  Vec3::Y * force_magnitude;
-            external_torque.0 += (global_transform.translation() - parent_global_transform.translation()).cross(force);
+        if let Ok((parent_global_transform, mut external_force, mut external_torque)) =
+            floating_body_query.get_mut(parent.get())
+        {
+            let force = Vec3::Y * force_magnitude;
+            external_torque.0 += (global_transform.translation()
+                - parent_global_transform.translation())
+            .cross(force);
             external_force.0 += force;
         }
     }
 }
 
 pub fn update_aerodynamic_force(
-    control_surface_query: Query<(&Parent, &GlobalTransform, &Aerodynamic, &LinearVelocity)>,
-    mut sailing_body_query: Query<(&GlobalTransform, &LinearVelocity)>,
+    mut gizmos: Gizmos,
+    sail_query: Query<(Entity, &GlobalTransform, &AerofoilArea)>,
+    mut vessel_query: Query<(
+        &GlobalTransform,
+        &LinearVelocity,
+        &mut ExternalForce,
+        &mut ExternalTorque,
+    )>,
+    parent_query: Query<&Parent>,
     wind: Res<Wind>,
+    air_density: Res<AirDensity>,
 ) {
-    for (parent, global_transform, aeorodynamic, linear_velocity) in &control_surface_query {
+    'outer: for (sail_entity, sail_global_transform, aerofoil_area) in &sail_query {
+        for parent_entity in parent_query.iter_ancestors(sail_entity) {
+            if let Ok((
+                vessel_global_transform,
+                linear_velocity,
+                mut external_force,
+                mut external_torque,
+            )) = vessel_query.get_mut(parent_entity)
+            {
+                let apparent_wind = wind.0 - linear_velocity.0;
+                let normalized_wind = apparent_wind.normalize();
+                let velocity = apparent_wind.length();
+                let angle_of_attack = apparent_wind
+                    .xz()
+                    .angle_between(sail_global_transform.left().xz());
+                let dynamic_pressure = 0.5 * air_density.0 * velocity.powi(2);
+                let lift_coefficient = (angle_of_attack * 2.).sin();
+                let drag_coefficient = 1. - (angle_of_attack * 2.).cos();
 
-        if let Ok((parent_global_transform, linear_velocity)) = sailing_body_query.get(parent.get()) {
-            // Calculate total velocity (wind speed and body’s velocity).
-            let velocity = linear_velocity.0 + wind.0;
+                let lift = normalized_wind.cross(Vec3::Y)
+                    * dynamic_pressure
+                    * aerofoil_area.0
+                    * lift_coefficient;
+                let drag = normalized_wind * dynamic_pressure * aerofoil_area.0 * drag_coefficient;
+                let force = lift + drag;
 
-            // pp 237...
+                gizmos.ray(sail_global_transform.translation(), lift, Color::BLUE);
+
+                gizmos.ray(sail_global_transform.translation(), drag, Color::RED);
+
+                gizmos.ray(sail_global_transform.translation(), force, Color::ORANGE);
+
+                external_torque.0 += (sail_global_transform.translation()
+                    - vessel_global_transform.translation())
+                .cross(force);
+                external_force.0 += force;
+
+                // Make sure each aerodynamic surface affects at most one parent
+                continue 'outer;
+            }
         }
     }
 }

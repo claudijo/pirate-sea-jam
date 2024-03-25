@@ -3,7 +3,10 @@ use crate::focal_point::resources::FocalPoint;
 use crate::game_state::states::GameState;
 use crate::ocean::materials::StandardOceanMaterial;
 use crate::ocean::resources::Wave;
-use crate::ocean::systems::{spawn_ocean, sync_ocean_tiles_center_offset, sync_shader_time, update_buoy_water_height, update_water_drag};
+use crate::ocean::systems::{
+    spawn_ocean, sync_ocean_tiles_center_offset, sync_shader_time, update_buoy_water_height,
+    update_water_drag,
+};
 use crate::physics::systems::{update_buoyant_force, update_linear_drag_force};
 use bevy::asset::load_internal_asset;
 use bevy::prelude::*;

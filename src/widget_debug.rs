@@ -1,7 +1,7 @@
 mod systems;
 
-use bevy::prelude::*;
 use crate::widget_debug::systems::{debug_buoys, debug_particle};
+use bevy::prelude::*;
 
 pub struct WidgetDebugPlugin;
 

@@ -10,8 +10,11 @@ use crate::floating_body::components::{
     Controls, FloatingLinearVelocity, FloatingPosition, Yaw, YawRotationalSpeed,
 };
 use crate::inputs::turn_action_from_input;
+use crate::ocean::resources::Wave;
 use crate::physics::bundles::{ParticleBundle, SpindleBundle};
-use crate::physics::components::{AngularDamping, Buoy, LinearDrag, Inertia, LinearDamping, Mass, AngularDrag};
+use crate::physics::components::{
+    AerofoilArea, AngularDamping, AngularVelocity, Buoy, Inertia, LinearDamping, Mass,
+};
 use crate::player::components::{Flag, Helm, Player};
 use crate::player::{
     ANGULAR_ACCELERATION, ANGULAR_DAMPING, LINEAR_ACCELERATION, LINEAR_DAMPING, MAX_ANGULAR_SPEED,
@@ -25,7 +28,6 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs, Rollback};
 use std::f32::consts::{E, PI, TAU};
-use crate::ocean::resources::Wave;
 
 pub fn spawn_players(
     mut commands: Commands,
@@ -49,7 +51,7 @@ pub fn spawn_players(
 
         commands
             .spawn((
-                SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, 5., z))),
+                SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, 0., z))),
                 Player { handle },
                 FloatingPosition(Vec2::new(x, z)),
                 Yaw::default(),
@@ -59,16 +61,16 @@ pub fn spawn_players(
                 ArtilleryReady::default(),
                 ArtilleryAiming::default(),
                 Name::new("Ship"),
-                LinearDrag::default(),
-                AngularDrag::default(),
+                // LinearDrag::default(),
+                // AngularDrag::default(),
                 SpindleBundle {
-                    inertia: Inertia::cuboid(3., 2., 2., 50.),
-                    // angular_damping: AngularDamping(0.5),
+                    inertia: Inertia::cuboid(4., 3., 3., 100.),
+                    angular_damping: AngularDamping(0.8),
                     ..default()
                 },
                 ParticleBundle {
-                    mass: Mass(50.),
-                    // linear_damping: LinearDamping(0.5),
+                    mass: Mass(100.),
+                    linear_damping: LinearDamping(0.8),
                     ..default()
                 },
             ))
@@ -81,9 +83,11 @@ pub fn spawn_players(
                 ] {
                     child_builder
                         .spawn((
-                            TransformBundle::from_transform(Transform::from_translation(buoy_translation)),
+                            TransformBundle::from_transform(Transform::from_translation(
+                                buoy_translation,
+                            )),
                             Buoy {
-                                volume: 0.4,
+                                volume: 0.75,
                                 max_depth: 0.5,
                                 ..default()
                             },
@@ -123,6 +127,7 @@ pub fn spawn_players(
                                     ..default()
                                 },
                                 Name::new("Sail"),
+                                AerofoilArea(0.01),
                             ))
                             .add_rollback();
 
@@ -193,14 +198,13 @@ pub fn animate_flag(
     let elapsed_time = time.elapsed_seconds();
 
     for (flag_entity, mut flag_transform, flag_parent) in &mut flag_query {
-        // Rotate flag according to wind
+        // Rotate flag from wind
         let flag_parent_global_transform = global_transform_query.get(flag_parent.get());
         if let Ok(flag_parent_global_transform) = flag_parent_global_transform {
             let angle = wind
                 .0
                 .xz()
-                .angle_between(flag_parent_global_transform.forward().xz())
-                + PI;
+                .angle_between(flag_parent_global_transform.forward().xz());
             flag_transform.rotation = Quat::from_rotation_y(angle);
         }
 

@@ -46,8 +46,8 @@ mod sky_box;
 mod stats;
 mod sync_test;
 mod utils;
-mod wind;
 mod widget_debug;
+mod wind;
 
 fn main() {
     let mut app = App::new();
