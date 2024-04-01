@@ -32,7 +32,15 @@ pub struct Buoy {
 
 #[derive(Component, Reflect, Clone, Copy, Default)]
 #[reflect(Component)]
-pub struct AerofoilArea(pub f32);
+pub struct Area(pub f32);
+
+#[derive(Component, Reflect, Clone, Copy, Default)]
+#[reflect(Component)]
+pub struct Aerofoil;
+
+#[derive(Component, Reflect, Clone, Copy, Default)]
+#[reflect(Component)]
+pub struct Hydrofoil;
 
 // The inertia tensor, unlike the other variables that
 // define a rigid body, is given in body space.

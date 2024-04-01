@@ -1,8 +1,6 @@
-use crate::physics::components::{
-    AerofoilArea, AngularDamping, AngularDrag, AngularVelocity, Buoy, ExternalForce,
-    ExternalTorque, Inertia, LinearDamping, LinearDrag, LinearVelocity, Mass,
-};
+use crate::physics::components::{Area, AngularDamping, AngularDrag, AngularVelocity, Buoy, ExternalForce, ExternalTorque, Inertia, LinearDamping, LinearDrag, LinearVelocity, Mass, Aerofoil};
 use crate::physics::resources::{AirDensity, Gravity, WaterDensity};
+use crate::utils::aerodynamics::{scaled_lift_drag, simple_drag_coefficient, simple_lift_coefficient};
 use crate::wind::resources::Wind;
 use bevy::prelude::*;
 use bevy_ggrs::Rollback;
@@ -167,7 +165,7 @@ pub fn update_buoyant_force(
 
 pub fn update_aerodynamic_force(
     mut gizmos: Gizmos,
-    sail_query: Query<(Entity, &GlobalTransform, &AerofoilArea)>,
+    sail_query: Query<(Entity, &GlobalTransform, &Area), With<Aerofoil>>,
     mut vessel_query: Query<(
         &GlobalTransform,
         &LinearVelocity,
@@ -178,7 +176,7 @@ pub fn update_aerodynamic_force(
     wind: Res<Wind>,
     air_density: Res<AirDensity>,
 ) {
-    'outer: for (sail_entity, sail_global_transform, aerofoil_area) in &sail_query {
+    'outer: for (sail_entity, sail_global_transform, area) in &sail_query {
         for parent_entity in parent_query.iter_ancestors(sail_entity) {
             if let Ok((
                 vessel_global_transform,
@@ -187,33 +185,38 @@ pub fn update_aerodynamic_force(
                 mut external_torque,
             )) = vessel_query.get_mut(parent_entity)
             {
-                let apparent_wind = wind.0 - linear_velocity.0;
-                let normalized_wind = apparent_wind.normalize();
-                let velocity = apparent_wind.length();
-                let angle_of_attack = apparent_wind
-                    .xz()
-                    .angle_between(sail_global_transform.left().xz());
-                let dynamic_pressure = 0.5 * air_density.0 * velocity.powi(2);
-                let lift_coefficient = (angle_of_attack * 2.).sin();
-                let drag_coefficient = 1. - (angle_of_attack * 2.).cos();
+                let relative_velocity = wind.0 - linear_velocity.0;
+                let aerodynamic_force_multiplier =  0.5 * air_density.0 * relative_velocity.length().powi(2) * area.0;
+                let (mut lift, mut drag) = scaled_lift_drag(relative_velocity, sail_global_transform.back());
+                lift *= aerodynamic_force_multiplier;
+                drag *= aerodynamic_force_multiplier;
 
-                let lift = normalized_wind.cross(Vec3::Y)
-                    * dynamic_pressure
-                    * aerofoil_area.0
-                    * lift_coefficient;
-                let drag = normalized_wind * dynamic_pressure * aerofoil_area.0 * drag_coefficient;
-                let force = lift + drag;
+                let aerodynamic_force = lift + drag;
 
-                gizmos.ray(sail_global_transform.translation(), lift, Color::BLUE);
+                gizmos.ray(
+                    sail_global_transform.translation(),
+                    sail_global_transform.back() * 5.,
+                    Color::WHITE,
+                );
+                gizmos.ray(
+                    sail_global_transform.translation(),
+                    wind.0,
+                    Color::BLUE,
+                );
 
+                gizmos.ray(sail_global_transform.translation(), lift, Color::GREEN);
                 gizmos.ray(sail_global_transform.translation(), drag, Color::RED);
 
-                gizmos.ray(sail_global_transform.translation(), force, Color::ORANGE);
+                gizmos.ray(
+                    sail_global_transform.translation(),
+                    aerodynamic_force,
+                    Color::ORANGE,
+                );
 
                 external_torque.0 += (sail_global_transform.translation()
                     - vessel_global_transform.translation())
-                .cross(force);
-                external_force.0 += force;
+                .cross(aerodynamic_force);
+                external_force.0 += aerodynamic_force;
 
                 // Make sure each aerodynamic surface affects at most one parent
                 continue 'outer;

@@ -1,3 +1,4 @@
+pub mod aerodynamics;
 pub mod f32_extensions;
 pub mod hash;
 pub mod linear_algebra;

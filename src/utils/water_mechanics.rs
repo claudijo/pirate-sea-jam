@@ -51,7 +51,6 @@ pub fn gerstner_wave_tangent_binormal(
 }
 
 // https://www.youtube.com/watch?v=kGEqaX4Y4bQ&t=746s
-#[allow(dead_code)]
 pub fn wave_height<F>(
     point: Vec3,
     waves: [Vec4; 4],

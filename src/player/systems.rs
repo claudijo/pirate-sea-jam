@@ -12,9 +12,7 @@ use crate::floating_body::components::{
 use crate::inputs::turn_action_from_input;
 use crate::ocean::resources::Wave;
 use crate::physics::bundles::{ParticleBundle, SpindleBundle};
-use crate::physics::components::{
-    AerofoilArea, AngularDamping, AngularVelocity, Buoy, Inertia, LinearDamping, Mass,
-};
+use crate::physics::components::{Area, AngularDamping, AngularVelocity, Buoy, Inertia, LinearDamping, Mass, Aerofoil};
 use crate::player::components::{Flag, Helm, Player};
 use crate::player::{
     ANGULAR_ACCELERATION, ANGULAR_DAMPING, LINEAR_ACCELERATION, LINEAR_DAMPING, MAX_ANGULAR_SPEED,
@@ -51,7 +49,7 @@ pub fn spawn_players(
 
         commands
             .spawn((
-                SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, 0., z))),
+                SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, 0., z)).with_rotation(Quat::from_rotation_y(PI/4.))),
                 Player { handle },
                 FloatingPosition(Vec2::new(x, z)),
                 Yaw::default(),
@@ -61,10 +59,9 @@ pub fn spawn_players(
                 ArtilleryReady::default(),
                 ArtilleryAiming::default(),
                 Name::new("Ship"),
-                // LinearDrag::default(),
-                // AngularDrag::default(),
                 SpindleBundle {
                     inertia: Inertia::cuboid(4., 3., 3., 100.),
+                    // angular_velocity: AngularVelocity(Vec3::Y * 2.),
                     angular_damping: AngularDamping(0.8),
                     ..default()
                 },
@@ -127,7 +124,8 @@ pub fn spawn_players(
                                     ..default()
                                 },
                                 Name::new("Sail"),
-                                AerofoilArea(0.01),
+                                Area(1.),
+                                Aerofoil,
                             ))
                             .add_rollback();
 
