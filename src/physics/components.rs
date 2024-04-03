@@ -42,6 +42,10 @@ pub struct Aerofoil;
 #[reflect(Component)]
 pub struct Hydrofoil;
 
+#[derive(Component, Reflect, Clone, Copy, Default)]
+#[reflect(Component)]
+pub struct Rudder;
+
 // The inertia tensor, unlike the other variables that
 // define a rigid body, is given in body space.
 #[derive(Component, Reflect, Clone, Copy, Default)]

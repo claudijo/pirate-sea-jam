@@ -1,11 +1,10 @@
 use bevy::prelude::*;
 use std::f32::consts::PI;
 
-const GRAVITY: f32 = 9.81;
+const GRAVITY: f32 = 10.;
 
 // See: https://catlikecoding.com/unity/tutorials/flow/waves/
 // `wave`: Vec4 containing direction x, direction z, steepness, wave_length
-#[allow(dead_code)]
 pub fn gerstner_wave(wave: Vec4, p: Vec3, time: f32) -> Vec3 {
     let steepness = wave.z;
     let wave_length = wave.w;

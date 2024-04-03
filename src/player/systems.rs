@@ -12,7 +12,7 @@ use crate::floating_body::components::{
 use crate::inputs::turn_action_from_input;
 use crate::ocean::resources::Wave;
 use crate::physics::bundles::{ParticleBundle, SpindleBundle};
-use crate::physics::components::{Area, AngularDamping, AngularVelocity, Buoy, Inertia, LinearDamping, Mass, Aerofoil};
+use crate::physics::components::{Aerofoil, AngularDamping, AngularVelocity, Area, Buoy, Hydrofoil, Inertia, LinearDamping, Mass, Rudder};
 use crate::player::components::{Flag, Helm, Player};
 use crate::player::{
     ANGULAR_ACCELERATION, ANGULAR_DAMPING, LINEAR_ACCELERATION, LINEAR_DAMPING, MAX_ANGULAR_SPEED,
@@ -32,8 +32,6 @@ pub fn spawn_players(
     args: Res<Args>,
     model_assets: Res<ModelAssets>,
     mut assets: ResMut<Assets<Mesh>>,
-    wave: Res<Wave>,
-    time: Res<Time>,
 ) {
     let placement_circle_radius = 5.;
     for handle in 0..args.num_players {
@@ -49,7 +47,10 @@ pub fn spawn_players(
 
         commands
             .spawn((
-                SpatialBundle::from_transform(Transform::from_translation(Vec3::new(x, 0., z)).with_rotation(Quat::from_rotation_y(PI/4.))),
+                SpatialBundle::from_transform(
+                    Transform::from_translation(Vec3::new(x, 0., z))
+                        .with_rotation(Quat::from_rotation_y(PI / 4.)),
+                ),
                 Player { handle },
                 FloatingPosition(Vec2::new(x, z)),
                 Yaw::default(),
@@ -124,8 +125,18 @@ pub fn spawn_players(
                                     ..default()
                                 },
                                 Name::new("Sail"),
-                                Area(1.),
+                                Area(8.),
                                 Aerofoil,
+                            ))
+                            .add_rollback();
+
+                        child_builder
+                            .spawn((
+                                TransformBundle::from_transform(Transform::from_xyz(0., -0.5, -2.)),
+                                Name::new("Rudder"),
+                                Area(0.01),
+                                Rudder,
+                                Hydrofoil,
                             ))
                             .add_rollback();
 
@@ -261,6 +272,17 @@ pub fn animate_helm(
     for yaw_rotational_speed in &player_query {
         for mut transform in &mut helm_query {
             transform.rotation = Quat::from_rotation_z(yaw_rotational_speed.0 * TAU);
+        }
+    }
+}
+
+pub fn update_rudder(
+    player_query: Query<&YawRotationalSpeed, With<Rollback>>,
+    mut rudder_query: Query<&mut Transform, With<Rudder>>
+) {
+    for yaw_rotational_speed in &player_query {
+        for mut transform in &mut rudder_query {
+            transform.rotation = Quat::from_rotation_y(yaw_rotational_speed.0 * PI/8.);
         }
     }
 }
