@@ -7,7 +7,7 @@ use crate::artillery::{
 use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
 use crate::controls::components::{
-    Controls, HelmRotationalSpeed,
+    Controls, WheelTurnRatio,
 };
 use crate::inputs::turn_action_from_input;
 use crate::physics::bundles::{ParticleBundle, SpindleBundle};
@@ -15,9 +15,9 @@ use crate::physics::components::{
     Aerofoil, AngularDamping, Area, Buoy, Hydrofoil, Inertia, LinearDamping,
     LinearVelocity, Mass, Rudder,
 };
-use crate::player::components::{Flag, Helm, Player};
+use crate::player::components::{Flag, Wheel, Player};
 use crate::player::{
-    HELM_ROTATIONAL_ACCELERATION, HELM_ROTATIONAL_SPEED_DAMPING, HELM_MAX_ROTATIONAL_SPEED,
+    WHEEL_TURN_ACCELERATION, WHEEL_TURN_DAMPING,
 
 };
 use crate::utils::f32_extensions::F32Ext;
@@ -55,7 +55,7 @@ pub fn spawn_players(
                 ),
                 Player { handle },
                 Controls::default(),
-                HelmRotationalSpeed::default(),
+                WheelTurnRatio::default(),
                 ArtilleryReady::default(),
                 ArtilleryAiming::default(),
                 Name::new("Ship"),
@@ -109,8 +109,8 @@ pub fn spawn_players(
                                     transform: Transform::from_xyz(0., 5.5806, -1.0694),
                                     ..default()
                                 },
-                                Helm,
-                                Name::new("Helm"),
+                                Wheel,
+                                Name::new("Wheel"),
                             ))
                             .add_rollback();
 
@@ -284,24 +284,24 @@ pub fn animate_flag(
     }
 }
 
-pub fn animate_helm(
-    player_query: Query<&HelmRotationalSpeed, With<Rollback>>,
-    mut helm_query: Query<&mut Transform, With<Helm>>,
+pub fn animate_wheel(
+    player_query: Query<&WheelTurnRatio, With<Rollback>>,
+    mut helm_query: Query<&mut Transform, With<Wheel>>,
 ) {
-    for yaw_rotational_speed in &player_query {
+    for wheel_turn_ratio in &player_query {
         for mut transform in &mut helm_query {
-            transform.rotation = Quat::from_rotation_z(yaw_rotational_speed.0 * TAU);
+            transform.rotation = Quat::from_rotation_z(wheel_turn_ratio.0 * TAU);
         }
     }
 }
 
 pub fn update_rudder(
-    player_query: Query<&HelmRotationalSpeed, With<Rollback>>,
+    player_query: Query<&WheelTurnRatio, With<Rollback>>,
     mut rudder_query: Query<&mut Transform, With<Rudder>>,
 ) {
-    for yaw_rotational_speed in &player_query {
+    for wheel_turn_ratio in &player_query {
         for mut transform in &mut rudder_query {
-            transform.rotation = Quat::from_rotation_y(yaw_rotational_speed.0 * PI / 8.);
+            transform.rotation = Quat::from_rotation_y(wheel_turn_ratio.0 * PI / 8.);
         }
     }
 }
@@ -330,10 +330,10 @@ pub fn apply_inputs(
     }
 }
 
-pub fn update_helm_rotational_speed(
+pub fn update_wheel_turn_ratio(
     mut player_query: Query<
         (
-            &mut HelmRotationalSpeed,
+            &mut WheelTurnRatio,
             &Controls,
         ),
         With<Rollback>,
@@ -341,12 +341,10 @@ pub fn update_helm_rotational_speed(
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
-    for (mut rotational_speed, controls) in &mut player_query {
-        rotational_speed.0 +=
-            controls.turn_action as f32 * HELM_ROTATIONAL_ACCELERATION * delta_time;
-        rotational_speed.0 *= HELM_ROTATIONAL_SPEED_DAMPING.powf(delta_time);
-        rotational_speed.0 = rotational_speed
-            .0
-            .clamp(-HELM_MAX_ROTATIONAL_SPEED, HELM_MAX_ROTATIONAL_SPEED);
+    for (mut wheel_turn_ratio, controls) in &mut player_query {
+        wheel_turn_ratio.0 +=
+            controls.turn_action as f32 * WHEEL_TURN_ACCELERATION * delta_time;
+        wheel_turn_ratio.0 *= WHEEL_TURN_DAMPING.powf(delta_time);
+        wheel_turn_ratio.0 = wheel_turn_ratio.0.clamp(-1., 1.);
     }
 }

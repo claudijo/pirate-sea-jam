@@ -7,7 +7,7 @@ pub struct Player {
 }
 
 #[derive(Component)]
-pub struct Helm;
+pub struct Wheel;
 
 #[derive(Component)]
 pub struct Flag;
