@@ -1,5 +1,5 @@
 use crate::controls::components::{
-    checksum_yaw_rotation_speed, YawRotationalSpeed,
+    checksum_helm_rotation_speed, HelmRotationalSpeed,
 };
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
@@ -11,8 +11,8 @@ pub struct ShipPlugin;
 impl Plugin for ShipPlugin {
     fn build(&self, app: &mut App) {
         // Component candidates for roll back
-        app.rollback_component_with_copy::<YawRotationalSpeed>();
+        app.rollback_component_with_copy::<HelmRotationalSpeed>();
 
-        app.checksum_component::<YawRotationalSpeed>(checksum_yaw_rotation_speed);
+        app.checksum_component::<HelmRotationalSpeed>(checksum_helm_rotation_speed);
     }
 }

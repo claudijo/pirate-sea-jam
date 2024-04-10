@@ -3,7 +3,7 @@ use bevy::prelude::*;
 
 #[derive(Component, Reflect, Clone, Copy, Default)]
 #[reflect(Component)]
-pub struct YawRotationalSpeed(pub f32);
+pub struct HelmRotationalSpeed(pub f32);
 
 #[derive(Component, Reflect, Clone, Copy, Default)]
 #[reflect(Component)]
@@ -12,6 +12,6 @@ pub struct Controls {
     pub accelerate_action: i32,
 }
 
-pub fn checksum_yaw_rotation_speed(value: &YawRotationalSpeed) -> u64 {
+pub fn checksum_helm_rotation_speed(value: &HelmRotationalSpeed) -> u64 {
     hash_f32_number(value.0)
 }

@@ -7,7 +7,7 @@ use crate::artillery::{
 use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
 use crate::controls::components::{
-    Controls, YawRotationalSpeed,
+    Controls, HelmRotationalSpeed,
 };
 use crate::inputs::turn_action_from_input;
 use crate::physics::bundles::{ParticleBundle, SpindleBundle};
@@ -17,8 +17,8 @@ use crate::physics::components::{
 };
 use crate::player::components::{Flag, Helm, Player};
 use crate::player::{
-    ANGULAR_ACCELERATION, ANGULAR_DAMPING, LINEAR_ACCELERATION, LINEAR_DAMPING, MAX_ANGULAR_SPEED,
-    MAX_LINEAR_SPEED, TRACTION,
+    HELM_ROTATIONAL_ACCELERATION, HELM_ROTATIONAL_SPEED_DAMPING, HELM_MAX_ROTATIONAL_SPEED,
+
 };
 use crate::utils::f32_extensions::F32Ext;
 use crate::utils::linear_algebra::face_normal;
@@ -55,7 +55,7 @@ pub fn spawn_players(
                 ),
                 Player { handle },
                 Controls::default(),
-                YawRotationalSpeed::default(),
+                HelmRotationalSpeed::default(),
                 ArtilleryReady::default(),
                 ArtilleryAiming::default(),
                 Name::new("Ship"),
@@ -285,7 +285,7 @@ pub fn animate_flag(
 }
 
 pub fn animate_helm(
-    player_query: Query<&YawRotationalSpeed, With<Rollback>>,
+    player_query: Query<&HelmRotationalSpeed, With<Rollback>>,
     mut helm_query: Query<&mut Transform, With<Helm>>,
 ) {
     for yaw_rotational_speed in &player_query {
@@ -296,7 +296,7 @@ pub fn animate_helm(
 }
 
 pub fn update_rudder(
-    player_query: Query<&YawRotationalSpeed, With<Rollback>>,
+    player_query: Query<&HelmRotationalSpeed, With<Rollback>>,
     mut rudder_query: Query<&mut Transform, With<Rudder>>,
 ) {
     for yaw_rotational_speed in &player_query {
@@ -330,11 +330,10 @@ pub fn apply_inputs(
     }
 }
 
-// Take control component and calculate new velocity and update velocity component
-pub fn update_yaw_rotational_speed(
+pub fn update_helm_rotational_speed(
     mut player_query: Query<
         (
-            &mut YawRotationalSpeed,
+            &mut HelmRotationalSpeed,
             &Controls,
         ),
         With<Rollback>,
@@ -344,10 +343,10 @@ pub fn update_yaw_rotational_speed(
     let delta_time = time.delta_seconds();
     for (mut rotational_speed, controls) in &mut player_query {
         rotational_speed.0 +=
-            controls.turn_action as f32 * ANGULAR_ACCELERATION * delta_time;
-        rotational_speed.0 *= ANGULAR_DAMPING.powf(delta_time);
+            controls.turn_action as f32 * HELM_ROTATIONAL_ACCELERATION * delta_time;
+        rotational_speed.0 *= HELM_ROTATIONAL_SPEED_DAMPING.powf(delta_time);
         rotational_speed.0 = rotational_speed
             .0
-            .clamp(-MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
+            .clamp(-HELM_MAX_ROTATIONAL_SPEED, HELM_MAX_ROTATIONAL_SPEED);
     }
 }

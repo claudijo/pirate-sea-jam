@@ -212,8 +212,6 @@ pub fn update_aerodynamic_force(
                     Color::WHITE,
                 );
 
-                // gizmos.ray(aerofoil_global_transform.translation(), wind.0, Color::BLUE);
-                //
                 gizmos.ray(aerofoil_global_transform.translation(), lift, Color::GREEN);
                 gizmos.ray(aerofoil_global_transform.translation(), drag, Color::RED);
 
