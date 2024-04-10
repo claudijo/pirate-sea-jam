@@ -1,4 +1,3 @@
-use crate::floating_body::systems::float;
 use crate::focal_point::resources::FocalPoint;
 use crate::game_state::states::GameState;
 use crate::ocean::materials::StandardOceanMaterial;
@@ -7,7 +6,7 @@ use crate::ocean::systems::{
     spawn_ocean, sync_ocean_tiles_center_offset, sync_shader_time, update_buoy_water_height,
     update_water_drag,
 };
-use crate::physics::systems::{update_buoyant_force, update_linear_drag_force};
+use crate::physics::systems::{update_aerodynamic_force, update_buoyant_force, update_linear_drag_force};
 use bevy::asset::load_internal_asset;
 use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
@@ -102,7 +101,7 @@ impl Plugin for OceanPlugin {
             sync_shader_time.run_if(in_state(GameState::SplashScreen)),
         );
 
-        app.add_systems(GgrsSchedule, sync_shader_time.before(float));
+        app.add_systems(GgrsSchedule, sync_shader_time.before(update_aerodynamic_force));
 
         app.add_systems(
             GgrsSchedule,

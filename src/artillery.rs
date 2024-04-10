@@ -3,9 +3,9 @@ use crate::artillery::systems::{
     despawn_projectile, register_start_aim_artillery_animations,
     register_stop_aim_artillery_animations, start_aim_artillery, stop_aim_and_fire_artillery,
 };
-use crate::floating_body::systems::float;
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
+use crate::physics::systems::update_orientation;
 
 pub mod components;
 mod resources;
@@ -35,15 +35,9 @@ impl Plugin for ArtilleryPlugin {
         app.add_systems(
             GgrsSchedule,
             (
-                // reload_artillery,
-                start_aim_artillery.after(float),
+                start_aim_artillery.after(update_orientation),
                 stop_aim_and_fire_artillery.after(start_aim_artillery),
                 despawn_projectile,
-                // fire_artillery
-                //     .after(update_player_position)
-                //     .after(reload_artillery)
-                //     .after(integrate)
-                //     .after(float),
             ),
         );
     }

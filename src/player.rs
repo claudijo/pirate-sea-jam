@@ -6,7 +6,7 @@ use crate::physics::systems::update_aerodynamic_force;
 use crate::player::components::Player;
 use crate::player::systems::{
     animate_flag, animate_helm, apply_inputs, spawn_players, update_hull_drag,
-    update_player_position, update_player_velocity, update_rudder,
+    update_yaw_rotational_speed, update_rudder,
 };
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
@@ -30,8 +30,7 @@ impl Plugin for PlayerPlugin {
                 apply_inputs,
                 update_rudder,
                 update_hull_drag,
-                update_player_velocity,
-                update_player_position,
+                update_yaw_rotational_speed,
             )
                 .chain()
                 .before(update_aerodynamic_force),

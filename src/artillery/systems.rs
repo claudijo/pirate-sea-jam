@@ -6,7 +6,6 @@ use crate::artillery::{
 };
 use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
-use crate::floating_body::components::FloatingLinearVelocity;
 use crate::inputs::fire;
 use crate::ocean::resources::Wave;
 use crate::physics::bundles::ParticleBundle;
@@ -72,7 +71,7 @@ pub fn stop_aim_and_fire_artillery(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
     inputs: Res<PlayerInputs<RollbackConfig>>,
-    mut player_query: Query<(&mut ArtilleryAiming, &Player, &FloatingLinearVelocity)>,
+    mut player_query: Query<(&mut ArtilleryAiming, &Player, &LinearVelocity)>,
     mut artillery_query: Query<(
         &GlobalTransform,
         &Name,
@@ -81,7 +80,7 @@ pub fn stop_aim_and_fire_artillery(
     )>,
     animation_clips: Res<EndAimArtilleryAnimationClips>,
 ) {
-    for (mut artillery_aiming, player, floating_linear_velocity) in &mut player_query {
+    for (mut artillery_aiming, player, linear_velocity) in &mut player_query {
         let (input, _) = inputs[player.handle];
         if !fire(input) && artillery_aiming.0 {
             artillery_aiming.0 = false;
@@ -117,7 +116,7 @@ pub fn stop_aim_and_fire_artillery(
                             ParticleBundle {
                                 linear_velocity: LinearVelocity(
                                     global_transform.left() * artillery.muzzle_velocity
-                                        + floating_linear_velocity.0.extend_with_y(0.),
+                                        + linear_velocity.0,
                                 ),
                                 ..default()
                             },

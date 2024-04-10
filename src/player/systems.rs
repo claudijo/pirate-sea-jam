@@ -6,11 +6,10 @@ use crate::artillery::{
 };
 use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
-use crate::floating_body::components::{
-    Controls, FloatingLinearVelocity, FloatingPosition, Yaw, YawRotationalSpeed,
+use crate::controls::components::{
+    Controls, YawRotationalSpeed,
 };
 use crate::inputs::turn_action_from_input;
-use crate::ocean::resources::Wave;
 use crate::physics::bundles::{ParticleBundle, SpindleBundle};
 use crate::physics::components::{
     Aerofoil, AngularDamping, Area, Buoy, Hydrofoil, Inertia, LinearDamping,
@@ -55,10 +54,7 @@ pub fn spawn_players(
                         .with_rotation(Quat::from_rotation_y(4. * PI / 8.)),
                 ),
                 Player { handle },
-                FloatingPosition(Vec2::new(x, z)),
-                Yaw::default(),
                 Controls::default(),
-                FloatingLinearVelocity::default(),
                 YawRotationalSpeed::default(),
                 ArtilleryReady::default(),
                 ArtilleryAiming::default(),
@@ -335,12 +331,10 @@ pub fn apply_inputs(
 }
 
 // Take control component and calculate new velocity and update velocity component
-pub fn update_player_velocity(
+pub fn update_yaw_rotational_speed(
     mut player_query: Query<
         (
-            &mut FloatingLinearVelocity,
             &mut YawRotationalSpeed,
-            &Yaw,
             &Controls,
         ),
         With<Rollback>,
@@ -348,62 +342,12 @@ pub fn update_player_velocity(
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
-    for (mut linear_velocity, mut rotational_speed, yaw, controls) in &mut player_query {
-        linear_velocity.0 +=
-            yaw.forward() * controls.accelerate_action as f32 * LINEAR_ACCELERATION * delta_time;
-        linear_velocity.0 *= LINEAR_DAMPING.powf(delta_time);
-        linear_velocity.0 = linear_velocity.0.clamp_length_max(MAX_LINEAR_SPEED);
-
-        linear_velocity.0 = linear_velocity
-            .0
-            .normalize()
-            .damp(yaw.forward(), TRACTION, delta_time)
-            * linear_velocity.0.length();
-
-        let rotation_speed_factor = linear_velocity.0.length() / MAX_LINEAR_SPEED;
+    for (mut rotational_speed, controls) in &mut player_query {
         rotational_speed.0 +=
-            controls.turn_action as f32 * ANGULAR_ACCELERATION * rotation_speed_factor * delta_time;
+            controls.turn_action as f32 * ANGULAR_ACCELERATION * delta_time;
         rotational_speed.0 *= ANGULAR_DAMPING.powf(delta_time);
         rotational_speed.0 = rotational_speed
             .0
             .clamp(-MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
-    }
-}
-
-#[allow(dead_code)]
-pub fn debug_velocity(
-    player_query: Query<(&Transform, &Yaw, &FloatingLinearVelocity), With<Rollback>>,
-    mut gizmos: Gizmos,
-) {
-    for (transform, yaw, linear_velocity) in &player_query {
-        gizmos.ray(
-            transform.translation + Vec3::new(0., 2., 0.),
-            yaw.forward().extend_with_y(0.) * 8.,
-            Color::BLUE,
-        );
-        gizmos.ray(
-            transform.translation + Vec3::new(0., 2., 0.),
-            linear_velocity.0.extend_with_y(0.) * 1.4,
-            Color::GREEN,
-        );
-    }
-}
-
-pub fn update_player_position(
-    mut player_query: Query<
-        (
-            &mut Yaw,
-            &mut FloatingPosition,
-            &FloatingLinearVelocity,
-            &YawRotationalSpeed,
-        ),
-        With<Rollback>,
-    >,
-    time: Res<Time>,
-) {
-    let delta_time = time.delta_seconds();
-    for (mut yaw, mut position, linear_velocity, rotational_speed) in &mut player_query {
-        yaw.0 -= rotational_speed.0 * delta_time;
-        position.0 += linear_velocity.0 * delta_time;
     }
 }

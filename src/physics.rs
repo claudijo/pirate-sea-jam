@@ -1,4 +1,3 @@
-use crate::floating_body::systems::float;
 use crate::physics::components::{
     checksum_angular_velocity, checksum_bending_spring_orientation,
     checksum_bending_spring_rest_orientation, checksum_damping, checksum_external_force,
@@ -43,7 +42,6 @@ impl Plugin for PhysicsPlugin {
                 update_orientation,
             )
                 .chain()
-                .before(float),
         );
 
         app.rollback_component_with_copy::<LinearVelocity>();
