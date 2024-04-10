@@ -33,13 +33,20 @@ const OCEAN_MATERIAL_BINDINGS: Handle<Shader> =
     Handle::weak_from_u128(0x06a957f34bac4aabad104c64a301c3fb);
 
 // Each Vec4 containing direction x, direction z, steepness, wave_length. Sum of all steepness values must not exceed 1.
-// Following wave will cancel out if sent to gerstener wave function Vec4::new(1., 0., 0., 1.)
 const WAVES: [Vec4; 4] = [
     Vec4::new(1., 0., 0.22, 64.),
     Vec4::new(-1., 0.8, 0.2, 48.),
     Vec4::new(1., -1.2, 0.18, 32.),
     Vec4::new(-1., 3., 0.16, 24.),
 ];
+
+// Following wave will cancel out if sent to gerstener wave function Vec4::new(1., 0., 0., 1.)
+// const WAVES: [Vec4; 4] = [
+//     Vec4::new(1., 0., 0., 1.),
+//     Vec4::new(1., 0., 0., 1.),
+//     Vec4::new(1., 0., 0., 1.),
+//     Vec4::new(1., 0., 0., 1.),
+// ];
 
 const OCEAN_ANIMATION_TIME_SCALE: f32 = 0.6;
 

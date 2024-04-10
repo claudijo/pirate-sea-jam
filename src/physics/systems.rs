@@ -1,15 +1,13 @@
+use crate::ocean::resources::Wave;
 use crate::physics::components::{
     Aerofoil, AngularDamping, AngularDrag, AngularVelocity, Area, Buoy, ExternalForce,
     ExternalTorque, Hydrofoil, Inertia, LinearDamping, LinearDrag, LinearVelocity, Mass,
 };
 use crate::physics::resources::{AirDensity, Gravity, WaterDensity};
-use crate::utils::aerodynamics::{
-    scaled_lift_drag,
-};
+use crate::utils::aerodynamics::scaled_lift_drag;
 use crate::wind::resources::Wind;
 use bevy::prelude::*;
 use bevy_ggrs::Rollback;
-use crate::ocean::resources::Wave;
 
 pub fn update_angular_velocity(
     mut physics_query: Query<
@@ -116,10 +114,10 @@ pub fn update_linear_drag_force(
     mut physics_query: Query<(&LinearDrag, &LinearVelocity, &mut ExternalForce)>,
 ) {
     for (linear_drag, mut linear_velocity, mut external_force) in &mut physics_query {
-        let speed = linear_velocity.0.length();
-        let drag_coefficient = linear_drag.velocity_drag_coefficient * speed
-            + linear_drag.velocity_squared_drag_coefficient * speed.powi(2);
-        if linear_velocity.0.length() > 0. {
+        if linear_velocity.0.length() > f32::EPSILON {
+            let speed = linear_velocity.0.length();
+            let drag_coefficient = linear_drag.velocity_drag_coefficient * speed
+                + linear_drag.velocity_squared_drag_coefficient * speed.powi(2);
             let drag_force = linear_velocity.0.normalize() * -drag_coefficient;
             external_force.0 += drag_force;
         }
@@ -130,10 +128,11 @@ pub fn update_angular_drag_force(
     mut physics_query: Query<(&AngularDrag, &AngularVelocity, &mut ExternalTorque)>,
 ) {
     for (angular_drag, mut angular_velocity, mut external_torque) in &mut physics_query {
-        let speed = angular_velocity.0.length();
-        let drag_coefficient = angular_drag.velocity_drag_coefficient * speed
-            + angular_drag.velocity_squared_drag_coefficient * speed.powi(2);
-        if angular_velocity.0.length() > 0. {
+        if angular_velocity.0.length() > f32::EPSILON {
+            let speed = angular_velocity.0.length();
+            let drag_coefficient = angular_drag.velocity_drag_coefficient * speed
+                + angular_drag.velocity_squared_drag_coefficient * speed.powi(2);
+
             let drag_force = angular_velocity.0.normalize() * -drag_coefficient;
             external_torque.0 += drag_force;
         }
@@ -170,6 +169,7 @@ pub fn update_buoyant_force(
 }
 
 pub fn update_aerodynamic_force(
+    mut gizmos: Gizmos,
     aerofoil_query: Query<(Entity, &GlobalTransform, &Area), With<Aerofoil>>,
     mut vessel_query: Query<(
         &GlobalTransform,
@@ -200,6 +200,29 @@ pub fn update_aerodynamic_force(
 
                 let aerodynamic_force = lift + drag;
 
+                gizmos.ray(
+                    vessel_global_transform.translation(),
+                    linear_velocity.0,
+                    Color::BLACK,
+                );
+
+                gizmos.ray(
+                    aerofoil_global_transform.translation(),
+                    linear_velocity.0,
+                    Color::WHITE,
+                );
+
+                // gizmos.ray(aerofoil_global_transform.translation(), wind.0, Color::BLUE);
+                //
+                gizmos.ray(aerofoil_global_transform.translation(), lift, Color::GREEN);
+                gizmos.ray(aerofoil_global_transform.translation(), drag, Color::RED);
+
+                gizmos.ray(
+                    aerofoil_global_transform.translation(),
+                    aerodynamic_force,
+                    Color::ORANGE,
+                );
+
                 external_torque.0 += (aerofoil_global_transform.translation()
                     - vessel_global_transform.translation())
                 .cross(aerodynamic_force);
@@ -213,6 +236,7 @@ pub fn update_aerodynamic_force(
 }
 
 pub fn update_hydrodynamic_force(
+    mut gizmos: Gizmos,
     hydrofoil_query: Query<(Entity, &GlobalTransform, &Area), With<Hydrofoil>>,
     mut vessel_query: Query<(
         &GlobalTransform,
@@ -244,6 +268,21 @@ pub fn update_hydrodynamic_force(
                 drag *= hydrodynamic_force_multiplier;
 
                 let hydrodynamic_force = lift + drag;
+
+                gizmos.ray(
+                    hydrofoil_global_transform.translation(),
+                    linear_velocity.0,
+                    Color::BLUE,
+                );
+
+                gizmos.ray(
+                    hydrofoil_global_transform.translation(),
+                    hydrodynamic_force,
+                    Color::ORANGE,
+                );
+
+                gizmos.ray(hydrofoil_global_transform.translation(), lift, Color::GREEN);
+                gizmos.ray(hydrofoil_global_transform.translation(), drag, Color::RED);
 
                 external_torque.0 += (hydrofoil_global_transform.translation()
                     - vessel_global_transform.translation())

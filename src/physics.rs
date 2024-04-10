@@ -8,7 +8,11 @@ use crate::physics::components::{
     SpringDamping, SpringStiffness, TorqueImpulse,
 };
 use crate::physics::resources::{AirDensity, Gravity, WaterDensity};
-use crate::physics::systems::{update_aerodynamic_force, update_angular_drag_force, update_angular_velocity, update_buoyant_force, update_hydrodynamic_force, update_linear_drag_force, update_linear_velocity, update_orientation, update_position};
+use crate::physics::systems::{
+    update_aerodynamic_force, update_angular_drag_force, update_angular_velocity,
+    update_buoyant_force, update_hydrodynamic_force, update_linear_drag_force,
+    update_linear_velocity, update_orientation, update_position,
+};
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
 

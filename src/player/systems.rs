@@ -12,7 +12,10 @@ use crate::floating_body::components::{
 use crate::inputs::turn_action_from_input;
 use crate::ocean::resources::Wave;
 use crate::physics::bundles::{ParticleBundle, SpindleBundle};
-use crate::physics::components::{Aerofoil, AngularDamping, AngularVelocity, Area, Buoy, Hydrofoil, Inertia, LinearDamping, Mass, Rudder};
+use crate::physics::components::{
+    Aerofoil, AngularDamping, Area, Buoy, Hydrofoil, Inertia, LinearDamping,
+    LinearVelocity, Mass, Rudder,
+};
 use crate::player::components::{Flag, Helm, Player};
 use crate::player::{
     ANGULAR_ACCELERATION, ANGULAR_DAMPING, LINEAR_ACCELERATION, LINEAR_DAMPING, MAX_ANGULAR_SPEED,
@@ -49,7 +52,7 @@ pub fn spawn_players(
             .spawn((
                 SpatialBundle::from_transform(
                     Transform::from_translation(Vec3::new(x, 0., z))
-                        .with_rotation(Quat::from_rotation_y(PI / 4.)),
+                        .with_rotation(Quat::from_rotation_y(4. * PI / 8.)),
                 ),
                 Player { handle },
                 FloatingPosition(Vec2::new(x, z)),
@@ -62,8 +65,7 @@ pub fn spawn_players(
                 Name::new("Ship"),
                 SpindleBundle {
                     inertia: Inertia::cuboid(4., 3., 3., 100.),
-                    // angular_velocity: AngularVelocity(Vec3::Y * 2.),
-                    angular_damping: AngularDamping(0.8),
+                    angular_damping: AngularDamping(0.6),
                     ..default()
                 },
                 ParticleBundle {
@@ -121,10 +123,22 @@ pub fn spawn_players(
                                 SceneBundle {
                                     scene: model_assets.scene_handles["medium_pirate_sail.glb"]
                                         .clone(),
-                                    transform: Transform::from_xyz(0., 2.3248, 1.3574),
+                                    transform: Transform::from_xyz(0., 2.3248, 1.3574)
+                                        .with_rotation(Quat::from_rotation_y(PI / 4.)),
                                     ..default()
                                 },
                                 Name::new("Sail"),
+                            ))
+                            .add_rollback();
+
+                        // Place the force generating sail in center of gravity so that we don't
+                        // generate any torque, which messes things up. Same with keel.
+                        child_builder
+                            .spawn((
+                                TransformBundle::from_transform(Transform::from_rotation(
+                                    Quat::from_rotation_y(PI / 4.),
+                                )),
+                                Name::new("Virtual sail"),
                                 Area(8.),
                                 Aerofoil,
                             ))
@@ -132,9 +146,18 @@ pub fn spawn_players(
 
                         child_builder
                             .spawn((
-                                TransformBundle::from_transform(Transform::from_xyz(0., -0.5, -2.)),
+                                TransformBundle::default(),
+                                Name::new("Keel"),
+                                Area(1.),
+                                Hydrofoil,
+                            ))
+                            .add_rollback();
+
+                        child_builder
+                            .spawn((
+                                TransformBundle::from_transform(Transform::from_xyz(0., -1., -2.)),
                                 Name::new("Rudder"),
-                                Area(0.01),
+                                Area(0.05),
                                 Rudder,
                                 Hydrofoil,
                             ))
@@ -278,11 +301,25 @@ pub fn animate_helm(
 
 pub fn update_rudder(
     player_query: Query<&YawRotationalSpeed, With<Rollback>>,
-    mut rudder_query: Query<&mut Transform, With<Rudder>>
+    mut rudder_query: Query<&mut Transform, With<Rudder>>,
 ) {
     for yaw_rotational_speed in &player_query {
         for mut transform in &mut rudder_query {
-            transform.rotation = Quat::from_rotation_y(yaw_rotational_speed.0 * PI/8.);
+            transform.rotation = Quat::from_rotation_y(yaw_rotational_speed.0 * PI / 8.);
+        }
+    }
+}
+
+pub fn update_hull_drag(
+    mut player_query: Query<(&mut LinearDamping, &GlobalTransform, &LinearVelocity)>,
+) {
+    for (mut linear_damping, global_transform, linear_velocity) in &mut player_query {
+        if global_transform.back().dot(linear_velocity.0) > 0. {
+            // Going forward
+            linear_damping.0 = 0.8;
+        } else {
+            // Going backwards
+            linear_damping.0 = 0.6;
         }
     }
 }
