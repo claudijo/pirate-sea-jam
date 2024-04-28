@@ -1,6 +1,4 @@
-use crate::controls::components::{
-    checksum_wheel_turn_ratio, WheelTurnRatio,
-};
+use crate::controls::components::{checksum_wheel_turn_ratio, WheelTurnRatio};
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
 

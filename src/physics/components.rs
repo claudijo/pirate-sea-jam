@@ -26,7 +26,8 @@ pub struct ExternalTorque(pub Vec3);
 pub struct Buoy {
     pub volume: f32,
     pub water_height: f32,
-    // The maximum submersion depth of the object before it generates its maximum buoyancy force.
+    // The maximum submersion depth of the object at which point it generates its maximum buoyancy
+    // force.
     pub max_depth: f32,
 }
 
@@ -37,6 +38,10 @@ pub struct Area(pub f32);
 #[derive(Component, Reflect, Clone, Copy, Default)]
 #[reflect(Component)]
 pub struct Aerofoil;
+
+#[derive(Component, Reflect, Clone, Copy, Default)]
+#[reflect(Component)]
+pub struct SailTrim;
 
 #[derive(Component, Reflect, Clone, Copy, Default)]
 #[reflect(Component)]

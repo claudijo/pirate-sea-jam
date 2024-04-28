@@ -3,9 +3,9 @@ use crate::artillery::systems::{
     despawn_projectile, register_start_aim_artillery_animations,
     register_stop_aim_artillery_animations, start_aim_artillery, stop_aim_and_fire_artillery,
 };
+use crate::physics::systems::update_orientation;
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
-use crate::physics::systems::update_orientation;
 
 pub mod components;
 mod resources;

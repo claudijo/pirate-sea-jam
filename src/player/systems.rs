@@ -6,23 +6,17 @@ use crate::artillery::{
 };
 use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
-use crate::controls::components::{
-    Controls, WheelTurnRatio,
-};
+use crate::controls::components::{Controls, SailTrimRatio, WheelTurnRatio};
 use crate::inputs::turn_action_from_input;
 use crate::physics::bundles::{ParticleBundle, SpindleBundle};
 use crate::physics::components::{
-    Aerofoil, AngularDamping, Area, Buoy, Hydrofoil, Inertia, LinearDamping,
-    LinearVelocity, Mass, Rudder,
+    Aerofoil, AngularDamping, Area, Buoy, Hydrofoil, Inertia, LinearDamping, LinearVelocity, Mass,
+    Rudder, SailTrim,
 };
-use crate::player::components::{Flag, Wheel, Player};
-use crate::player::{
-    WHEEL_TURN_ACCELERATION, WHEEL_TURN_DAMPING,
-
-};
+use crate::player::components::{Flag, Player, Wheel};
+use crate::player::{WHEEL_TURN_ACCELERATION, WHEEL_TURN_DAMPING};
 use crate::utils::f32_extensions::F32Ext;
 use crate::utils::linear_algebra::face_normal;
-use crate::utils::vec2_extensions::Vec2Ext;
 use crate::wind::resources::Wind;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
@@ -41,8 +35,8 @@ pub fn spawn_players(
         let x = placement_circle_radius * placement_angle.cos();
         let z = placement_circle_radius * placement_angle.sin();
 
-        // Duplicate vertices once for flag mesh here, which will facilitate recalculating normals when animating the
-        // flag later on, even if accessing the mesh through the scene asset
+        // Duplicate vertices once for flag mesh here, which will facilitate recalculating normals
+        // when animating the flag later on, even if accessing the mesh through the scene asset
         let flag_mesh_handle = &model_assets.mesh_handles["medium_flag.glb"];
         let flag_mesh = assets.get_mut(flag_mesh_handle).unwrap();
         flag_mesh.duplicate_vertices();
@@ -56,6 +50,7 @@ pub fn spawn_players(
                 Player { handle },
                 Controls::default(),
                 WheelTurnRatio::default(),
+                SailTrimRatio::default(),
                 ArtilleryReady::default(),
                 ArtilleryAiming::default(),
                 Name::new("Ship"),
@@ -119,11 +114,12 @@ pub fn spawn_players(
                                 SceneBundle {
                                     scene: model_assets.scene_handles["medium_pirate_sail.glb"]
                                         .clone(),
-                                    transform: Transform::from_xyz(0., 2.3248, 1.3574)
-                                        .with_rotation(Quat::from_rotation_y(PI / 4.)),
+                                    transform: Transform::from_xyz(0., 2.3248, 1.3574),
+                                    // .with_rotation(Quat::from_rotation_y(PI / 4.)),
                                     ..default()
                                 },
                                 Name::new("Sail"),
+                                SailTrim,
                             ))
                             .add_rollback();
 
@@ -137,6 +133,7 @@ pub fn spawn_players(
                                 Name::new("Virtual sail"),
                                 Area(8.),
                                 Aerofoil,
+                                SailTrim,
                             ))
                             .add_rollback();
 
@@ -284,13 +281,13 @@ pub fn animate_flag(
     }
 }
 
-pub fn animate_wheel(
+pub fn animate_wheel_turn(
     player_query: Query<&WheelTurnRatio, With<Rollback>>,
     mut helm_query: Query<&mut Transform, With<Wheel>>,
 ) {
     for wheel_turn_ratio in &player_query {
         for mut transform in &mut helm_query {
-            transform.rotation = Quat::from_rotation_z(wheel_turn_ratio.0 * TAU);
+            transform.rotation = Quat::from_rotation_z(wheel_turn_ratio.0 * 4.);
         }
     }
 }
@@ -302,6 +299,17 @@ pub fn update_rudder(
     for wheel_turn_ratio in &player_query {
         for mut transform in &mut rudder_query {
             transform.rotation = Quat::from_rotation_y(wheel_turn_ratio.0 * PI / 8.);
+        }
+    }
+}
+
+pub fn animate_sail_trim(
+    player_query: Query<&SailTrimRatio, With<Rollback>>,
+    mut sail_query: Query<&mut Transform, With<SailTrim>>,
+) {
+    for sail_trim_ratio in &player_query {
+        for mut transform in &mut sail_query {
+            transform.rotation = Quat::from_rotation_y(sail_trim_ratio.0 * PI / 4.);
         }
     }
 }
@@ -331,20 +339,27 @@ pub fn apply_inputs(
 }
 
 pub fn update_wheel_turn_ratio(
-    mut player_query: Query<
-        (
-            &mut WheelTurnRatio,
-            &Controls,
-        ),
-        With<Rollback>,
-    >,
+    mut player_query: Query<(&mut WheelTurnRatio, &Controls), With<Rollback>>,
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
     for (mut wheel_turn_ratio, controls) in &mut player_query {
-        wheel_turn_ratio.0 +=
-            controls.turn_action as f32 * WHEEL_TURN_ACCELERATION * delta_time;
+        wheel_turn_ratio.0 += controls.turn_action as f32 * WHEEL_TURN_ACCELERATION * delta_time;
         wheel_turn_ratio.0 *= WHEEL_TURN_DAMPING.powf(delta_time);
         wheel_turn_ratio.0 = wheel_turn_ratio.0.clamp(-1., 1.);
+    }
+}
+
+pub fn update_sail_trim_ratio(
+    mut player_query: Query<(&mut SailTrimRatio, &GlobalTransform), With<Rollback>>,
+    wind: Res<Wind>,
+) {
+    for (mut sail_trim_ratio, global_transform) in &mut player_query {
+        let trim_ratio = global_transform
+            .forward()
+            .xz()
+            .angle_between(wind.0.xz())
+            .sin();
+        sail_trim_ratio.0 = trim_ratio;
     }
 }

@@ -7,6 +7,10 @@ pub struct WheelTurnRatio(pub f32);
 
 #[derive(Component, Reflect, Clone, Copy, Default)]
 #[reflect(Component)]
+pub struct SailTrimRatio(pub f32);
+
+#[derive(Component, Reflect, Clone, Copy, Default)]
+#[reflect(Component)]
 pub struct Controls {
     pub turn_action: i32,
     pub accelerate_action: i32,

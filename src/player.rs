@@ -5,8 +5,8 @@ use crate::game_state::states::GameState;
 use crate::physics::systems::update_aerodynamic_force;
 use crate::player::components::Player;
 use crate::player::systems::{
-    animate_flag, animate_wheel, apply_inputs, spawn_players, update_hull_drag,
-    update_wheel_turn_ratio, update_rudder,
+    animate_flag, animate_sail_trim, animate_wheel_turn, apply_inputs, spawn_players,
+    update_hull_drag, update_rudder, update_sail_trim_ratio, update_wheel_turn_ratio,
 };
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
@@ -26,6 +26,7 @@ impl Plugin for PlayerPlugin {
                 update_rudder,
                 update_hull_drag,
                 update_wheel_turn_ratio,
+                update_sail_trim_ratio,
             )
                 .chain()
                 .before(update_aerodynamic_force),
@@ -33,7 +34,8 @@ impl Plugin for PlayerPlugin {
 
         app.add_systems(
             Update,
-            (animate_wheel, animate_flag).run_if(in_state(GameState::InGame)),
+            (animate_sail_trim, animate_wheel_turn, animate_flag)
+                .run_if(in_state(GameState::InGame)),
         );
 
         // Registered all components that needs to be restored when rollback entities are restored

@@ -41,7 +41,7 @@ impl Plugin for PhysicsPlugin {
                 update_angular_velocity,
                 update_orientation,
             )
-                .chain()
+                .chain(),
         );
 
         app.rollback_component_with_copy::<LinearVelocity>();

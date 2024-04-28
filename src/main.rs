@@ -6,7 +6,7 @@
 
 use crate::args::ArgsPlugin;
 use crate::connection::systems::RollbackConfig;
-use crate::controls::components::{Controls};
+use crate::controls::components::Controls;
 use crate::game_state::states::GameState;
 use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
@@ -30,8 +30,8 @@ mod artillery;
 mod assets;
 mod camera;
 mod connection;
-mod debug_fps;
 mod controls;
+mod debug_fps;
 mod focal_point;
 mod game_state;
 mod inputs;
