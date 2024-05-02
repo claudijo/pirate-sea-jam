@@ -88,9 +88,11 @@ fn main() {
     app.add_plugins(InstructionsPlugin);
     app.add_plugins(MenuPlugin);
     app.add_plugins(PhysicsPlugin);
-    app.add_plugins(WidgetDebugPlugin);
 
     app.register_type::<Controls>();
+
+    #[cfg(debug_assertions)]
+    app.add_plugins(WidgetDebugPlugin);
 
     #[cfg(debug_assertions)]
     app.add_plugins(EditorPlugin::default());

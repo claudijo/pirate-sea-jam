@@ -60,7 +60,7 @@ pub fn spawn_players(
                     ..default()
                 },
                 ParticleBundle {
-                    mass: Mass(80.),
+                    mass: Mass(100.),
                     linear_damping: LinearDamping(0.8),
                     ..default()
                 },

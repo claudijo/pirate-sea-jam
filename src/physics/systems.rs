@@ -196,7 +196,6 @@ pub fn update_buoyant_force(
 }
 
 pub fn update_aerodynamic_force(
-    mut gizmos: Gizmos,
     aerofoil_query: Query<(Entity, &GlobalTransform, &Area), With<Aerofoil>>,
     mut vessel_query: Query<(
         &GlobalTransform,
@@ -228,28 +227,6 @@ pub fn update_aerodynamic_force(
                 drag *= aerodynamic_force_multiplier;
 
                 let aerodynamic_force = lift + drag;
-
-                gizmos.ray(
-                    vessel_global_transform.translation() + Vec3::Y * 2.,
-                    // vessel_global_transform.back() * 30.,
-                    vessel_transform.back() * 10.,
-                    Color::BLACK,
-                );
-
-                // gizmos.ray(
-                //     aerofoil_global_transform.translation(),
-                //     linear_velocity.0,
-                //     Color::WHITE,
-                // );
-
-                // gizmos.ray(aerofoil_global_transform.translation(), lift, Color::GREEN);
-                // gizmos.ray(aerofoil_global_transform.translation(), drag, Color::RED);
-                //
-                // gizmos.ray(
-                //     aerofoil_global_transform.translation(),
-                //     aerodynamic_force,
-                //     Color::ORANGE,
-                // );
 
                 external_torque.0 += (aerofoil_global_transform.translation()
                     - vessel_global_transform.translation())

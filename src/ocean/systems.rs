@@ -146,13 +146,13 @@ pub fn sync_ocean_tiles_center_offset(
     mut ocean_tile_query: Query<(&mut Transform, &OceanTile)>,
     mut materials: ResMut<Assets<StandardOceanMaterial>>,
 ) {
-    // for (mut transform, ocean_tile) in &mut ocean_tile_query {
-    //     transform.translation = focal_point.0 + ocean_tile.offset;
-    // }
-    //
-    // for (_, material) in materials.iter_mut() {
-    //     material.extension.position.center_offset = focal_point.0;
-    // }
+    for (mut transform, ocean_tile) in &mut ocean_tile_query {
+        transform.translation = focal_point.0 + ocean_tile.offset;
+    }
+
+    for (_, material) in materials.iter_mut() {
+        material.extension.position.center_offset = focal_point.0;
+    }
 }
 
 pub fn sync_shader_time(time: Res<Time>, mut materials: ResMut<Assets<StandardOceanMaterial>>) {
