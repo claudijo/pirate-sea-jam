@@ -1,4 +1,3 @@
-use crate::ocean::resources::Wave;
 use crate::physics::components::{
     Aerofoil, AngularDamping, AngularDrag, AngularVelocity, Area, Buoy, ExternalForce,
     ExternalImpulse, ExternalTorque, ExternalTorqueImpulse, Hydrofoil, Inertia, LinearDamping,
@@ -81,7 +80,6 @@ pub fn update_linear_velocity(
     gravity: Res<Gravity>,
     mut physics_query: Query<
         (
-            Entity,
             &Mass,
             &LinearDamping,
             &mut ExternalForce,
@@ -93,7 +91,7 @@ pub fn update_linear_velocity(
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
-    for (entity, mass, linear_damping, mut external_force, mut external_impulse, mut velocity) in
+    for (mass, linear_damping, mut external_force, mut external_impulse, mut velocity) in
         &mut physics_query
     {
         if mass.0 <= 0. {
@@ -140,7 +138,7 @@ pub fn update_position(
 pub fn update_linear_drag_force(
     mut physics_query: Query<(&LinearDrag, &LinearVelocity, &mut ExternalForce)>,
 ) {
-    for (linear_drag, mut linear_velocity, mut external_force) in &mut physics_query {
+    for (linear_drag, linear_velocity, mut external_force) in &mut physics_query {
         if linear_velocity.0.length() > f32::EPSILON {
             let speed = linear_velocity.0.length();
             let drag_coefficient = linear_drag.velocity_drag_coefficient * speed
@@ -154,7 +152,7 @@ pub fn update_linear_drag_force(
 pub fn update_angular_drag_force(
     mut physics_query: Query<(&AngularDrag, &AngularVelocity, &mut ExternalTorque)>,
 ) {
-    for (angular_drag, mut angular_velocity, mut external_torque) in &mut physics_query {
+    for (angular_drag, angular_velocity, mut external_torque) in &mut physics_query {
         if angular_velocity.0.length() > f32::EPSILON {
             let speed = angular_velocity.0.length();
             let drag_coefficient = angular_drag.velocity_drag_coefficient * speed
@@ -168,11 +166,11 @@ pub fn update_angular_drag_force(
 
 // Assume buoys apply buoyant force to parent
 pub fn update_buoyant_force(
-    buoy_query: Query<(&Parent, &Buoy, &GlobalTransform, &Transform)>,
+    buoy_query: Query<(&Parent, &Buoy, &GlobalTransform)>,
     mut floating_body_query: Query<(&GlobalTransform, &mut ExternalForce, &mut ExternalTorque)>,
     water_density: Res<WaterDensity>,
 ) {
-    for (parent, buoy, global_transform, transform) in &buoy_query {
+    for (parent, buoy, global_transform) in &buoy_query {
         let submerged_proportion =
             (global_transform.translation().y - buoy.water_height - buoy.max_depth)
                 / (-2. * buoy.max_depth);
@@ -199,7 +197,6 @@ pub fn update_aerodynamic_force(
     aerofoil_query: Query<(Entity, &GlobalTransform, &Area), With<Aerofoil>>,
     mut vessel_query: Query<(
         &GlobalTransform,
-        &Transform,
         &LinearVelocity,
         &mut ExternalForce,
         &mut ExternalTorque,
@@ -212,7 +209,6 @@ pub fn update_aerodynamic_force(
         for parent_entity in parent_query.iter_ancestors(aerofoil_entity) {
             if let Ok((
                 vessel_global_transform,
-                vessel_transform,
                 linear_velocity,
                 mut external_force,
                 mut external_torque,

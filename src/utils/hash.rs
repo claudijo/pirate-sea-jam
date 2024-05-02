@@ -15,6 +15,7 @@ pub fn hash_f32_number(value: f32) -> u64 {
     hasher.finish()
 }
 
+#[allow(dead_code)]
 pub fn hash_vec2(value: Vec2) -> u64 {
     assert!(
         value.is_finite(),

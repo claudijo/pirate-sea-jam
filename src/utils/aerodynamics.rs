@@ -2,7 +2,6 @@ use crate::utils::linear_algebra::{
     angle_between_perpendicular, perpendicular_to_projection_direction,
 };
 use bevy::math::Vec3;
-use std::f32::EPSILON;
 use std::ops::Neg;
 
 // https://aviation.stackexchange.com/a/64637

@@ -21,6 +21,7 @@ impl Wave {
                 .sum::<Vec3>()
     }
 
+    #[allow(dead_code)]
     pub fn next_position_normal(
         &self,
         mut position: Vec3,

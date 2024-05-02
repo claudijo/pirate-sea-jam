@@ -18,6 +18,7 @@ pub fn gerstner_wave(wave: Vec4, p: Vec3, time: f32) -> Vec3 {
     Vec3::new(d.x * (a * f.cos()), a * f.sin(), d.y * (a * f.cos()))
 }
 
+#[allow(dead_code)]
 pub fn gerstner_wave_tangent_binormal(
     wave: Vec4,
     p: Vec3,

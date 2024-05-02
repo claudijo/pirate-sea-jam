@@ -7,7 +7,7 @@ use crate::ocean::resources::Wave;
 use crate::ocean::{
     OCEAN_PRIMARY_TILE_SUBDIVISIONS, OCEAN_SECONDARY_TILE_SUBDIVISIONS, OCEAN_TILE_SIZE,
 };
-use crate::physics::components::{AngularDamping, AngularDrag, Buoy, LinearDamping, LinearDrag};
+use crate::physics::components::{AngularDrag, Buoy, LinearDrag};
 use bevy::math::Vec3A;
 use bevy::prelude::*;
 use bevy::render::primitives::Aabb;

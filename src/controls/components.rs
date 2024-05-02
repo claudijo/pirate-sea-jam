@@ -1,4 +1,4 @@
-use crate::utils::hash::{hash_f32_number, hash_vec2};
+use crate::utils::hash::hash_f32_number;
 use bevy::prelude::*;
 
 #[derive(Component, Reflect, Clone, Copy, Default)]

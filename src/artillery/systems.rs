@@ -1,4 +1,4 @@
-use crate::artillery::components::{Artillery, ArtilleryAiming, ArtilleryReady, Projectile};
+use crate::artillery::components::{Artillery, ArtilleryAiming, Projectile};
 use crate::artillery::resources::{EndAimArtilleryAnimationClips, StartAimArtilleryAnimationClips};
 use crate::artillery::{
     PORT_BACK_CANNON_TAG, PORT_FRONT_CANNON_TAG, STARBOARD_BACK_CANNON_TAG,
@@ -9,13 +9,9 @@ use crate::connection::systems::RollbackConfig;
 use crate::inputs::fire;
 use crate::ocean::resources::Wave;
 use crate::physics::bundles::ParticleBundle;
-use crate::physics::components::{
-    AngularVelocity, ExternalForce, ExternalImpulse, ExternalTorque, ExternalTorqueImpulse,
-    LinearVelocity,
-};
+use crate::physics::components::{ExternalImpulse, ExternalTorqueImpulse, LinearVelocity};
 use crate::player::components::Player;
 use crate::utils::linear_algebra::is_facing;
-use crate::utils::vec2_extensions::Vec2Ext;
 use bevy::animation::RepeatAnimation;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs};

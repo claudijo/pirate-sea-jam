@@ -1,8 +1,5 @@
 use crate::utils::hash::{hash_f32_number, hash_quat, hash_vec3};
-use bevy::prelude::shape::Cube;
 use bevy::prelude::*;
-use bevy::utils::FixedState;
-use std::hash::{BuildHasher, Hash, Hasher};
 
 #[derive(Component, Reflect, Clone, Copy, Default)]
 #[reflect(Component)]
@@ -85,6 +82,7 @@ impl Inertia {
         Self::non_uniformly_scaled_regular_shape(x_length, y_length, z_length, mass / 12.)
     }
 
+    #[allow(dead_code)]
     pub fn ellipsoid(x_radius: f32, y_radius: f32, z_radius: f32, mass: f32) -> Self {
         Self::non_uniformly_scaled_regular_shape(x_radius, y_radius, z_radius, mass / 5.)
     }

@@ -21,7 +21,7 @@ use crate::wind::resources::Wind;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs, Rollback};
-use std::f32::consts::{E, PI, TAU};
+use std::f32::consts::{E, PI};
 
 pub fn spawn_players(
     mut commands: Commands,
