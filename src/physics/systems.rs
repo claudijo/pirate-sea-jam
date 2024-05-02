@@ -1,7 +1,8 @@
 use crate::ocean::resources::Wave;
 use crate::physics::components::{
     Aerofoil, AngularDamping, AngularDrag, AngularVelocity, Area, Buoy, ExternalForce,
-    ExternalTorque, Hydrofoil, Inertia, LinearDamping, LinearDrag, LinearVelocity, Mass,
+    ExternalImpulse, ExternalTorque, ExternalTorqueImpulse, Hydrofoil, Inertia, LinearDamping,
+    LinearDrag, LinearVelocity, Mass,
 };
 use crate::physics::resources::{AirDensity, Gravity, WaterDensity};
 use crate::utils::aerodynamics::scaled_lift_drag;
@@ -16,6 +17,7 @@ pub fn update_angular_velocity(
             &Inertia,
             &AngularDamping,
             &mut ExternalTorque,
+            &mut ExternalTorqueImpulse,
             &mut AngularVelocity,
         ),
         With<Rollback>,
@@ -23,18 +25,30 @@ pub fn update_angular_velocity(
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
-    for (global_transform, inertia, angular_damping, mut external_torque, mut angular_velocity) in
-        &mut physics_query
+    for (
+        global_transform,
+        inertia,
+        angular_damping,
+        mut external_torque,
+        mut external_torque_impulse,
+        mut angular_velocity,
+    ) in &mut physics_query
     {
         if inertia.0 == Mat3::ZERO {
             continue;
         }
 
         let world_coordinates_inertia = inertia.0 * Mat3::from(global_transform.affine().matrix3);
-        let angular_acceleration = world_coordinates_inertia.inverse() * external_torque.0;
+        let inverted_world_coordinates_inertia = world_coordinates_inertia.inverse();
 
-        // Update linear velocity from the acceleration.
+        // Update angular velocity from the acceleration.
+        let angular_acceleration = inverted_world_coordinates_inertia * external_torque.0;
         angular_velocity.0 += angular_acceleration * delta_time;
+
+        // Update angular velocity from impulse
+        let angular_impulse_velocity =
+            inverted_world_coordinates_inertia * external_torque_impulse.0;
+        angular_velocity.0 += angular_impulse_velocity;
 
         // Impose drag.(The damping parameter can be flexible and allow it to be used to simulate
         // visible levels of drag)
@@ -42,6 +56,9 @@ pub fn update_angular_velocity(
 
         // Reset torque
         external_torque.0 = Vec3::ZERO;
+
+        // Reset torque impulse
+        external_torque_impulse.0 = Vec3::ZERO;
     }
 }
 
@@ -64,9 +81,11 @@ pub fn update_linear_velocity(
     gravity: Res<Gravity>,
     mut physics_query: Query<
         (
+            Entity,
             &Mass,
             &LinearDamping,
             &mut ExternalForce,
+            &mut ExternalImpulse,
             &mut LinearVelocity,
         ),
         With<Rollback>,
@@ -74,7 +93,9 @@ pub fn update_linear_velocity(
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
-    for (mass, linear_damping, mut external_force, mut velocity) in &mut physics_query {
+    for (entity, mass, linear_damping, mut external_force, mut external_impulse, mut velocity) in
+        &mut physics_query
+    {
         if mass.0 <= 0. {
             continue;
         }
@@ -86,12 +107,18 @@ pub fn update_linear_velocity(
         // Update linear velocity from the acceleration.
         velocity.0 += linear_acceleration * delta_time;
 
+        // Update linear velocity from impulse
+        velocity.0 += external_impulse.0 / mass.0;
+
         // Impose drag.(The damping parameter can be flexible and allow it to be used to simulate
         // visible levels of drag)
         velocity.0 *= linear_damping.0.powf(delta_time);
 
         // Reset force
         external_force.0 = Vec3::ZERO;
+
+        // Reset impulse
+        external_impulse.0 = Vec3::ZERO;
     }
 }
 
@@ -173,6 +200,7 @@ pub fn update_aerodynamic_force(
     aerofoil_query: Query<(Entity, &GlobalTransform, &Area), With<Aerofoil>>,
     mut vessel_query: Query<(
         &GlobalTransform,
+        &Transform,
         &LinearVelocity,
         &mut ExternalForce,
         &mut ExternalTorque,
@@ -185,6 +213,7 @@ pub fn update_aerodynamic_force(
         for parent_entity in parent_query.iter_ancestors(aerofoil_entity) {
             if let Ok((
                 vessel_global_transform,
+                vessel_transform,
                 linear_velocity,
                 mut external_force,
                 mut external_torque,
@@ -201,25 +230,26 @@ pub fn update_aerodynamic_force(
                 let aerodynamic_force = lift + drag;
 
                 gizmos.ray(
-                    vessel_global_transform.translation(),
-                    linear_velocity.0,
+                    vessel_global_transform.translation() + Vec3::Y * 2.,
+                    // vessel_global_transform.back() * 30.,
+                    vessel_transform.back() * 10.,
                     Color::BLACK,
                 );
 
-                gizmos.ray(
-                    aerofoil_global_transform.translation(),
-                    linear_velocity.0,
-                    Color::WHITE,
-                );
+                // gizmos.ray(
+                //     aerofoil_global_transform.translation(),
+                //     linear_velocity.0,
+                //     Color::WHITE,
+                // );
 
-                gizmos.ray(aerofoil_global_transform.translation(), lift, Color::GREEN);
-                gizmos.ray(aerofoil_global_transform.translation(), drag, Color::RED);
-
-                gizmos.ray(
-                    aerofoil_global_transform.translation(),
-                    aerodynamic_force,
-                    Color::ORANGE,
-                );
+                // gizmos.ray(aerofoil_global_transform.translation(), lift, Color::GREEN);
+                // gizmos.ray(aerofoil_global_transform.translation(), drag, Color::RED);
+                //
+                // gizmos.ray(
+                //     aerofoil_global_transform.translation(),
+                //     aerodynamic_force,
+                //     Color::ORANGE,
+                // );
 
                 external_torque.0 += (aerofoil_global_transform.translation()
                     - vessel_global_transform.translation())
@@ -234,7 +264,6 @@ pub fn update_aerodynamic_force(
 }
 
 pub fn update_hydrodynamic_force(
-    mut gizmos: Gizmos,
     hydrofoil_query: Query<(Entity, &GlobalTransform, &Area), With<Hydrofoil>>,
     mut vessel_query: Query<(
         &GlobalTransform,
@@ -266,21 +295,6 @@ pub fn update_hydrodynamic_force(
                 drag *= hydrodynamic_force_multiplier;
 
                 let hydrodynamic_force = lift + drag;
-
-                gizmos.ray(
-                    hydrofoil_global_transform.translation(),
-                    linear_velocity.0,
-                    Color::BLUE,
-                );
-
-                gizmos.ray(
-                    hydrofoil_global_transform.translation(),
-                    hydrodynamic_force,
-                    Color::ORANGE,
-                );
-
-                gizmos.ray(hydrofoil_global_transform.translation(), lift, Color::GREEN);
-                gizmos.ray(hydrofoil_global_transform.translation(), drag, Color::RED);
 
                 external_torque.0 += (hydrofoil_global_transform.translation()
                     - vessel_global_transform.translation())

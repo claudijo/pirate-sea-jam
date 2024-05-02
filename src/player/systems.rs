@@ -60,7 +60,7 @@ pub fn spawn_players(
                     ..default()
                 },
                 ParticleBundle {
-                    mass: Mass(100.),
+                    mass: Mass(80.),
                     linear_damping: LinearDamping(0.8),
                     ..default()
                 },
@@ -115,7 +115,6 @@ pub fn spawn_players(
                                     scene: model_assets.scene_handles["medium_pirate_sail.glb"]
                                         .clone(),
                                     transform: Transform::from_xyz(0., 2.3248, 1.3574),
-                                    // .with_rotation(Quat::from_rotation_y(PI / 4.)),
                                     ..default()
                                 },
                                 Name::new("Sail"),
@@ -189,7 +188,7 @@ pub fn spawn_players(
                                         ..default()
                                     },
                                     Artillery {
-                                        muzzle_velocity: 18.,
+                                        muzzle_velocity: 24.,
                                         ..default()
                                     },
                                     AnimationPlayer::default(),

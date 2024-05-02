@@ -9,7 +9,10 @@ use crate::connection::systems::RollbackConfig;
 use crate::inputs::fire;
 use crate::ocean::resources::Wave;
 use crate::physics::bundles::ParticleBundle;
-use crate::physics::components::LinearVelocity;
+use crate::physics::components::{
+    AngularVelocity, ExternalForce, ExternalImpulse, ExternalTorque, ExternalTorqueImpulse,
+    LinearVelocity,
+};
 use crate::player::components::Player;
 use crate::utils::linear_algebra::is_facing;
 use crate::utils::vec2_extensions::Vec2Ext;
@@ -71,7 +74,14 @@ pub fn stop_aim_and_fire_artillery(
     mut commands: Commands,
     model_assets: Res<ModelAssets>,
     inputs: Res<PlayerInputs<RollbackConfig>>,
-    mut player_query: Query<(&mut ArtilleryAiming, &Player, &LinearVelocity)>,
+    mut player_query: Query<(
+        &mut ArtilleryAiming,
+        &Player,
+        &LinearVelocity,
+        &mut ExternalImpulse,
+        &mut ExternalTorqueImpulse,
+        &GlobalTransform,
+    )>,
     mut artillery_query: Query<(
         &GlobalTransform,
         &Name,
@@ -80,12 +90,20 @@ pub fn stop_aim_and_fire_artillery(
     )>,
     animation_clips: Res<EndAimArtilleryAnimationClips>,
 ) {
-    for (mut artillery_aiming, player, linear_velocity) in &mut player_query {
+    for (
+        mut artillery_aiming,
+        player,
+        linear_velocity,
+        mut external_impulse,
+        mut external_torque_impulse,
+        vessel_global_transform,
+    ) in &mut player_query
+    {
         let (input, _) = inputs[player.handle];
         if !fire(input) && artillery_aiming.0 {
             artillery_aiming.0 = false;
 
-            for (global_transform, name, mut artillery, mut animation_player) in
+            for (artillery_global_transform, name, mut artillery, mut animation_player) in
                 &mut artillery_query
             {
                 if artillery.is_aiming {
@@ -107,7 +125,7 @@ pub fn stop_aim_and_fire_artillery(
                             SceneBundle {
                                 scene: model_assets.scene_handles["cannon_ball.glb"].clone(),
                                 transform: Transform::from_translation(
-                                    global_transform.translation(),
+                                    artillery_global_transform.translation(),
                                 ),
                                 ..default()
                             },
@@ -115,13 +133,20 @@ pub fn stop_aim_and_fire_artillery(
                             Projectile,
                             ParticleBundle {
                                 linear_velocity: LinearVelocity(
-                                    global_transform.left() * artillery.muzzle_velocity
+                                    artillery_global_transform.left() * artillery.muzzle_velocity
                                         + linear_velocity.0,
                                 ),
                                 ..default()
                             },
                         ))
                         .add_rollback();
+
+                    let recoil_impulse = artillery_global_transform.right() * 60.;
+
+                    external_torque_impulse.0 += (artillery_global_transform.translation()
+                        - vessel_global_transform.translation())
+                    .cross(recoil_impulse);
+                    external_impulse.0 += recoil_impulse;
                 }
             }
         }

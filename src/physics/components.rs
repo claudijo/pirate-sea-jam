@@ -23,6 +23,14 @@ pub struct ExternalTorque(pub Vec3);
 
 #[derive(Component, Reflect, Clone, Copy, Default)]
 #[reflect(Component)]
+pub struct ExternalTorqueImpulse(pub Vec3);
+
+#[derive(Component, Reflect, Clone, Copy, Default)]
+#[reflect(Component)]
+pub struct ExternalImpulse(pub Vec3);
+
+#[derive(Component, Reflect, Clone, Copy, Default)]
+#[reflect(Component)]
 pub struct Buoy {
     pub volume: f32,
     pub water_height: f32,
