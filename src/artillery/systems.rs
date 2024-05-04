@@ -27,13 +27,13 @@ pub fn start_aim_artillery(
         &mut AnimationPlayer,
     )>,
     children_query: Query<&Children>,
-    mut player_query: Query<(Entity, &mut ArtilleryAiming, &Player)>,
+    mut player_query: Query<(Entity, &GlobalTransform, &mut ArtilleryAiming, &Player)>,
     inputs: Res<PlayerInputs<RollbackConfig>>,
     animation_clips: Res<StartAimArtilleryAnimationClips>,
 ) {
     let dummy_closest_target = Vec3::ZERO;
 
-    for (ship_entity, mut artillery_aiming, player) in &mut player_query {
+    for (ship_entity, vessel_global_transform, mut artillery_aiming, player) in &mut player_query {
         let (input, _) = inputs[player.handle];
         if fire(input) && !artillery_aiming.0 {
             artillery_aiming.0 = true;
@@ -44,7 +44,7 @@ pub fn start_aim_artillery(
                 {
                     if is_facing(
                         global_transform.left(),
-                        global_transform.translation(),
+                        vessel_global_transform.translation(),
                         dummy_closest_target,
                     ) {
                         if let Some(animation_clip_handle) =

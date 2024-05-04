@@ -6,7 +6,7 @@ pub fn face_normal(a: [f32; 3], b: [f32; 3], c: [f32; 3]) -> [f32; 3] {
 }
 
 pub fn is_facing(source_direction: Vec3, source_position: Vec3, target_position: Vec3) -> bool {
-    source_direction.dot(target_position - source_position) > 0.
+    (target_position - source_position).dot(source_direction) > 0.
 }
 
 pub fn angle_between_perpendicular(vector: Vec3, normal: Vec3) -> f32 {
