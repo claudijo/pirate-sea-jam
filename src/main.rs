@@ -3,7 +3,6 @@
 // workflow treats them as errors, so this allows them throughout the project.
 // Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
-
 // Some debug related imports are not used in release builds. Prevent those warnings.
 #![cfg_attr(not(debug_assertions), allow(dead_code, unused_imports))]
 
