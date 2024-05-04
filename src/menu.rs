@@ -1,4 +1,4 @@
-mod resources;
+mod components;
 mod systems;
 
 use crate::game_state::states::GameState;

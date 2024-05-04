@@ -1,61 +1,96 @@
 use crate::args::resources::Args;
-use crate::artillery::components::CannonsAreAiming;
+use crate::artillery::components::{Artillery, ArtilleryAiming, ArtilleryReady};
+use crate::artillery::{
+    PORT_BACK_CANNON_TAG, PORT_FRONT_CANNON_TAG, STARBOARD_BACK_CANNON_TAG,
+    STARBOARD_FRONT_CANNON_TAG,
+};
 use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
-use crate::floating_body::components::{
-    Controls, LinearVelocity, Position, Yaw, YawRotationalSpeed,
-};
+use crate::controls::components::{Controls, SailTrimRatio, WheelTurnRatio};
 use crate::inputs::turn_action_from_input;
-use crate::player::components::{Flag, Helm, Player};
-use crate::player::{
-    ANGULAR_ACCELERATION, ANGULAR_DAMPING, LINEAR_ACCELERATION, LINEAR_DAMPING, MAX_ANGULAR_SPEED,
-    MAX_LINEAR_SPEED, TRACTION,
+use crate::physics::bundles::{ParticleBundle, SpindleBundle};
+use crate::physics::components::{
+    Aerofoil, AngularDamping, Area, Buoy, Hydrofoil, Inertia, LinearDamping, LinearVelocity, Mass,
+    Rudder, SailTrim,
 };
+use crate::player::components::{Flag, Player, Wheel};
+use crate::player::{WHEEL_TURN_ACCELERATION, WHEEL_TURN_DAMPING};
 use crate::utils::f32_extensions::F32Ext;
 use crate::utils::linear_algebra::face_normal;
-use crate::utils::vec2_extensions::Vec2Ext;
 use crate::wind::resources::Wind;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs, Rollback};
-use std::f32::consts::{E, PI, TAU};
+use std::f32::consts::{E, PI};
 
 pub fn spawn_players(
     mut commands: Commands,
-    model_assets: Res<ModelAssets>,
     args: Res<Args>,
+    model_assets: Res<ModelAssets>,
     mut assets: ResMut<Assets<Mesh>>,
 ) {
     let placement_circle_radius = 5.;
     for handle in 0..args.num_players {
         let placement_angle = handle as f32 / args.num_players as f32 * 2. * PI;
         let x = placement_circle_radius * placement_angle.cos();
-        let y = placement_circle_radius * placement_angle.sin();
+        let z = placement_circle_radius * placement_angle.sin();
 
-        // Duplicate vertices once for flag mesh here, which will facilitate recalculating normals when animating the
-        // flag later on, even if accessing the mesh through the scene asset
+        // Duplicate vertices once for flag mesh here, which will facilitate recalculating normals
+        // when animating the flag later on, even if accessing the mesh through the scene asset
         let flag_mesh_handle = &model_assets.mesh_handles["medium_flag.glb"];
         let flag_mesh = assets.get_mut(flag_mesh_handle).unwrap();
         flag_mesh.duplicate_vertices();
 
         commands
             .spawn((
-                SpatialBundle::default(),
+                SpatialBundle::from_transform(
+                    Transform::from_translation(Vec3::new(x, 0., z))
+                        .with_rotation(Quat::from_rotation_y(4. * PI / 8.)),
+                ),
                 Player { handle },
-                Position(Vec2::new(x, y)),
-                Yaw::default(),
                 Controls::default(),
-                LinearVelocity::default(),
-                YawRotationalSpeed::default(),
-                CannonsAreAiming::default(),
+                WheelTurnRatio::default(),
+                SailTrimRatio::default(),
+                ArtilleryReady::default(),
+                ArtilleryAiming::default(),
                 Name::new("Ship"),
+                SpindleBundle {
+                    inertia: Inertia::cuboid(4., 3., 3., 100.),
+                    angular_damping: AngularDamping(0.6),
+                    ..default()
+                },
+                ParticleBundle {
+                    mass: Mass(100.),
+                    linear_damping: LinearDamping(0.8),
+                    ..default()
+                },
             ))
             .with_children(|child_builder| {
+                for buoy_translation in [
+                    Vec3::new(1.25, 0.5, 1.25),
+                    Vec3::new(-1.25, 0.5, 1.25),
+                    Vec3::new(1.25, 0.5, -1.25),
+                    Vec3::new(-1.25, 0.5, -1.25),
+                ] {
+                    child_builder
+                        .spawn((
+                            TransformBundle::from_transform(Transform::from_translation(
+                                buoy_translation,
+                            )),
+                            Buoy {
+                                volume: 0.75,
+                                max_depth: 0.5,
+                                ..default()
+                            },
+                        ))
+                        .add_rollback();
+                }
+
                 child_builder
                     .spawn((
                         SceneBundle {
                             scene: model_assets.scene_handles["medium_hull.glb"].clone(),
-                            transform: Transform::from_xyz(0., -0.5, 0.),
+                            transform: Transform::from_xyz(0., 0., 0.),
                             ..default()
                         },
                         Name::new("Hull"),
@@ -69,8 +104,8 @@ pub fn spawn_players(
                                     transform: Transform::from_xyz(0., 5.5806, -1.0694),
                                     ..default()
                                 },
-                                Helm,
-                                Name::new("Helm"),
+                                Wheel,
+                                Name::new("Wheel"),
                             ))
                             .add_rollback();
 
@@ -83,6 +118,40 @@ pub fn spawn_players(
                                     ..default()
                                 },
                                 Name::new("Sail"),
+                                SailTrim,
+                            ))
+                            .add_rollback();
+
+                        // Place the force generating sail in center of gravity so that we don't
+                        // generate any torque, which messes things up. Same with keel.
+                        child_builder
+                            .spawn((
+                                TransformBundle::from_transform(Transform::from_rotation(
+                                    Quat::from_rotation_y(PI / 4.),
+                                )),
+                                Name::new("Virtual sail"),
+                                Area(8.),
+                                Aerofoil,
+                                SailTrim,
+                            ))
+                            .add_rollback();
+
+                        child_builder
+                            .spawn((
+                                TransformBundle::default(),
+                                Name::new("Keel"),
+                                Area(1.),
+                                Hydrofoil,
+                            ))
+                            .add_rollback();
+
+                        child_builder
+                            .spawn((
+                                TransformBundle::from_transform(Transform::from_xyz(0., -1., -2.)),
+                                Name::new("Rudder"),
+                                Area(0.05),
+                                Rudder,
+                                Hydrofoil,
                             ))
                             .add_rollback();
 
@@ -100,10 +169,10 @@ pub fn spawn_players(
 
                         #[rustfmt::skip]
                             let cannons = [
-                            ([1.1769, 1.4593, -0.5485], PI, "Cannon port back"),
-                            ([1.13846, 1.54822, 1.54781], PI, "Cannon port front"),
-                            ([-1.1769, 1.4593, -0.5485], 0., "Cannon starboard back"),
-                            ([-1.13846, 1.54822, 1.54781], 0., "Cannon starboard back"),
+                            ([1.1769, 1.4593, -0.5485], PI, PORT_BACK_CANNON_TAG),
+                            ([1.13846, 1.54822, 1.54781], PI, PORT_FRONT_CANNON_TAG),
+                            ([-1.1769, 1.4593, -0.5485], 0., STARBOARD_BACK_CANNON_TAG),
+                            ([-1.13846, 1.54822, 1.54781], 0., STARBOARD_FRONT_CANNON_TAG),
                         ];
 
                         for (cannon_transform, cannon_y_rotation, name) in cannons {
@@ -118,6 +187,11 @@ pub fn spawn_players(
                                         .with_rotation(Quat::from_rotation_y(cannon_y_rotation)),
                                         ..default()
                                     },
+                                    Artillery {
+                                        muzzle_velocity: 24.,
+                                        ..default()
+                                    },
+                                    AnimationPlayer::default(),
                                     Name::new(name),
                                 ))
                                 .add_rollback();
@@ -148,14 +222,13 @@ pub fn animate_flag(
     let elapsed_time = time.elapsed_seconds();
 
     for (flag_entity, mut flag_transform, flag_parent) in &mut flag_query {
-        // Rotate flag according to wind
+        // Rotate flag from wind
         let flag_parent_global_transform = global_transform_query.get(flag_parent.get());
         if let Ok(flag_parent_global_transform) = flag_parent_global_transform {
             let angle = wind
                 .0
                 .xz()
-                .angle_between(flag_parent_global_transform.forward().xz())
-                + PI;
+                .angle_between(flag_parent_global_transform.forward().xz());
             flag_transform.rotation = Quat::from_rotation_y(angle);
         }
 
@@ -207,13 +280,49 @@ pub fn animate_flag(
     }
 }
 
-pub fn animate_helm(
-    player_query: Query<&YawRotationalSpeed, With<Rollback>>,
-    mut helm_query: Query<&mut Transform, With<Helm>>,
+pub fn animate_wheel_turn(
+    player_query: Query<&WheelTurnRatio, With<Rollback>>,
+    mut helm_query: Query<&mut Transform, With<Wheel>>,
 ) {
-    for yaw_rotational_speed in &player_query {
+    for wheel_turn_ratio in &player_query {
         for mut transform in &mut helm_query {
-            transform.rotation = Quat::from_rotation_z(yaw_rotational_speed.0 * TAU);
+            transform.rotation = Quat::from_rotation_z(wheel_turn_ratio.0 * 4.);
+        }
+    }
+}
+
+pub fn update_rudder(
+    player_query: Query<&WheelTurnRatio, With<Rollback>>,
+    mut rudder_query: Query<&mut Transform, With<Rudder>>,
+) {
+    for wheel_turn_ratio in &player_query {
+        for mut transform in &mut rudder_query {
+            transform.rotation = Quat::from_rotation_y(wheel_turn_ratio.0 * PI / 8.);
+        }
+    }
+}
+
+pub fn animate_sail_trim(
+    player_query: Query<&SailTrimRatio, With<Rollback>>,
+    mut sail_query: Query<&mut Transform, With<SailTrim>>,
+) {
+    for sail_trim_ratio in &player_query {
+        for mut transform in &mut sail_query {
+            transform.rotation = Quat::from_rotation_y(sail_trim_ratio.0 * PI / 4.);
+        }
+    }
+}
+
+pub fn update_hull_drag(
+    mut player_query: Query<(&mut LinearDamping, &GlobalTransform, &LinearVelocity)>,
+) {
+    for (mut linear_damping, global_transform, linear_velocity) in &mut player_query {
+        if global_transform.back().dot(linear_velocity.0) > 0. {
+            // Going forward
+            linear_damping.0 = 0.8;
+        } else {
+            // Going backwards
+            linear_damping.0 = 0.6;
         }
     }
 }
@@ -228,76 +337,28 @@ pub fn apply_inputs(
     }
 }
 
-// Take control component and calculate new velocity and update velocity component
-pub fn update_velocity(
-    mut player_query: Query<
-        (
-            &mut LinearVelocity,
-            &mut YawRotationalSpeed,
-            &Yaw,
-            &Controls,
-        ),
-        With<Rollback>,
-    >,
+pub fn update_wheel_turn_ratio(
+    mut player_query: Query<(&mut WheelTurnRatio, &Controls), With<Rollback>>,
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
-    for (mut linear_velocity, mut rotational_speed, yaw, controls) in &mut player_query {
-        linear_velocity.0 +=
-            yaw.forward() * controls.accelerate_action as f32 * LINEAR_ACCELERATION * delta_time;
-        linear_velocity.0 *= LINEAR_DAMPING.powf(delta_time);
-        linear_velocity.0 = linear_velocity.0.clamp_length_max(MAX_LINEAR_SPEED);
-
-        linear_velocity.0 = linear_velocity
-            .0
-            .normalize()
-            .damp(yaw.forward(), TRACTION, delta_time)
-            * linear_velocity.0.length();
-
-        let rotation_speed_factor = linear_velocity.0.length() / MAX_LINEAR_SPEED;
-        rotational_speed.0 +=
-            controls.turn_action as f32 * ANGULAR_ACCELERATION * rotation_speed_factor * delta_time;
-        rotational_speed.0 *= ANGULAR_DAMPING.powf(delta_time);
-        rotational_speed.0 = rotational_speed
-            .0
-            .clamp(-MAX_ANGULAR_SPEED, MAX_ANGULAR_SPEED);
+    for (mut wheel_turn_ratio, controls) in &mut player_query {
+        wheel_turn_ratio.0 += controls.turn_action as f32 * WHEEL_TURN_ACCELERATION * delta_time;
+        wheel_turn_ratio.0 *= WHEEL_TURN_DAMPING.powf(delta_time);
+        wheel_turn_ratio.0 = wheel_turn_ratio.0.clamp(-1., 1.);
     }
 }
 
-#[allow(dead_code)]
-pub fn debug_velocity(
-    player_query: Query<(&Transform, &Yaw, &LinearVelocity), With<Rollback>>,
-    mut gizmos: Gizmos,
+pub fn update_sail_trim_ratio(
+    mut player_query: Query<(&mut SailTrimRatio, &GlobalTransform), With<Rollback>>,
+    wind: Res<Wind>,
 ) {
-    for (transform, yaw, linear_velocity) in &player_query {
-        gizmos.ray(
-            transform.translation + Vec3::new(0., 2., 0.),
-            yaw.forward().extend_with_y(0.) * 8.,
-            Color::BLUE,
-        );
-        gizmos.ray(
-            transform.translation + Vec3::new(0., 2., 0.),
-            linear_velocity.0.extend_with_y(0.) * 1.4,
-            Color::GREEN,
-        );
-    }
-}
-
-pub fn update_position(
-    mut player_query: Query<
-        (
-            &mut Yaw,
-            &mut Position,
-            &LinearVelocity,
-            &YawRotationalSpeed,
-        ),
-        With<Rollback>,
-    >,
-    time: Res<Time>,
-) {
-    let delta_time = time.delta_seconds();
-    for (mut yaw, mut position, linear_velocity, rotational_speed) in &mut player_query {
-        yaw.0 -= rotational_speed.0 * delta_time;
-        position.0 += linear_velocity.0 * delta_time;
+    for (mut sail_trim_ratio, global_transform) in &mut player_query {
+        let trim_ratio = global_transform
+            .forward()
+            .xz()
+            .angle_between(wind.0.xz())
+            .sin();
+        sail_trim_ratio.0 = trim_ratio;
     }
 }

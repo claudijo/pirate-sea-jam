@@ -2,20 +2,17 @@ pub mod components;
 pub mod systems;
 
 use crate::game_state::states::GameState;
+use crate::physics::systems::update_aerodynamic_force;
 use crate::player::components::Player;
 use crate::player::systems::{
-    animate_flag, animate_helm, apply_inputs, spawn_players, update_position, update_velocity,
+    animate_flag, animate_sail_trim, animate_wheel_turn, apply_inputs, spawn_players,
+    update_hull_drag, update_rudder, update_sail_trim_ratio, update_wheel_turn_ratio,
 };
 use bevy::prelude::*;
 use bevy_ggrs::{GgrsApp, GgrsSchedule};
 
-pub const LINEAR_ACCELERATION: f32 = 10.;
-pub const ANGULAR_ACCELERATION: f32 = 4.;
-pub const MAX_LINEAR_SPEED: f32 = 6.;
-pub const MAX_ANGULAR_SPEED: f32 = 1.;
-pub const LINEAR_DAMPING: f32 = 1.;
-pub const ANGULAR_DAMPING: f32 = 0.1;
-pub const TRACTION: f32 = 1.;
+pub const WHEEL_TURN_ACCELERATION: f32 = 4.;
+pub const WHEEL_TURN_DAMPING: f32 = 0.1;
 
 pub struct PlayerPlugin;
 
@@ -24,12 +21,21 @@ impl Plugin for PlayerPlugin {
         app.add_systems(OnEnter(GameState::InGame), spawn_players);
         app.add_systems(
             GgrsSchedule,
-            (apply_inputs, update_velocity, update_position).chain(),
+            (
+                apply_inputs,
+                update_rudder,
+                update_hull_drag,
+                update_wheel_turn_ratio,
+                update_sail_trim_ratio,
+            )
+                .chain()
+                .before(update_aerodynamic_force),
         );
 
         app.add_systems(
             Update,
-            (animate_helm, animate_flag).run_if(in_state(GameState::InGame)),
+            (animate_sail_trim, animate_wheel_turn, animate_flag)
+                .run_if(in_state(GameState::InGame)),
         );
 
         // Registered all components that needs to be restored when rollback entities are restored

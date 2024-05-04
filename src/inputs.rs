@@ -30,7 +30,6 @@ pub fn turn_action_from_input(input_and_status: (u8, InputStatus)) -> i32 {
     turn
 }
 
-#[allow(dead_code)]
 pub fn fire(input: u8) -> bool {
     input & INPUT_FIRE != 0
 }

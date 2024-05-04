@@ -1,7 +1,7 @@
 #define_import_path pirate_sea_jam::water_dynamics
 
 const PI: f32 = 3.14159265358979323846264338327950288;
-const GRAVITY: f32 = 9.807;
+const GRAVITY: f32 = 10.;
 
 // `wave`: Vec4 containing direction x, direction z, steepness, wave_length
 fn gerstner_wave(wave: vec4<f32>, p: vec3<f32>, time: f32) -> vec3<f32> {

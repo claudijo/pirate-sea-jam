@@ -4,9 +4,12 @@
 // Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+// Some debug related imports are not used in release builds. Prevent those warnings.
+#![cfg_attr(not(debug_assertions), allow(dead_code, unused_imports))]
+
 use crate::args::ArgsPlugin;
 use crate::connection::systems::RollbackConfig;
-use crate::floating_body::components::{Controls, LinearVelocity, Position, Yaw};
+use crate::controls::components::Controls;
 use crate::game_state::states::GameState;
 use bevy::asset::AssetMetaCheck;
 use bevy::prelude::*;
@@ -19,8 +22,10 @@ use crate::focal_point::FocalPointPlugin;
 use crate::instructions::InstructionsPlugin;
 use crate::menu::MenuPlugin;
 use crate::orbiting_camera::OrbitingCameraPlugin;
+use crate::physics::PhysicsPlugin;
 use crate::sky_box::SkyBoxPlugin;
 use crate::sync_test::SyncTestPlugin;
+use crate::widget_debug::WidgetDebugPlugin;
 use crate::wind::WindPlugin;
 
 mod args;
@@ -28,8 +33,8 @@ mod artillery;
 mod assets;
 mod camera;
 mod connection;
+mod controls;
 mod debug_fps;
-mod floating_body;
 mod focal_point;
 mod game_state;
 mod inputs;
@@ -38,11 +43,13 @@ mod light;
 mod menu;
 mod ocean;
 mod orbiting_camera;
+mod physics;
 mod player;
 mod sky_box;
 mod stats;
 mod sync_test;
 mod utils;
+mod widget_debug;
 mod wind;
 
 fn main() {
@@ -69,7 +76,7 @@ fn main() {
     app.add_plugins(camera::CameraPlugin);
     app.add_plugins(ocean::OceanPlugin);
     app.add_plugins(player::PlayerPlugin);
-    app.add_plugins(floating_body::ShipPlugin);
+    app.add_plugins(controls::ShipPlugin);
     app.add_plugins(assets::AssetsPlugin);
     app.add_plugins(inputs::InputsPlugin);
     app.add_plugins(connection::ConnectionPlugin);
@@ -83,11 +90,12 @@ fn main() {
     app.add_plugins(DebugFpsPlugin);
     app.add_plugins(InstructionsPlugin);
     app.add_plugins(MenuPlugin);
+    app.add_plugins(PhysicsPlugin);
 
-    app.register_type::<LinearVelocity>();
-    app.register_type::<Position>();
-    app.register_type::<Yaw>();
     app.register_type::<Controls>();
+
+    #[cfg(debug_assertions)]
+    app.add_plugins(WidgetDebugPlugin);
 
     #[cfg(debug_assertions)]
     app.add_plugins(EditorPlugin::default());
