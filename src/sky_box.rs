@@ -14,7 +14,7 @@ impl Plugin for SkyBoxPlugin {
 
         app.add_systems(
             Update,
-            sync_sky_box_center_offset.run_if(resource_changed::<FocalPoint>()),
+            sync_sky_box_center_offset.run_if(resource_changed::<FocalPoint>),
         );
     }
 }

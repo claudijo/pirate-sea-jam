@@ -47,7 +47,7 @@ pub fn release_pointer(mut window: Query<&mut Window>) {
     }
 }
 
-pub fn release_pointer_on_escape(window: Query<&mut Window>, key: Res<Input<KeyCode>>) {
+pub fn release_pointer_on_escape(window: Query<&mut Window>, key: Res<ButtonInput<KeyCode>>) {
     if key.just_pressed(KeyCode::Escape) {
         release_pointer(window);
     }

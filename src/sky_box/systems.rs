@@ -14,7 +14,7 @@ pub fn spawn_sky_box(
     // Sky box
     commands.spawn((
         PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Box::new(1., 1., 1.))),
+            mesh: meshes.add(Mesh::from(Cuboid::new(1., 1., 1.))),
             material: materials.add(StandardMaterial {
                 base_color: Color::hex("a5cddf").unwrap(),
                 unlit: true,
