@@ -180,7 +180,7 @@ pub fn register_start_aim_artillery_animations(
             Quat::from_rotation_y(PI) * Quat::from_rotation_z(-30_f32.to_radians()),
             Quat::from_rotation_y(PI) * Quat::from_rotation_z(0.),
         ]),
-        interpolation: Interpolation::CubicSpline,
+        interpolation: Interpolation::Linear,
     };
 
     let tilt_starboard_cannon_animation_curve = VariableCurve {
@@ -190,7 +190,7 @@ pub fn register_start_aim_artillery_animations(
             Quat::from_rotation_z(-30_f32.to_radians()),
             Quat::from_rotation_z(0.),
         ]),
-        interpolation: Interpolation::CubicSpline,
+        interpolation: Interpolation::Linear,
     };
 
     for (tag, tilt_curve) in [
@@ -239,13 +239,13 @@ pub fn register_stop_aim_artillery_animations(
     let reset_tilt_port_cannon_animation_curve = VariableCurve {
         keyframe_timestamps: keyframe_timestamps.clone(),
         keyframes: Keyframes::Rotation(vec![Quat::from_rotation_y(PI)]),
-        interpolation: Interpolation::CubicSpline,
+        interpolation: Interpolation::Linear,
     };
 
     let reset_tilt_starboard_cannon_animation_curve = VariableCurve {
         keyframe_timestamps: keyframe_timestamps.clone(),
         keyframes: Keyframes::Rotation(vec![Quat::from_rotation_y(0.)]),
-        interpolation: Interpolation::CubicSpline,
+        interpolation: Interpolation::Linear,
     };
 
     let stretch_and_squash_cannon_animation_curve = VariableCurve {
@@ -256,7 +256,7 @@ pub fn register_stop_aim_artillery_animations(
             Vec3::new(1.1, 0.9, 0.9),
             Vec3::new(1., 1., 1.),
         ]),
-        interpolation: Interpolation::CubicSpline,
+        interpolation: Interpolation::Linear,
     };
 
     for (tag, reset_tilt_curve) in [
