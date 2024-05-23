@@ -2,6 +2,7 @@ use bevy::math::FloatExt;
 use std::f32::consts::E;
 
 pub trait F32Ext {
+    #[allow(dead_code)]
     fn damp(self, rhs: Self, lambda: f32, delta_time: f32) -> Self;
 }
 impl F32Ext for f32 {

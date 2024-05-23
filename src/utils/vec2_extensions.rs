@@ -2,7 +2,9 @@ use bevy::prelude::*;
 use std::f32::consts::E;
 
 pub trait Vec2Ext {
+    #[allow(dead_code)]
     fn extend_with_y(self, y: f32) -> Vec3;
+    #[allow(dead_code)]
     fn damp(self, rhs: Self, lambda: f32, delta_time: f32) -> Self;
 }
 
