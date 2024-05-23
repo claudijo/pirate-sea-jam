@@ -16,6 +16,6 @@ pub fn spawn_light(mut commands: Commands) {
     // ambient light
     commands.insert_resource(AmbientLight {
         color: Color::rgb_u8(210, 220, 240),
-        brightness: 0.5,
+        brightness: 160.,
     });
 }
