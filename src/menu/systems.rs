@@ -3,12 +3,16 @@ use crate::game_state::states::GameState;
 use crate::menu::components::{StartGameButton, StartMenuLayout};
 use crate::menu::{START_BUTTON_HOVER, START_BUTTON_NORMAL};
 use bevy::prelude::*;
+use crate::camera::resources::MainCamera;
 
 // Start game button mainly used for determining input device as well as focusing canvas element when
 // loaded in browser
-pub fn spawn_main_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
+pub fn spawn_main_menu(mut commands: Commands, font_assets: Res<FontAssets>, main_camera: Res<MainCamera>,) {
     commands
         .spawn((
+            // Seems to be required in dev builds since using editor plugin results in multiple
+            // cameras
+            TargetCamera(main_camera.id),
             StartMenuLayout,
             NodeBundle {
                 style: Style {

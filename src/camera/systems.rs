@@ -2,13 +2,14 @@ use crate::ocean::OCEAN_TILE_SIZE;
 use crate::orbiting_camera::resources::OrbitingCamera;
 use bevy::prelude::*;
 use bevy::window::{Cursor, CursorGrabMode};
+use crate::camera::resources::MainCamera;
 
 pub fn spawn_camera(mut commands: Commands) {
     let pitch = 30_f32.to_radians();
     let radius = 30. + 15. * pitch;
     let translation = Vec3::new(0.0, pitch.sin() * radius, pitch.cos() * radius);
 
-    commands.spawn((
+    let main_camera_id = commands.spawn((
         OrbitingCamera {
             pitch,
             radius,
@@ -27,7 +28,11 @@ pub fn spawn_camera(mut commands: Commands) {
                 end: OCEAN_TILE_SIZE * 1.5,
             },
         },
-    ));
+    )).id();
+
+    commands.insert_resource(MainCamera {
+        id: main_camera_id,
+    });
 }
 
 pub fn grab_pointer(mut window: Query<&mut Window>) {

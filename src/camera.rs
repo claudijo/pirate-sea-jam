@@ -4,7 +4,8 @@ use crate::camera::systems::{
 use crate::game_state::states::GameState;
 use bevy::prelude::*;
 
-mod systems;
+pub mod systems;
+pub mod resources;
 
 pub struct CameraPlugin;
 

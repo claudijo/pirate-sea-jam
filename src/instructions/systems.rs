@@ -1,8 +1,13 @@
 use bevy::prelude::*;
+use crate::camera::resources::MainCamera;
 
-pub fn display_control_keys(mut commands: Commands) {
+pub fn display_control_keys(mut commands: Commands, main_camera: Res<MainCamera>,) {
     commands
-        .spawn((NodeBundle {
+        .spawn((
+            // Seems to be required in dev builds since using editor plugin results in multiple
+            // cameras
+            TargetCamera(main_camera.id),
+            NodeBundle {
             style: Style {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
