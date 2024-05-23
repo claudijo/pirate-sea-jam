@@ -1,6 +1,6 @@
+use crate::camera::systems::spawn_camera;
 use crate::instructions::systems::display_control_keys;
 use bevy::prelude::*;
-use crate::camera::systems::spawn_camera;
 
 mod systems;
 

@@ -47,6 +47,7 @@ pub fn spawn_ocean_tile(
     // planes isn't implemented yet, so I'd continue using Plane instead of Plane3d if you need it,
     // even though its deprecated. Also, according to the tracking issue it is planned and not yet
     // done: https://github.com/bevyengine/bevy/issues/10572
+    #[allow(deprecated)]
     let mut mesh = Mesh::from(shape::Plane {
         size: tile_size,
         subdivisions: subdivision_count,
@@ -83,7 +84,6 @@ pub fn spawn_ocean_tile(
                         time_scale,
                         waves,
                         subdivision_count,
-                        ..default()
                     },
                     position: OceanPosition {
                         center_offset: Vec3::ZERO,

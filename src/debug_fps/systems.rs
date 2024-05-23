@@ -1,7 +1,7 @@
+use crate::camera::resources::MainCamera;
 use crate::debug_fps::resources::DebugFps;
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
-use crate::camera::resources::MainCamera;
 
 pub fn spawn_debug_fps(mut commands: Commands, main_camera: Res<MainCamera>) {
     commands.spawn((

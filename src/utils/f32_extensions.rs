@@ -1,5 +1,5 @@
-use std::f32::consts::E;
 use bevy::math::FloatExt;
+use std::f32::consts::E;
 
 pub trait F32Ext {
     fn damp(self, rhs: Self, lambda: f32, delta_time: f32) -> Self;

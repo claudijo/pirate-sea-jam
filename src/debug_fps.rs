@@ -1,7 +1,7 @@
+use crate::camera::systems::spawn_camera;
 use crate::debug_fps::systems::{spawn_debug_fps, update_debug_fps};
 use bevy::diagnostic::FrameTimeDiagnosticsPlugin;
 use bevy::prelude::*;
-use crate::camera::systems::spawn_camera;
 
 mod resources;
 mod systems;
