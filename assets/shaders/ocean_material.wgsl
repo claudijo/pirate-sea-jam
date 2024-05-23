@@ -5,7 +5,7 @@
     mesh_functions::{get_model_matrix, mesh_position_local_to_clip, mesh_position_local_to_world, mesh_normal_local_to_world},
 }
 
-#import bevy_render::instance_index
+//#import bevy_render::instance_index
 
 #import pirate_sea_jam::{
     water_dynamics,
@@ -96,7 +96,8 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
 
     out.world_normal = mesh_normal_local_to_world(
         normal,
-        instance_index::get_instance_index(in.instance_index)
+        in.instance_index
+//        instance_index::get_instance_index(in.instance_index)
     );
 
     return out;

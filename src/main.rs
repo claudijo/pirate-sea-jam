@@ -56,13 +56,11 @@ fn main() {
 
     app.insert_resource(AssetMetaCheck::Never);
 
-    app.add_state::<GameState>();
+    app.init_state::<GameState>();
 
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
             title: "Pirate Sea Jam".into(),
-            // This requires css html, body {margin: 0;height: 100%;} as explained https://github.com/bevyengine/bevy/pull/4726
-            fit_canvas_to_parent: true,
             ..default()
         }),
         ..default()

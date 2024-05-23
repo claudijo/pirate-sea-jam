@@ -94,7 +94,7 @@ impl Plugin for OceanPlugin {
 
         app.add_systems(
             Update,
-            sync_ocean_tiles_center_offset.run_if(resource_changed::<FocalPoint>()),
+            sync_ocean_tiles_center_offset.run_if(resource_changed::<FocalPoint>),
         );
 
         // Animate waves (outside GGRS schedule) when displaying main menu

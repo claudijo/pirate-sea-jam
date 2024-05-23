@@ -1,9 +1,13 @@
+use crate::camera::resources::MainCamera;
 use crate::debug_fps::resources::DebugFps;
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 
-pub fn spawn_debug_fps(mut commands: Commands) {
+pub fn spawn_debug_fps(mut commands: Commands, main_camera: Res<MainCamera>) {
     commands.spawn((
+        // Seems to be required in dev builds since using editor plugin results in multiple
+        // cameras
+        TargetCamera(main_camera.id),
         TextBundle::from_section(
             "FPS: ??",
             TextStyle {
@@ -26,7 +30,7 @@ pub fn update_debug_fps(
     mut fps_text_query: Query<&mut Text, With<DebugFps>>,
 ) {
     for mut text in &mut fps_text_query {
-        if let Some(fps) = diagnostics.get(FrameTimeDiagnosticsPlugin::FPS) {
+        if let Some(fps) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(value) = fps.average() {
                 text.sections[0].value = format!("FPS: {value:.2}");
             }

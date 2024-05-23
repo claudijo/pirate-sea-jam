@@ -15,7 +15,6 @@ use crate::physics::components::{
 };
 use crate::player::components::{Flag, Player, Wheel};
 use crate::player::{WHEEL_TURN_ACCELERATION, WHEEL_TURN_DAMPING};
-use crate::utils::f32_extensions::F32Ext;
 use crate::utils::linear_algebra::face_normal;
 use crate::wind::resources::Wind;
 use bevy::math::Vec3Swizzles;

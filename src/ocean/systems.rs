@@ -42,6 +42,12 @@ pub fn spawn_ocean_tile(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<StandardOceanMaterial>>,
 ) {
+    // https://github.com/bevyengine/bevy/pull/11773 and a comment on the finite/infinite plane split
+    // PR (https://github.com/bevyengine/bevy/pull/12426/files#r1555080768) subdivision on the new
+    // planes isn't implemented yet, so I'd continue using Plane instead of Plane3d if you need it,
+    // even though its deprecated. Also, according to the tracking issue it is planned and not yet
+    // done: https://github.com/bevyengine/bevy/issues/10572
+    #[allow(deprecated)]
     let mut mesh = Mesh::from(shape::Plane {
         size: tile_size,
         subdivisions: subdivision_count,

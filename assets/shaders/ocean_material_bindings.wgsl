@@ -21,11 +21,11 @@ struct RollbackTime {
     padding: vec3<f32>,
 }
 
-@group(1) @binding(100)
+@group(2) @binding(100)
 var<uniform> settings: OceanTilelSettings;
 
-@group(1) @binding(101)
+@group(2) @binding(101)
 var<uniform> position: OceanPosition;
 
-@group(1) @binding(102)
+@group(2) @binding(102)
 var<uniform> time: RollbackTime;

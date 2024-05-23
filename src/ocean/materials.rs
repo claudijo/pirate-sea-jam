@@ -4,7 +4,7 @@ use bevy::render::render_resource::{AsBindGroup, ShaderRef, ShaderType};
 
 pub type StandardOceanMaterial = ExtendedMaterial<StandardMaterial, OceanMaterialExtension>;
 
-#[derive(ShaderType, Clone, Reflect, Debug)]
+#[derive(ShaderType, Clone, Reflect, Debug, Default)]
 pub struct OceanTileSettings {
     pub tile_offset: Vec3,
     pub tile_size: f32,

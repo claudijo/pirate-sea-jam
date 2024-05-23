@@ -8,20 +8,20 @@ use bevy_ggrs::{LocalInputs, LocalPlayers};
 
 pub fn read_local_inputs(
     mut commands: Commands,
-    keys: Res<Input<KeyCode>>,
+    keys: Res<ButtonInput<KeyCode>>,
     local_players: Res<LocalPlayers>,
 ) {
     let mut local_inputs = HashMap::new();
 
     for handle in &local_players.0 {
         let mut input = 0u8;
-        if keys.any_pressed([KeyCode::Left, KeyCode::A]) {
+        if keys.any_pressed([KeyCode::ArrowLeft, KeyCode::KeyA]) {
             input |= INPUT_LEFT
         }
-        if keys.any_pressed([KeyCode::Right, KeyCode::D]) {
+        if keys.any_pressed([KeyCode::ArrowRight, KeyCode::KeyD]) {
             input |= INPUT_RIGHT;
         }
-        if keys.any_pressed([KeyCode::Space, KeyCode::Return]) {
+        if keys.any_pressed([KeyCode::Space, KeyCode::Enter]) {
             input |= INPUT_FIRE;
         }
 
