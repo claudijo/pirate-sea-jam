@@ -1,4 +1,3 @@
-use crate::focal_point::resources::FocalPoint;
 use crate::ocean::components::OceanTile;
 use crate::ocean::materials::{
     OceanMaterialExtension, OceanPosition, OceanTileSettings, RollbackTime, StandardOceanMaterial,

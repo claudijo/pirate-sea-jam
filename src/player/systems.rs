@@ -19,8 +19,9 @@ use crate::utils::linear_algebra::face_normal;
 use crate::wind::resources::Wind;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
-use bevy_ggrs::{AddRollbackCommandExtension, PlayerInputs, Rollback};
+use bevy_ggrs::{AddRollbackCommandExtension, LocalPlayers, PlayerInputs, Rollback};
 use std::f32::consts::{E, PI};
+use crate::orbiting_camera::resources::FocalPoint;
 
 pub fn spawn_players(
     mut commands: Commands,
@@ -361,3 +362,20 @@ pub fn update_sail_trim_ratio(
         sail_trim_ratio.0 = trim_ratio;
     }
 }
+
+pub fn update_focal_point(
+    player_query: Query<(&Player, &Transform)>,
+    local_players: Res<LocalPlayers>,
+    mut focal_point: ResMut<FocalPoint>,
+) {
+    for (player, transform) in &player_query {
+        // Ignore non-local players
+        if !local_players.0.contains(&player.handle) {
+            continue;
+        }
+
+        focal_point.0 = transform.translation;
+        focal_point.0.y = 0.;
+    }
+}
+

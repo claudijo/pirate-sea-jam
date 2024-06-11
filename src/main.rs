@@ -17,7 +17,6 @@ use bevy_ggrs::{GgrsApp, GgrsPlugin};
 
 use crate::connection::FPS;
 use crate::debug_fps::DebugFpsPlugin;
-use crate::focal_point::FocalPointPlugin;
 use crate::instructions::InstructionsPlugin;
 use crate::menu::MenuPlugin;
 use crate::orbiting_camera::OrbitingCameraPlugin;
@@ -34,7 +33,6 @@ mod camera;
 mod connection;
 mod controls;
 mod debug_fps;
-mod focal_point;
 mod game_state;
 mod inputs;
 mod instructions;
@@ -80,7 +78,6 @@ fn main() {
     app.add_plugins(artillery::ArtilleryPlugin);
     app.add_plugins(ArgsPlugin);
     app.add_plugins(SyncTestPlugin);
-    app.add_plugins(FocalPointPlugin);
     app.add_plugins(OrbitingCameraPlugin);
     app.add_plugins(WindPlugin);
     app.add_plugins(SkyBoxPlugin);

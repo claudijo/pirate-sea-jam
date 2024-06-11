@@ -1,4 +1,3 @@
-use crate::focal_point::resources::FocalPoint;
 use crate::game_state::states::GameState;
 use crate::ocean::materials::StandardOceanMaterial;
 use crate::ocean::resources::{OceanCenter, Wave};

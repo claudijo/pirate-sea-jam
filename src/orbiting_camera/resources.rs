@@ -21,3 +21,6 @@ impl Default for OrbitingCamera {
         }
     }
 }
+
+#[derive(Resource)]
+pub struct FocalPoint(pub Vec3);
