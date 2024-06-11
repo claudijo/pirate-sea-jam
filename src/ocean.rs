@@ -1,7 +1,7 @@
 use crate::focal_point::resources::FocalPoint;
 use crate::game_state::states::GameState;
 use crate::ocean::materials::StandardOceanMaterial;
-use crate::ocean::resources::Wave;
+use crate::ocean::resources::{OceanCenter, Wave};
 use crate::ocean::systems::{
     spawn_ocean, sync_ocean_tiles_center_offset, sync_shader_time, update_buoy_water_height,
     update_water_drag,
@@ -20,10 +20,12 @@ mod systems;
 
 pub const OCEAN_TILE_SIZE: f32 = 160.;
 
-// Needs to be odd
+// NOTE: Value needs to be odd
 const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 15;
 
 const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS * 2 + 1;
+
+const OCEAN_PRIMARY_TILE_QUAD_CELL_SIZE: f32 = OCEAN_TILE_SIZE / (OCEAN_PRIMARY_TILE_SUBDIVISIONS + 1) as f32;
 
 const WATER_DYNAMICS_HANDLE: Handle<Shader> =
     Handle::weak_from_u128(0x64632a74ee9240ea8097a33da35f3ad5);
@@ -88,13 +90,15 @@ impl Plugin for OceanPlugin {
             configs: WAVES,
         });
 
+        app.insert_resource(OceanCenter(Vec3::ZERO));
+
         app.add_plugins(MaterialPlugin::<StandardOceanMaterial>::default());
 
         app.add_systems(Startup, spawn_ocean);
 
         app.add_systems(
             Update,
-            sync_ocean_tiles_center_offset.run_if(resource_changed::<FocalPoint>),
+            sync_ocean_tiles_center_offset.run_if(resource_changed::<OceanCenter>),
         );
 
         // Animate waves (outside GGRS schedule) when displaying main menu

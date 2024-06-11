@@ -9,6 +9,10 @@ pub struct Wave {
     pub configs: [Vec4; 4],
 }
 
+#[derive(Resource, Reflect, Default)]
+#[reflect(Resource)]
+pub struct OceanCenter(pub Vec3);
+
 impl Wave {
     pub fn next_position(&self, mut position: Vec3, waves: [Vec4; 4], time: f32) -> Vec3 {
         let time = time * self.time_scale;

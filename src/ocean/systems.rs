@@ -3,7 +3,7 @@ use crate::ocean::components::OceanTile;
 use crate::ocean::materials::{
     OceanMaterialExtension, OceanPosition, OceanTileSettings, RollbackTime, StandardOceanMaterial,
 };
-use crate::ocean::resources::Wave;
+use crate::ocean::resources::{OceanCenter, Wave};
 use crate::ocean::{
     OCEAN_PRIMARY_TILE_SUBDIVISIONS, OCEAN_SECONDARY_TILE_SUBDIVISIONS, OCEAN_TILE_SIZE,
 };
@@ -56,6 +56,7 @@ pub fn spawn_ocean_tile(
 
     // Use custom AABB to prevent culling issues of meshes after being animated and displaced in the shader.
     const MAX_ANIMATED_VERTEX_DISPLACEMENT: f32 = 3.6;
+
     let aabb = Aabb {
         center: Vec3A::ZERO,
         half_extents: Vec3A::new(
@@ -148,16 +149,16 @@ pub fn spawn_ocean(
 }
 
 pub fn sync_ocean_tiles_center_offset(
-    focal_point: Res<FocalPoint>,
+    ocean_center: Res<OceanCenter>,
     mut ocean_tile_query: Query<(&mut Transform, &OceanTile)>,
     mut materials: ResMut<Assets<StandardOceanMaterial>>,
 ) {
     for (mut transform, ocean_tile) in &mut ocean_tile_query {
-        transform.translation = focal_point.0 + ocean_tile.offset;
+        transform.translation = ocean_center.0 + ocean_tile.offset;
     }
 
     for (_, material) in materials.iter_mut() {
-        material.extension.position.center_offset = focal_point.0;
+        material.extension.position.center_offset = ocean_center.0;
     }
 }
 
