@@ -1,7 +1,7 @@
+use crate::orbiting_camera::resources::FocalPoint;
 use crate::sky_box::systems::{spawn_sky_box, sync_sky_box_center_offset};
 use bevy::app::{App, Plugin, Startup, Update};
 use bevy::prelude::*;
-use crate::orbiting_camera::resources::FocalPoint;
 
 mod components;
 mod systems;

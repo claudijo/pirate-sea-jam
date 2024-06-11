@@ -4,9 +4,9 @@ mod systems;
 
 use crate::game_state::states::GameState;
 use crate::orbiting_camera::events::OrbitMotion;
+use crate::orbiting_camera::resources::FocalPoint;
 use crate::orbiting_camera::systems::orbit;
 use bevy::prelude::*;
-use crate::orbiting_camera::resources::FocalPoint;
 
 pub struct OrbitingCameraPlugin;
 

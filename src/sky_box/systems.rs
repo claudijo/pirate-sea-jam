@@ -1,10 +1,10 @@
 use crate::ocean::OCEAN_TILE_SIZE;
+use crate::orbiting_camera::resources::FocalPoint;
 use crate::sky_box::components::Sky;
 use bevy::asset::Assets;
 use bevy::math::Vec3;
 use bevy::pbr::{NotShadowCaster, PbrBundle, StandardMaterial};
 use bevy::prelude::*;
-use crate::orbiting_camera::resources::FocalPoint;
 
 pub fn spawn_sky_box(
     mut commands: Commands,

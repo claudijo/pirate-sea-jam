@@ -2,9 +2,10 @@ use crate::game_state::states::GameState;
 use crate::ocean::materials::StandardOceanMaterial;
 use crate::ocean::resources::{OceanCenter, Wave};
 use crate::ocean::systems::{
-    spawn_ocean, sync_ocean_tiles_center_offset, sync_shader_time, update_buoy_water_height,
-    update_water_drag,
+    spawn_ocean, sync_ocean_global_center, sync_ocean_tiles_center_offset, sync_shader_time,
+    update_buoy_water_height, update_water_drag,
 };
+use crate::orbiting_camera::resources::FocalPoint;
 use crate::physics::systems::{
     update_aerodynamic_force, update_buoyant_force, update_linear_drag_force,
 };
@@ -24,7 +25,8 @@ const OCEAN_SECONDARY_TILE_SUBDIVISIONS: u32 = 15;
 
 const OCEAN_PRIMARY_TILE_SUBDIVISIONS: u32 = OCEAN_SECONDARY_TILE_SUBDIVISIONS * 2 + 1;
 
-const OCEAN_PRIMARY_TILE_QUAD_CELL_SIZE: f32 = OCEAN_TILE_SIZE / (OCEAN_PRIMARY_TILE_SUBDIVISIONS + 1) as f32;
+const OCEAN_PRIMARY_TILE_QUAD_CELL_SIZE: f32 =
+    OCEAN_TILE_SIZE / (OCEAN_PRIMARY_TILE_SUBDIVISIONS + 1) as f32;
 
 const WATER_DYNAMICS_HANDLE: Handle<Shader> =
     Handle::weak_from_u128(0x64632a74ee9240ea8097a33da35f3ad5);
@@ -94,6 +96,11 @@ impl Plugin for OceanPlugin {
         app.add_plugins(MaterialPlugin::<StandardOceanMaterial>::default());
 
         app.add_systems(Startup, spawn_ocean);
+
+        app.add_systems(
+            Update,
+            sync_ocean_global_center.run_if(resource_changed::<FocalPoint>),
+        );
 
         app.add_systems(
             Update,

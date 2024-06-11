@@ -4,8 +4,10 @@ use crate::ocean::materials::{
 };
 use crate::ocean::resources::{OceanCenter, Wave};
 use crate::ocean::{
-    OCEAN_PRIMARY_TILE_SUBDIVISIONS, OCEAN_SECONDARY_TILE_SUBDIVISIONS, OCEAN_TILE_SIZE,
+    OCEAN_PRIMARY_TILE_QUAD_CELL_SIZE, OCEAN_PRIMARY_TILE_SUBDIVISIONS,
+    OCEAN_SECONDARY_TILE_SUBDIVISIONS, OCEAN_TILE_SIZE,
 };
+use crate::orbiting_camera::resources::FocalPoint;
 use crate::physics::components::{AngularDrag, Buoy, LinearDrag};
 use bevy::math::Vec3A;
 use bevy::prelude::*;
@@ -144,6 +146,26 @@ pub fn spawn_ocean(
             &mut meshes,
             &mut materials,
         );
+    }
+}
+
+// Nudge the ocean in the right direction every time the focal point (ship) traverses the distance
+// equal to at least one ocean tile quad size. Assume adjustment might need be larger than one ocean
+// tile quad size, for example if the frame rate is low and/or tile quad size is small.
+pub fn sync_ocean_global_center(
+    mut ocean_center: ResMut<OceanCenter>,
+    focal_point: Res<FocalPoint>,
+) {
+    let diff = focal_point.0 - ocean_center.0;
+
+    if diff.x.abs() > OCEAN_PRIMARY_TILE_QUAD_CELL_SIZE {
+        ocean_center.0.x += (diff.x / OCEAN_PRIMARY_TILE_QUAD_CELL_SIZE).floor()
+            * OCEAN_PRIMARY_TILE_QUAD_CELL_SIZE;
+    }
+
+    if diff.z.abs() > OCEAN_PRIMARY_TILE_QUAD_CELL_SIZE {
+        ocean_center.0.z += (diff.z / OCEAN_PRIMARY_TILE_QUAD_CELL_SIZE).floor()
+            * OCEAN_PRIMARY_TILE_QUAD_CELL_SIZE;
     }
 }
 

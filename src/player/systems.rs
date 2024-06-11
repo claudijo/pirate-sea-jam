@@ -8,6 +8,7 @@ use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
 use crate::controls::components::{Controls, SailTrimRatio, WheelTurnRatio};
 use crate::inputs::turn_action_from_input;
+use crate::orbiting_camera::resources::FocalPoint;
 use crate::physics::bundles::{ParticleBundle, SpindleBundle};
 use crate::physics::components::{
     Aerofoil, AngularDamping, Area, Buoy, Hydrofoil, Inertia, LinearDamping, LinearVelocity, Mass,
@@ -21,7 +22,6 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, LocalPlayers, PlayerInputs, Rollback};
 use std::f32::consts::{E, PI};
-use crate::orbiting_camera::resources::FocalPoint;
 
 pub fn spawn_players(
     mut commands: Commands,
@@ -378,4 +378,3 @@ pub fn update_focal_point(
         focal_point.0.y = 0.;
     }
 }
-
