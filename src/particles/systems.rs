@@ -3,6 +3,7 @@ use crate::particles::components::ParticleEmitter;
 use crate::physics::bundles::{ParticlePhysicsBundle, SpindlePhysicsBundle};
 use crate::physics::components::LinearVelocity;
 use bevy::prelude::*;
+use crate::utils::f32_extensions::F32Ext;
 
 pub fn emit_particles(
     mut commands: Commands,
@@ -30,8 +31,7 @@ pub fn emit_particles(
                     .ico(0)
                     .unwrap()
                     .scaled_by(Vec3::splat(
-                        emitter.particle_size
-                            + emitter.particle_scale_variance * (2.0 * rand::random::<f32>() - 1.0),
+                        emitter.particle_size.random_variation(emitter.particle_scale_variance),
                     )),
             );
 
@@ -43,18 +43,15 @@ pub fn emit_particles(
                             material: material.clone(),
                             transform: Transform::from_translation(
                                 Vec3::new(
-                                    emitter.position_variance * (2.0 * rand::random::<f32>() - 1.0),
-                                    emitter.position_variance * (2.0 * rand::random::<f32>() - 1.0),
-                                    emitter.position_variance * (2.0 * rand::random::<f32>() - 1.0),
+                                    0f32.random_variation(emitter.position_variance),
+                                    0f32.random_variation(emitter.position_variance),
+                                    0f32.random_variation(emitter.position_variance),
                                 ) + global_transform.translation(),
                             ),
                             ..default()
                         },
                         ParticlePhysicsBundle {
                             linear_velocity: LinearVelocity(global_velocity),
-                            ..default()
-                        },
-                        SpindlePhysicsBundle {
                             ..default()
                         },
                         Lifespan {
