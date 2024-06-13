@@ -18,12 +18,13 @@ use bevy_ggrs::{GgrsApp, GgrsPlugin};
 use crate::connection::FPS;
 use crate::debug_fps::DebugFpsPlugin;
 use crate::instructions::InstructionsPlugin;
+use crate::lifespan::LifespanPlugin;
 use crate::menu::MenuPlugin;
 use crate::orbiting_camera::OrbitingCameraPlugin;
+use crate::particles::ParticlesPlugin;
 use crate::physics::PhysicsPlugin;
 use crate::sky_box::SkyBoxPlugin;
 use crate::sync_test::SyncTestPlugin;
-use crate::widget_debug::WidgetDebugPlugin;
 use crate::wind::WindPlugin;
 
 mod args;
@@ -36,10 +37,12 @@ mod debug_fps;
 mod game_state;
 mod inputs;
 mod instructions;
+mod lifespan;
 mod light;
 mod menu;
 mod ocean;
 mod orbiting_camera;
+mod particles;
 mod physics;
 mod player;
 mod sky_box;
@@ -85,12 +88,13 @@ fn main() {
     app.add_plugins(InstructionsPlugin);
     app.add_plugins(MenuPlugin);
     app.add_plugins(PhysicsPlugin);
+    app.add_plugins(ParticlesPlugin);
+    app.add_plugins(LifespanPlugin);
 
     app.register_type::<Controls>();
 
     #[cfg(debug_assertions)]
-    app.add_plugins(WidgetDebugPlugin);
-
+    // app.add_plugins(WidgetDebugPlugin);
     #[cfg(debug_assertions)]
     app.add_plugins(EditorPlugin::default());
 

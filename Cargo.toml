@@ -10,6 +10,7 @@ bevy_editor_pls = "0.8.1"
 bevy_ggrs = { version = "0.15.0", features = ["wasm-bindgen"] }
 bevy_matchbox = { version = "0.9.0", features = ["ggrs"] }
 clap = { version = "4.5.4", features = ["derive"] }
+rand = "0.8.5"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]

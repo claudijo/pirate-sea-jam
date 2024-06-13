@@ -8,7 +8,7 @@ use crate::assets::resources::ModelAssets;
 use crate::connection::systems::RollbackConfig;
 use crate::inputs::fire;
 use crate::ocean::resources::Wave;
-use crate::physics::bundles::ParticleBundle;
+use crate::physics::bundles::ParticlePhysicsBundle;
 use crate::physics::components::{ExternalImpulse, ExternalTorqueImpulse, LinearVelocity};
 use crate::player::components::Player;
 use crate::utils::linear_algebra::is_facing;
@@ -127,7 +127,7 @@ pub fn stop_aim_and_fire_artillery(
                             },
                             Name::new("Projectile"),
                             Projectile,
-                            ParticleBundle {
+                            ParticlePhysicsBundle {
                                 linear_velocity: LinearVelocity(
                                     artillery_global_transform.left() * artillery.muzzle_velocity
                                         + linear_velocity.0,

@@ -7,20 +7,16 @@ use crate::physics::resources::{AirDensity, Gravity, WaterDensity};
 use crate::utils::aerodynamics::scaled_lift_drag;
 use crate::wind::resources::Wind;
 use bevy::prelude::*;
-use bevy_ggrs::Rollback;
 
 pub fn update_angular_velocity(
-    mut physics_query: Query<
-        (
-            &GlobalTransform,
-            &Inertia,
-            &AngularDamping,
-            &mut ExternalTorque,
-            &mut ExternalTorqueImpulse,
-            &mut AngularVelocity,
-        ),
-        With<Rollback>,
-    >,
+    mut physics_query: Query<(
+        &GlobalTransform,
+        &Inertia,
+        &AngularDamping,
+        &mut ExternalTorque,
+        &mut ExternalTorqueImpulse,
+        &mut AngularVelocity,
+    )>,
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
@@ -62,7 +58,7 @@ pub fn update_angular_velocity(
 }
 
 pub fn update_orientation(
-    mut physics_query: Query<(&Inertia, &AngularVelocity, &mut Transform), With<Rollback>>,
+    mut physics_query: Query<(&Inertia, &AngularVelocity, &mut Transform)>,
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
@@ -78,16 +74,13 @@ pub fn update_orientation(
 
 pub fn update_linear_velocity(
     gravity: Res<Gravity>,
-    mut physics_query: Query<
-        (
-            &Mass,
-            &LinearDamping,
-            &mut ExternalForce,
-            &mut ExternalImpulse,
-            &mut LinearVelocity,
-        ),
-        With<Rollback>,
-    >,
+    mut physics_query: Query<(
+        &Mass,
+        &LinearDamping,
+        &mut ExternalForce,
+        &mut ExternalImpulse,
+        &mut LinearVelocity,
+    )>,
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();
@@ -121,7 +114,7 @@ pub fn update_linear_velocity(
 }
 
 pub fn update_position(
-    mut physics_query: Query<(&Mass, &LinearVelocity, &mut Transform), With<Rollback>>,
+    mut physics_query: Query<(&Mass, &LinearVelocity, &mut Transform)>,
     time: Res<Time>,
 ) {
     let delta_time = time.delta_seconds();

@@ -9,7 +9,8 @@ use crate::connection::systems::RollbackConfig;
 use crate::controls::components::{Controls, SailTrimRatio, WheelTurnRatio};
 use crate::inputs::turn_action_from_input;
 use crate::orbiting_camera::resources::FocalPoint;
-use crate::physics::bundles::{ParticleBundle, SpindleBundle};
+use crate::particles::components::ParticleEmitter;
+use crate::physics::bundles::{ParticlePhysicsBundle, SpindlePhysicsBundle};
 use crate::physics::components::{
     Aerofoil, AngularDamping, Area, Buoy, Hydrofoil, Inertia, LinearDamping, LinearVelocity, Mass,
     Rudder, SailTrim,
@@ -54,18 +55,43 @@ pub fn spawn_players(
                 ArtilleryReady::default(),
                 ArtilleryAiming::default(),
                 Name::new("Ship"),
-                SpindleBundle {
+                SpindlePhysicsBundle {
                     inertia: Inertia::cuboid(4., 3., 3., 100.),
                     angular_damping: AngularDamping(0.6),
                     ..default()
                 },
-                ParticleBundle {
+                ParticlePhysicsBundle {
                     mass: Mass(100.),
                     linear_damping: LinearDamping(0.8),
                     ..default()
                 },
             ))
             .with_children(|child_builder| {
+                for foam_emitter_translation in [
+                    Vec3::new(0.75, 1., 1.75),
+                    Vec3::new(-0.75, 1., 1.75),
+                    Vec3::new(1.25, 1., 0.5),
+                    Vec3::new(-1.25, 1., 0.5),
+                    Vec3::new(1., 1., -0.75),
+                    Vec3::new(-1., 1., -0.75),
+                ] {
+                    child_builder.spawn((
+                        ParticleEmitter {
+                            rate: Timer::from_seconds(0.1, TimerMode::Repeating),
+                            amount_per_burst: 10,
+                            position_variance: 0.5,
+                            particle_lifetime: 1.,
+                            particle_size: 0.25,
+                            particle_scale_variance: 0.15,
+                            particle_velocity: foam_emitter_translation,
+                            particle_color: Color::WHITE,
+                        },
+                        TransformBundle::from_transform(Transform::from_translation(
+                            foam_emitter_translation,
+                        )),
+                    ));
+                }
+
                 for buoy_translation in [
                     Vec3::new(1.25, 0.5, 1.25),
                     Vec3::new(-1.25, 0.5, 1.25),

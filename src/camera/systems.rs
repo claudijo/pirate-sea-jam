@@ -1,6 +1,6 @@
 use crate::camera::resources::MainCamera;
 use crate::ocean::OCEAN_TILE_SIZE;
-use crate::orbiting_camera::resources::OrbitingCamera;
+use crate::orbiting_camera::components::OrbitingCamera;
 use bevy::prelude::*;
 use bevy::window::{Cursor, CursorGrabMode};
 

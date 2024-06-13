@@ -1,5 +1,6 @@
+use crate::orbiting_camera::components::OrbitingCamera;
 use crate::orbiting_camera::events::OrbitMotion;
-use crate::orbiting_camera::resources::{FocalPoint, OrbitingCamera};
+use crate::orbiting_camera::resources::FocalPoint;
 use bevy::prelude::*;
 use std::f32::consts::PI;
 

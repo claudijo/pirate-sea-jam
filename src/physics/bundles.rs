@@ -5,7 +5,7 @@ use crate::physics::components::{
 use bevy::prelude::*;
 
 #[derive(Bundle, Default)]
-pub struct ParticleBundle {
+pub struct ParticlePhysicsBundle {
     pub linear_velocity: LinearVelocity,
     pub external_force: ExternalForce,
     pub linear_damping: LinearDamping,
@@ -14,7 +14,7 @@ pub struct ParticleBundle {
 }
 
 #[derive(Bundle, Default)]
-pub struct SpindleBundle {
+pub struct SpindlePhysicsBundle {
     pub angular_velocity: AngularVelocity,
     pub external_torque: ExternalTorque,
     pub angular_damping: AngularDamping,
