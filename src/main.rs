@@ -11,6 +11,7 @@ use crate::connection::systems::RollbackConfig;
 use crate::controls::components::Controls;
 use crate::game_state::states::GameState;
 use bevy::asset::AssetMetaCheck;
+use bevy::pbr::PbrPlugin;
 use bevy::prelude::*;
 use bevy_editor_pls::EditorPlugin;
 use bevy_ggrs::{GgrsApp, GgrsPlugin};
