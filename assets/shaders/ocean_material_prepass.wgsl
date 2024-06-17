@@ -1,3 +1,5 @@
+// Shader that positions ocean verices so that shadows are calculated correctly. Quick and dirty, meaninging that only
+// most grannular waves closest to the ship will be fully correct.
 // Mainly copied from default StandardMaterial prepass shader and removed unused stuff
 // See https://github.com/bevyengine/bevy/blob/main/crates/bevy_pbr/src/prepass/prepass.wgsl
 // Possibly merge with corresponding main shader. Been tried using `#ifdef PREPASS_PIPELINE` directive without success.
