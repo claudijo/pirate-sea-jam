@@ -1,3 +1,4 @@
+use bevy::core_pipeline::prepass::{DepthPrepass, MotionVectorPrepass, NormalPrepass};
 use crate::camera::resources::MainCamera;
 use crate::ocean::OCEAN_TILE_SIZE;
 use crate::orbiting_camera::components::OrbitingCamera;
@@ -29,6 +30,7 @@ pub fn spawn_camera(mut commands: Commands) {
                     end: OCEAN_TILE_SIZE * 1.5,
                 },
             },
+            DepthPrepass,
         ))
         .id();
 

@@ -1,6 +1,7 @@
-use bevy::pbr::{ExtendedMaterial, MaterialExtension};
+use bevy::pbr::{ExtendedMaterial, MaterialExtension, MaterialPipeline, MaterialPipelineKey};
 use bevy::prelude::*;
-use bevy::render::render_resource::{AsBindGroup, ShaderRef, ShaderType};
+use bevy::render::mesh::MeshVertexBufferLayout;
+use bevy::render::render_resource::{AsBindGroup, RenderPipelineDescriptor, ShaderRef, ShaderType, SpecializedMeshPipelineError};
 
 pub type StandardOceanMaterial = ExtendedMaterial<StandardMaterial, OceanMaterialExtension>;
 

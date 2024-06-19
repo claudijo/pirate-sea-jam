@@ -67,6 +67,7 @@ fn main() {
         }),
         ..default()
     }));
+
     app.add_plugins(GgrsPlugin::<RollbackConfig>::default());
     // define frequency of rollback game logic update
     app.set_rollback_schedule_fps(FPS);
@@ -89,7 +90,7 @@ fn main() {
     app.add_plugins(InstructionsPlugin);
     app.add_plugins(MenuPlugin);
     app.add_plugins(PhysicsPlugin);
-    app.add_plugins(ParticlesPlugin);
+    // app.add_plugins(ParticlesPlugin);
     app.add_plugins(LifespanPlugin);
 
     app.register_type::<Controls>();
@@ -101,6 +102,10 @@ fn main() {
 
     #[cfg(debug_assertions)]
     app.add_plugins(stats::StatsPlugin);
+
+    // Disabling MSAA for maximum compatibility. Shader prepass with MSAA needs GPU capability
+    // MULTISAMPLED_SHADING, which does not seem to be supported(?)
+    app.insert_resource(Msaa::Off);
 
     app.run();
 }

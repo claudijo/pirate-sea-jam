@@ -1,11 +1,10 @@
 #import bevy_pbr::{
+    prepass_utils,
     pbr_fragment::pbr_input_from_standard_material,
     forward_io::{FragmentOutput, VertexOutput, Vertex},
     pbr_functions::{apply_pbr_lighting, main_pass_post_lighting_processing},
     mesh_functions::{get_model_matrix, mesh_position_local_to_clip, mesh_position_local_to_world, mesh_normal_local_to_world},
 }
-
-//#import bevy_render::instance_index
 
 #import pirate_sea_jam::{
     water_dynamics,
@@ -97,7 +96,6 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
     out.world_normal = mesh_normal_local_to_world(
         normal,
         in.instance_index
-//        instance_index::get_instance_index(in.instance_index)
     );
 
     return out;
@@ -107,7 +105,13 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
 fn fragment(
     in: VertexOutput,
     @builtin(front_facing) is_front: bool,
+#ifdef MULTISAMPLED
+    @builtin(sample_index) sample_index: u32,
+#endif
 ) -> FragmentOutput {
+#ifndef MULTISAMPLED
+    let sample_index = 0u;
+#endif
     var out: FragmentOutput;
 
     // generate a PbrInput struct from the StandardMaterial bindings
@@ -119,6 +123,21 @@ fn fragment(
     // apply in-shader post processing (fog, alpha-premultiply, and also tonemapping, debanding if the camera is non-hdr)
     // note this does not include fullscreen postprocessing effects like bloom.
     out.color = main_pass_post_lighting_processing(pbr_input, out.color);
+
+    // Scene depth 0. (far) to 1. (near)
+    let scene_depth = bevy_pbr::prepass_utils::prepass_depth(in.position, sample_index);
+
+    // Interpolated depth of the current fragment 0. (far) to 1. (near)
+    let frag_depth = in.position.z;
+
+    // Water depth 0. (shallow) to 1. (deep)
+    let water_depth = frag_depth - scene_depth;
+
+    // Fiddling with calculation to only get close to 1 near the ship and not for waves in the distance
+    var intersection = 1. - water_depth / (scene_depth);
+    intersection = smoothstep(0., 1., intersection);
+
+    out.color += intersection;
 
     return out;
 }
