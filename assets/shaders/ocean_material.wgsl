@@ -135,8 +135,8 @@ fn fragment(
     let water_depth = frag_depth - scene_depth;
 
     // Fiddling with calculation to only get close to 1 near the ship and not for waves in the distance
-    var intersection = 1. - water_depth / (scene_depth);
-    intersection = smoothstep(0., 1., intersection);
+    var intersection = 1. - water_depth;
+    intersection = smoothstep(0.9998, 1., intersection);
 
     out.color += intersection;
 #endif
