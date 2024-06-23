@@ -93,7 +93,11 @@ impl Plugin for OceanPlugin {
 
         app.insert_resource(OceanCenter(Vec3::ZERO));
 
-        app.add_plugins(MaterialPlugin::<StandardOceanMaterial>::default());
+        app.add_plugins(MaterialPlugin::<StandardOceanMaterial>{
+            // Required to get the foam line effect to work
+            prepass_enabled: false,
+            ..default()
+        });
 
         app.add_systems(Startup, spawn_ocean);
 

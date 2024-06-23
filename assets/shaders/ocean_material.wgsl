@@ -3,7 +3,8 @@
     pbr_fragment::pbr_input_from_standard_material,
     forward_io::{FragmentOutput, VertexOutput, Vertex},
     pbr_functions::{apply_pbr_lighting, main_pass_post_lighting_processing},
-    mesh_functions::{get_model_matrix, mesh_position_local_to_clip, mesh_position_local_to_world, mesh_normal_local_to_world},
+    mesh_functions::{get_model_matrix, mesh_position_local_to_world, mesh_normal_local_to_world},
+    view_transformations::position_world_to_clip
 }
 
 #import pirate_sea_jam::{
@@ -39,11 +40,13 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
             in.position + ocean_material_bindings::position.center_offset + ocean_material_bindings::settings.tile_offset,
             time
         );
+
         next_position_cw += water_dynamics::gerstner_wave(
             ocean_material_bindings::settings.waves[i],
             position_cw + ocean_material_bindings::position.center_offset + ocean_material_bindings::settings.tile_offset,
             time
         );
+
         next_position_ccw += water_dynamics::gerstner_wave(
             ocean_material_bindings::settings.waves[i],
             position_ccw + ocean_material_bindings::position.center_offset + ocean_material_bindings::settings.tile_offset,
@@ -83,15 +86,12 @@ fn vertex(in: Vertex, @builtin(vertex_index) vertex_index : u32) -> VertexOutput
     var position = vec4<f32>(next_position, 1.);
     var model_matrix = get_model_matrix(in.instance_index);
 
-    out.position = mesh_position_local_to_clip(
-        model_matrix,
-        position,
-    );
-
     out.world_position = mesh_position_local_to_world(
         model_matrix,
         position,
     );
+
+    out.position = position_world_to_clip(out.world_position.xyz);
 
     out.world_normal = mesh_normal_local_to_world(
         normal,
@@ -124,6 +124,7 @@ fn fragment(
     // note this does not include fullscreen postprocessing effects like bloom.
     out.color = main_pass_post_lighting_processing(pbr_input, out.color);
 
+#ifdef DEPTH_PREPASS
     // Scene depth 0. (far) to 1. (near)
     let scene_depth = bevy_pbr::prepass_utils::prepass_depth(in.position, sample_index);
 
@@ -138,6 +139,7 @@ fn fragment(
     intersection = smoothstep(0., 1., intersection);
 
     out.color += intersection;
+#endif
 
     return out;
 }

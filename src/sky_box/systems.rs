@@ -19,6 +19,9 @@ pub fn spawn_sky_box(
                 base_color: Color::hex("a5cddf").unwrap(),
                 unlit: true,
                 cull_mode: None,
+                // (Quick and dirty way to) make sure we don't get a foam line at the horizon by
+                // setting alpha mode and consequently disable depth prepass
+                alpha_mode: AlphaMode::Blend,
                 ..default()
             }),
             transform: Transform::from_scale(Vec3::splat(OCEAN_TILE_SIZE * 9.)),

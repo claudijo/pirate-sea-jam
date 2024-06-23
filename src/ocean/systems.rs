@@ -76,9 +76,6 @@ pub fn spawn_ocean_tile(
                 base: StandardMaterial {
                     base_color: Color::rgb(0.15, 0.74, 0.86),
                     metallic: 1.,
-                    // AlphaMode required to calculate water depth i shaders (from the camera point
-                    // of view).
-                    alpha_mode: AlphaMode::Blend,
                     ..Default::default()
                 },
                 extension: OceanMaterialExtension {
