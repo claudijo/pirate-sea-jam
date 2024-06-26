@@ -1,9 +1,9 @@
 use crate::lifespan::components::Lifespan;
 use crate::particles::components::ParticleEmitter;
-use crate::physics::bundles::{ParticlePhysicsBundle, SpindlePhysicsBundle};
+use crate::physics::bundles::{ParticlePhysicsBundle};
 use crate::physics::components::LinearVelocity;
-use bevy::prelude::*;
 use crate::utils::f32_extensions::F32Ext;
+use bevy::prelude::*;
 
 pub fn emit_particles(
     mut commands: Commands,
@@ -21,43 +21,45 @@ pub fn emit_particles(
 
             let material = materials.add(StandardMaterial {
                 base_color: emitter.particle_color,
-                unlit: true,
+                alpha_mode: emitter.particle_alpha_mode,
                 ..default()
             });
-            // let mesh = meshes.add(Triangle2d::default().mesh().scaled_by(Vec3::splat(emitter.particle_size + emitter.particle_scale_variance * (2.0 * rand::random::<f32>() - 1.0))));
+
             let mesh = meshes.add(
                 Sphere::default()
                     .mesh()
                     .ico(0)
                     .unwrap()
                     .scaled_by(Vec3::splat(
-                        emitter.particle_size.random_variation(emitter.particle_scale_variance),
+                        emitter
+                            .particle_size
+                            .random_variation(emitter.particle_scale_variance)
+                            + f32::EPSILON,
                     )),
             );
 
             for _i in 0..emitter.amount_per_burst {
-                commands
-                    .spawn((
-                        PbrBundle {
-                            mesh: mesh.clone(),
-                            material: material.clone(),
-                            transform: Transform::from_translation(
-                                Vec3::new(
-                                    0f32.random_variation(emitter.position_variance),
-                                    0f32.random_variation(emitter.position_variance),
-                                    0f32.random_variation(emitter.position_variance),
-                                ) + global_transform.translation(),
-                            ),
-                            ..default()
-                        },
-                        ParticlePhysicsBundle {
-                            linear_velocity: LinearVelocity(global_velocity),
-                            ..default()
-                        },
-                        Lifespan {
-                            ttl: Timer::from_seconds(emitter.particle_lifetime, TimerMode::Once),
-                        },
-                    ));
+                commands.spawn((
+                    PbrBundle {
+                        mesh: mesh.clone(),
+                        material: material.clone(),
+                        transform: Transform::from_translation(
+                            Vec3::new(
+                                0f32.random_variation(emitter.position_variance),
+                                0f32.random_variation(emitter.position_variance),
+                                0f32.random_variation(emitter.position_variance),
+                            ) + global_transform.translation(),
+                        ),
+                        ..default()
+                    },
+                    ParticlePhysicsBundle {
+                        linear_velocity: LinearVelocity(global_velocity),
+                        ..default()
+                    },
+                    Lifespan {
+                        ttl: Timer::from_seconds(emitter.particle_lifetime, TimerMode::Once),
+                    },
+                ));
             }
         }
     }

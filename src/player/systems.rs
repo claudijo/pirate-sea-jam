@@ -18,6 +18,7 @@ use crate::physics::components::{
 use crate::player::components::{Flag, Player, Wheel};
 use crate::player::{WHEEL_TURN_ACCELERATION, WHEEL_TURN_DAMPING};
 use crate::utils::linear_algebra::face_normal;
+use crate::water_splash::components::WaterSplasher;
 use crate::wind::resources::Wind;
 use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
@@ -68,24 +69,22 @@ pub fn spawn_players(
             ))
             .with_children(|child_builder| {
                 for foam_emitter_translation in [
-                    Vec3::new(0.75, 1., 1.75),
-                    Vec3::new(-0.75, 1., 1.75),
-                    Vec3::new(1.25, 1., 0.5),
-                    Vec3::new(-1.25, 1., 0.5),
-                    Vec3::new(1., 1., -0.75),
-                    Vec3::new(-1., 1., -0.75),
+                    Vec3::new(0.5, 0.9, 2.),  // Front port
+                    Vec3::new(-0.5, 0.9, 2.), // Front starboard
                 ] {
                     child_builder.spawn((
                         ParticleEmitter {
-                            rate: Timer::from_seconds(0.1, TimerMode::Repeating),
-                            amount_per_burst: 10,
+                            rate: Timer::from_seconds(0., TimerMode::Repeating),
+                            amount_per_burst: 0,
                             position_variance: 0.5,
-                            particle_lifetime: 1.,
-                            particle_size: 0.25,
-                            particle_scale_variance: 0.15,
-                            particle_velocity: foam_emitter_translation,
-                            particle_color: Color::WHITE,
+                            particle_lifetime: 0.6,
+                            particle_size: 0.4,
+                            particle_scale_variance: 0.1,
+                            particle_velocity: (foam_emitter_translation - Vec3::Z * 2.) * 3.,
+                            particle_color: Color::rgb(1., 1., 1.),
+                            particle_alpha_mode: AlphaMode::Blend,
                         },
+                        WaterSplasher { max_depth: 0.5 },
                         TransformBundle::from_transform(Transform::from_translation(
                             foam_emitter_translation,
                         )),
@@ -106,7 +105,6 @@ pub fn spawn_players(
                             Buoy {
                                 volume: 0.75,
                                 max_depth: 0.5,
-                                ..default()
                             },
                         ))
                         .add_rollback();

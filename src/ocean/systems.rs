@@ -8,7 +8,7 @@ use crate::ocean::{
     OCEAN_SECONDARY_TILE_SUBDIVISIONS, OCEAN_TILE_SIZE,
 };
 use crate::orbiting_camera::resources::FocalPoint;
-use crate::physics::components::{AngularDrag, Buoy, LinearDrag};
+use crate::physics::components::{AngularDrag, LinearDrag};
 use bevy::math::Vec3A;
 use bevy::pbr::NotShadowCaster;
 use bevy::prelude::*;
@@ -165,13 +165,11 @@ pub fn sync_ocean_global_center(
     let double_cell_size = OCEAN_PRIMARY_TILE_QUAD_CELL_SIZE * 2.;
 
     if diff.x.abs() > double_cell_size {
-        ocean_center.0.x += (diff.x / double_cell_size).floor()
-            * double_cell_size;
+        ocean_center.0.x += (diff.x / double_cell_size).floor() * double_cell_size;
     }
 
     if diff.z.abs() > double_cell_size {
-        ocean_center.0.z += (diff.z / double_cell_size).floor()
-            * double_cell_size;
+        ocean_center.0.z += (diff.z / double_cell_size).floor() * double_cell_size;
     }
 }
 
@@ -192,17 +190,6 @@ pub fn sync_ocean_tiles_center_offset(
 pub fn sync_shader_time(time: Res<Time>, mut materials: ResMut<Assets<StandardOceanMaterial>>) {
     for (_, material) in materials.iter_mut() {
         material.extension.rollback_time.elapsed_seconds = time.elapsed_seconds();
-    }
-}
-
-pub fn update_buoy_water_height(
-    mut buoy_query: Query<(&GlobalTransform, &mut Buoy), With<Rollback>>,
-    wave: Res<Wave>,
-    time: Res<Time>,
-) {
-    let elapsed_time = time.elapsed_seconds();
-    for (global_transform, mut buoy) in &mut buoy_query {
-        buoy.water_height = wave.height(global_transform.translation(), wave.configs, elapsed_time);
     }
 }
 

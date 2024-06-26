@@ -11,7 +11,10 @@ pub fn debug_buoys(buoy_query: Query<(&Buoy, &GlobalTransform)>, mut gizmos: Giz
     }
 }
 
-pub fn debug_particle(particle_query: Query<(&Mass, &GlobalTransform)>, mut gizmos: Gizmos) {
+pub fn debug_physics_particle(
+    particle_query: Query<(&Mass, &GlobalTransform)>,
+    mut gizmos: Gizmos,
+) {
     for (mass, global_transform) in &particle_query {
         let (_, rotation, translation) = global_transform.to_scale_rotation_translation();
         gizmos.sphere(translation, rotation, mass.0 * 0.1, Color::PURPLE);

@@ -10,4 +10,5 @@ pub struct ParticleEmitter {
     pub particle_size: f32,
     pub particle_velocity: Vec3,
     pub particle_color: Color,
+    pub particle_alpha_mode: AlphaMode,
 }

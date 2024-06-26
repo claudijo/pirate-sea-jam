@@ -35,13 +35,13 @@ impl Plugin for PlayerPlugin {
 
         app.add_systems(
             Update,
-            (animate_sail_trim, animate_wheel_turn, animate_flag)
+            (
+                animate_sail_trim,
+                animate_wheel_turn,
+                animate_flag,
+                update_focal_point,
+            )
                 .run_if(in_state(GameState::InGame)),
-        );
-
-        app.add_systems(
-            Update,
-            update_focal_point.run_if(in_state(GameState::InGame)),
         );
 
         // Registered all components that needs to be restored when rollback entities are restored

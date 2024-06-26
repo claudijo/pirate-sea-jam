@@ -25,38 +25,6 @@ impl Wave {
                 .sum::<Vec3>()
     }
 
-    #[allow(dead_code)]
-    pub fn next_position_normal(
-        &self,
-        mut position: Vec3,
-        waves: [Vec4; 4],
-        time: f32,
-    ) -> (Vec3, Vec3) {
-        let time = time * self.time_scale;
-        position.y = 0.; // Neutral water level
-
-        let mut tangent = Vec3::new(1., 0., 0.);
-        let mut binormal = Vec3::new(0., 0., 1.);
-
-        let position = position
-            + waves
-                .into_iter()
-                .map(|wave| {
-                    water_mechanics::gerstner_wave_tangent_binormal(
-                        wave,
-                        position,
-                        &mut tangent,
-                        &mut binormal,
-                        time,
-                    )
-                })
-                .sum::<Vec3>();
-
-        let normal = (binormal.cross(tangent)).normalize();
-
-        (position, normal)
-    }
-
     pub fn height(&self, point: Vec3, waves: [Vec4; 4], time: f32) -> f32 {
         water_mechanics::wave_height(
             point,

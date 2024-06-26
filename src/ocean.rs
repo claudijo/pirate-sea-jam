@@ -3,11 +3,11 @@ use crate::ocean::materials::StandardOceanMaterial;
 use crate::ocean::resources::{OceanCenter, Wave};
 use crate::ocean::systems::{
     spawn_ocean, sync_ocean_global_center, sync_ocean_tiles_center_offset, sync_shader_time,
-    update_buoy_water_height, update_water_drag,
+    update_water_drag,
 };
 use crate::orbiting_camera::resources::FocalPoint;
 use crate::physics::systems::{
-    update_aerodynamic_force, update_buoyant_force, update_linear_drag_force,
+    update_aerodynamic_force, update_linear_drag_force,
 };
 use bevy::asset::load_internal_asset;
 use bevy::prelude::*;
@@ -35,6 +35,8 @@ const UTILS_HANDLE: Handle<Shader> = Handle::weak_from_u128(0x24c6df2a389f4396aa
 
 const OCEAN_MATERIAL_BINDINGS: Handle<Shader> =
     Handle::weak_from_u128(0x06a957f34bac4aabad104c64a301c3fb);
+
+const NOISE: Handle<Shader> = Handle::weak_from_u128(0xe26cb7aca0c34bfa92c14ce3d90be3b9);
 
 // Each Vec4 containing direction x, direction z, steepness, wave_length. Sum of all steepness values must not exceed 1.
 const WAVES: [Vec4; 4] = [
@@ -85,6 +87,13 @@ impl Plugin for OceanPlugin {
             Shader::from_wgsl
         );
 
+        load_internal_asset!(
+            app,
+            NOISE,
+            concat!(env!("CARGO_MANIFEST_DIR"), "/assets/shaders/noise.wgsl"),
+            Shader::from_wgsl
+        );
+
         app.insert_resource(Wave {
             time_scale: OCEAN_ANIMATION_TIME_SCALE,
             sample_count: 4,
@@ -93,7 +102,7 @@ impl Plugin for OceanPlugin {
 
         app.insert_resource(OceanCenter(Vec3::ZERO));
 
-        app.add_plugins(MaterialPlugin::<StandardOceanMaterial>{
+        app.add_plugins(MaterialPlugin::<StandardOceanMaterial> {
             // Required to get the foam line effect to work
             prepass_enabled: false,
             ..default()
@@ -122,10 +131,6 @@ impl Plugin for OceanPlugin {
             sync_shader_time.before(update_aerodynamic_force),
         );
 
-        app.add_systems(
-            GgrsSchedule,
-            update_buoy_water_height.before(update_buoyant_force),
-        );
         app.add_systems(
             GgrsSchedule,
             update_water_drag.before(update_linear_drag_force),

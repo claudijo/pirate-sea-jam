@@ -1,3 +1,4 @@
+use crate::ocean::resources::Wave;
 use crate::physics::components::{
     Aerofoil, AngularDamping, AngularDrag, AngularVelocity, Area, Buoy, ExternalForce,
     ExternalImpulse, ExternalTorque, ExternalTorqueImpulse, Hydrofoil, Inertia, LinearDamping,
@@ -162,16 +163,19 @@ pub fn update_buoyant_force(
     buoy_query: Query<(&Parent, &Buoy, &GlobalTransform)>,
     mut floating_body_query: Query<(&GlobalTransform, &mut ExternalForce, &mut ExternalTorque)>,
     water_density: Res<WaterDensity>,
+    wave: Res<Wave>,
+    time: Res<Time>,
 ) {
+    let elapsed_time = time.elapsed_seconds();
     for (parent, buoy, global_transform) in &buoy_query {
-        let submerged_proportion =
-            (global_transform.translation().y - buoy.water_height - buoy.max_depth)
-                / (-2. * buoy.max_depth);
+        let water_height = wave.height(global_transform.translation(), wave.configs, elapsed_time);
+        let submerged = (global_transform.translation().y - water_height - buoy.max_depth)
+            / (-2. * buoy.max_depth);
 
-        let force_magnitude = match submerged_proportion {
+        let force_magnitude = match submerged {
             s if s <= 0. => 0.,
             s if s >= 1. => buoy.volume * water_density.0,
-            _ => submerged_proportion * buoy.volume * water_density.0,
+            _ => submerged * buoy.volume * water_density.0,
         };
 
         if let Ok((parent_global_transform, mut external_force, mut external_torque)) =

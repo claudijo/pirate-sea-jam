@@ -30,7 +30,6 @@ pub struct ExternalImpulse(pub Vec3);
 #[reflect(Component)]
 pub struct Buoy {
     pub volume: f32,
-    pub water_height: f32,
     // The maximum submersion depth of the object at which point it generates its maximum buoyancy
     // force.
     pub max_depth: f32,

@@ -1,13 +1,16 @@
 #import bevy_pbr::{
+    mesh_view_bindings,
+    mesh_vertex_output,
     prepass_utils,
     pbr_fragment::pbr_input_from_standard_material,
     forward_io::{FragmentOutput, VertexOutput, Vertex},
     pbr_functions::{apply_pbr_lighting, main_pass_post_lighting_processing},
-    mesh_functions::{get_model_matrix, mesh_position_local_to_world, mesh_normal_local_to_world},
+    mesh_functions::{get_model_matrix, mesh_position_local_to_world, mesh_normal_local_to_world, mesh_position_local_to_clip},
     view_transformations::position_world_to_clip
 }
 
 #import pirate_sea_jam::{
+    noise,
     water_dynamics,
     utils,
     ocean_material_bindings,
@@ -117,13 +120,6 @@ fn fragment(
     // generate a PbrInput struct from the StandardMaterial bindings
     var pbr_input = pbr_input_from_standard_material(in, is_front);
 
-    // apply lighting
-    out.color = apply_pbr_lighting(pbr_input);
-
-    // apply in-shader post processing (fog, alpha-premultiply, and also tonemapping, debanding if the camera is non-hdr)
-    // note this does not include fullscreen postprocessing effects like bloom.
-    out.color = main_pass_post_lighting_processing(pbr_input, out.color);
-
 #ifdef DEPTH_PREPASS
     // Scene depth 0. (far) to 1. (near)
     let scene_depth = bevy_pbr::prepass_utils::prepass_depth(in.position, sample_index);
@@ -134,12 +130,18 @@ fn fragment(
     // Water depth 0. (shallow) to 1. (deep)
     let water_depth = frag_depth - scene_depth;
 
-    // Fiddling with calculation to only get close to 1 near the ship and not for waves in the distance
-    var intersection = 1. - water_depth;
-    intersection = smoothstep(0.9998, 1., intersection);
+    let intersection_depth = smoothstep(0.9998, 1., 1. - water_depth);
+    let foam_noise = smoothstep(0., 1., noise::perlin_noise_2d(in.world_position.xz * 3.));
 
-    out.color += intersection;
+    pbr_input.material.base_color += intersection_depth * foam_noise;
 #endif
+
+    // apply lighting
+    out.color = apply_pbr_lighting(pbr_input);
+
+    // apply in-shader post processing (fog, alpha-premultiply, and also tonemapping, debanding if the camera is non-hdr)
+    // note this does not include fullscreen postprocessing effects like bloom.
+    out.color = main_pass_post_lighting_processing(pbr_input, out.color);
 
     return out;
 }

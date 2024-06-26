@@ -11,7 +11,6 @@ use crate::connection::systems::RollbackConfig;
 use crate::controls::components::Controls;
 use crate::game_state::states::GameState;
 use bevy::asset::AssetMetaCheck;
-use bevy::pbr::PbrPlugin;
 use bevy::prelude::*;
 use bevy_editor_pls::EditorPlugin;
 use bevy_ggrs::{GgrsApp, GgrsPlugin};
@@ -26,6 +25,7 @@ use crate::particles::ParticlesPlugin;
 use crate::physics::PhysicsPlugin;
 use crate::sky_box::SkyBoxPlugin;
 use crate::sync_test::SyncTestPlugin;
+use crate::water_splash::WaterSplashPlugin;
 use crate::wind::WindPlugin;
 
 mod args;
@@ -50,6 +50,7 @@ mod sky_box;
 mod stats;
 mod sync_test;
 mod utils;
+mod water_splash;
 mod widget_debug;
 mod wind;
 
@@ -90,8 +91,9 @@ fn main() {
     app.add_plugins(InstructionsPlugin);
     app.add_plugins(MenuPlugin);
     app.add_plugins(PhysicsPlugin);
-    // app.add_plugins(ParticlesPlugin);
+    app.add_plugins(ParticlesPlugin);
     app.add_plugins(LifespanPlugin);
+    app.add_plugins(WaterSplashPlugin);
 
     app.register_type::<Controls>();
 
