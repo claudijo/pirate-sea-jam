@@ -24,6 +24,9 @@ use bevy::math::Vec3Swizzles;
 use bevy::prelude::*;
 use bevy_ggrs::{AddRollbackCommandExtension, LocalPlayers, PlayerInputs, Rollback};
 use std::f32::consts::{E, PI};
+use crate::ocean::components::ImpactPointTimer;
+use crate::ocean::materials::{ImpactPoint, StandardOceanMaterial};
+use crate::ocean::systems::Tier;
 
 pub fn spawn_players(
     mut commands: Commands,
@@ -66,6 +69,7 @@ pub fn spawn_players(
                     linear_damping: LinearDamping(0.8),
                     ..default()
                 },
+                ImpactPointTimer(Timer::from_seconds(1., TimerMode::Repeating)),
             ))
             .with_children(|child_builder| {
                 for foam_emitter_translation in [
@@ -400,5 +404,26 @@ pub fn update_focal_point(
 
         focal_point.0 = transform.translation;
         focal_point.0.y = 0.;
+    }
+}
+
+pub fn add_water_impact(
+    mut player_query: Query<(&GlobalTransform, &mut ImpactPointTimer), With<Player>>,
+    mut materials: ResMut<Assets<StandardOceanMaterial>>,
+    time: Res<Time>
+) {
+    for (_, material) in materials.iter_mut() {
+        if material.extension.settings.tier == Tier::Primary as u32 {
+            for (global_transform, mut impact_point_timer) in &mut player_query {
+                impact_point_timer.0.tick(time.delta());
+                if impact_point_timer.0.just_finished() {
+                    material.extension.impact_points.put(ImpactPoint {
+                        elapsed_seconds: time.elapsed_seconds(),
+                        position: global_transform.translation(),
+                    });
+                }
+            }
+        }
+
     }
 }

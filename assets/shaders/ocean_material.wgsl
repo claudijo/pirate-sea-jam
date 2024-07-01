@@ -1,5 +1,5 @@
 #import bevy_pbr::{
-    mesh_view_bindings,
+    mesh_view_bindings::globals,
     mesh_vertex_output,
     prepass_utils,
     pbr_fragment::pbr_input_from_standard_material,
@@ -135,6 +135,45 @@ fn fragment(
 
     pbr_input.material.base_color += intersection_depth * foam_noise;
 #endif
+
+
+//    for (var i = 0; i < 4; i++) {
+//        let point_x = 0. * f32(i);
+//        let point_z = -10.;
+//        let dist_origo = sqrt(pow(point_x + in.world_position.x, 2.) + pow(point_z + in.world_position.z, 2.));
+//
+//        let wave_number =  0.8 * f32(i); // k
+//
+//        let frequency = sqrt(2 * 3.14 * 9.81 * wave_number); // omega
+//
+//        let y = sin(wave_number * dist_origo - globals.time * frequency);
+//
+//        let damping = 1. / pow(dist_origo, 2.);
+//        pbr_input.material.base_color +=  y * damping;// * foam_noise;
+//    }
+
+//    for (var i = 0; i < 4; i++) {
+//            let point_x = 0.; //5. * f32(i);
+//            let point_z = -10.;
+//            let dist_origo = sqrt(pow(point_x + in.world_position.x, 2.) + pow(point_z + in.world_position.z, 2.));
+//
+//            let wave_length =  0.2 * f32(i)  ;
+//            let speed = sqrt(9.81 * wave_length);
+//
+//            let phase = dist_origo / wave_length;// - 0.4 * f32(i);
+//            let angular_frequency = - speed;
+//            let y = sin(angular_frequency * globals.time + phase);
+//
+//            let damping = 1 / pow(dist_origo, 2.);
+//            let foam_noise = smoothstep(0., 1., noise::perlin_noise_2d((in.world_position.xz + globals.time) * 10.));
+//            pbr_input.material.base_color += saturate( y * damping);// * foam_noise;
+//        }
+
+//    let diff = abs(dist_origo - globals.time * 3. % 10.);
+//    let circle = 1. - smoothstep(0., 0.4, diff);
+
+
+//    pbr_input.material.base_color += circle * smoothstep(0., 1., noise::perlin_noise_2d((in.world_position.xz + globals.time) * 2.));
 
     // apply lighting
     out.color = apply_pbr_lighting(pbr_input);

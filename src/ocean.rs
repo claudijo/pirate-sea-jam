@@ -13,10 +13,10 @@ use bevy::asset::load_internal_asset;
 use bevy::prelude::*;
 use bevy_ggrs::GgrsSchedule;
 
-mod components;
-mod materials;
+pub mod components;
+pub mod materials;
 pub mod resources;
-mod systems;
+pub mod systems;
 
 pub const OCEAN_TILE_SIZE: f32 = 160.;
 

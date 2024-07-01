@@ -25,7 +25,51 @@ pub struct OceanPosition {
 #[derive(ShaderType, Clone, Reflect, Debug, Default)]
 pub struct RollbackTime {
     pub elapsed_seconds: f32,
-    pub padding: Vec3, // Needed for wasm, so that type has a size that is a multiple of 16 bytes
+}
+
+#[derive(ShaderType, Clone, Copy, Reflect, Debug, Default)]
+pub struct ImpactPoint {
+    pub elapsed_seconds: f32,
+    pub position: Vec3,
+}
+
+// Keep in sync with shader code
+const IMPACT_POINTS_CAPACITY: usize = 40;
+
+// Simple circular buffer (that overflows). See https://en.wikipedia.org/wiki/Circular_buffer
+#[derive(ShaderType, Clone, Reflect, Debug)]
+pub struct ImpactPoints {
+    pub write_index: u32,
+    pub read_index: u32,
+    pub buffer: [ImpactPoint; IMPACT_POINTS_CAPACITY],
+}
+
+impl ImpactPoints {
+    pub fn new() -> Self {
+        Self {
+            read_index: 0,
+            write_index: 0,
+            buffer: [ImpactPoint::default(); IMPACT_POINTS_CAPACITY],
+        }
+    }
+    pub fn put(&mut self, impact_point: ImpactPoint) {
+        if (self.write_index + 1) % self.buffer.len() as u32 == self.read_index {
+            // Buffer is full. Make room and enable overflow.
+            self.read_index = (self.read_index + 1) % self.buffer.len() as u32;
+        }
+        self.buffer[self.write_index as usize] = impact_point;
+        self.write_index = (self.write_index + 1) % self.buffer.len() as u32;
+    }
+
+    // fn get(&mut self) -> Some(ImpactPoint) {
+    //     if self.read_index == self.write_index {
+    //         return None;
+    //     }
+    //
+    //     let result = self.buffer[self.read_index];
+    //     self.read_index = (self.read_index + 1) % self.buffer.len() as u32;
+    //     result
+    // }
 }
 
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone)]
@@ -40,6 +84,9 @@ pub struct OceanMaterialExtension {
 
     #[uniform(102)]
     pub rollback_time: RollbackTime,
+
+    #[uniform(103)]
+    pub impact_points: ImpactPoints,
 }
 
 impl MaterialExtension for OceanMaterialExtension {

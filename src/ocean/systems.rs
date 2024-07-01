@@ -1,7 +1,5 @@
 use crate::ocean::components::OceanTile;
-use crate::ocean::materials::{
-    OceanMaterialExtension, OceanPosition, OceanTileSettings, RollbackTime, StandardOceanMaterial,
-};
+use crate::ocean::materials::{ImpactPoints, OceanMaterialExtension, OceanPosition, OceanTileSettings, RollbackTime, StandardOceanMaterial};
 use crate::ocean::resources::{OceanCenter, Wave};
 use crate::ocean::{
     OCEAN_PRIMARY_TILE_QUAD_CELL_SIZE, OCEAN_PRIMARY_TILE_SUBDIVISIONS,
@@ -92,6 +90,7 @@ pub fn spawn_ocean_tile(
                         center_offset: Vec3::ZERO,
                     },
                     rollback_time: RollbackTime::default(),
+                    impact_points: ImpactPoints::new(),
                 },
             }),
             ..default()
