@@ -69,7 +69,7 @@ pub fn spawn_players(
                     linear_damping: LinearDamping(0.8),
                     ..default()
                 },
-                ImpactPointTimer(Timer::from_seconds(1., TimerMode::Repeating)),
+                ImpactPointTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
             ))
             .with_children(|child_builder| {
                 for foam_emitter_translation in [
@@ -418,7 +418,7 @@ pub fn add_water_impact(
                 impact_point_timer.0.tick(time.delta());
                 if impact_point_timer.0.just_finished() {
                     material.extension.impact_points.put(ImpactPoint {
-                        elapsed_seconds: time.elapsed_seconds(),
+                        time: time.elapsed_seconds(),
                         position: global_transform.translation(),
                     });
                 }

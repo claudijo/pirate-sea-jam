@@ -1,3 +1,4 @@
+use std::path::Iter;
 use bevy::pbr::{ExtendedMaterial, MaterialExtension};
 use bevy::prelude::*;
 use bevy::render::render_resource::{
@@ -29,7 +30,7 @@ pub struct RollbackTime {
 
 #[derive(ShaderType, Clone, Copy, Reflect, Debug, Default)]
 pub struct ImpactPoint {
-    pub elapsed_seconds: f32,
+    pub time: f32,
     pub position: Vec3,
 }
 

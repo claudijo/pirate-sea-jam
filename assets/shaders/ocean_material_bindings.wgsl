@@ -3,7 +3,7 @@
 const WAVES_COUNT: i32 = 4;
 
 // Keep in sync with rust code
-const IMPACT_POINTS_CAPACITY: i32 = 40;
+const IMPACT_POINTS_CAPACITY: u32 = 40;
 
 struct OceanTilelSettings {
     tile_offset: vec3<f32>,
@@ -24,7 +24,7 @@ struct RollbackTime {
 }
 
 struct ImpactPoint {
-    elapsed_seconds: f32,
+    time: f32,
     position: vec3<f32>,
 }
 
